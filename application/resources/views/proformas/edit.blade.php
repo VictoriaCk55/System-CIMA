@@ -1,0 +1,1002 @@
+@extends('layouts.app')
+
+@section('title', 'Editar Proforma')
+
+@push('styles')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+.select2-container--default .select2-selection--single {
+    height: 38px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 36px;
+    padding-left: 12px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 36px;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.15);
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #ffc107 !important;
+    color: #000000 !important;
+}
+
+.select2-container--default .select2-search--dropdown .select2-search__field:focus {
+    border-color: #ffc107 !important;
+    outline: none;
+}
+
+.select2-dropdown {
+    border-color: #ced4da;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Estilo para el mensaje de búsqueda */
+.select2-container--default .select2-search--dropdown .select2-search__field::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+/* Mensaje personalizado en el placeholder */
+.select2-selection__placeholder {
+    color: #6c757d !important;
+    font-style: italic;
+}
+
+/* Estilo para el botón de guardar */
+.btn[style*="background-color: #ffc107"]:hover {
+    background-color: #e6a800 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+}
+
+#add-parametro.btn[style*="background-color: #ffc107"] {
+    background-color: #ffc107 !important;
+    color: #000000 !important;
+}
+
+.btn-secondary {
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+}
+
+.btn-volver {
+    color: #000000 !important;
+    border: 2px solid #ffffff !important;
+    background-color: #ffffff !important;
+    transition: all 0.3s ease !important;
+    font-weight: 500 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+}
+
+.btn-volver:hover {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #ffffff !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(128, 128, 128, 0.3) !important;
+}
+
+.form-control:focus, .form-select:focus, .select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: #ffbf00 !important;
+    box-shadow: 0 0 0 3px rgba(153, 132, 30, 0.15) !important;
+}
+
+/* Estilo para errores de validación */
+.alert-duplicado-frontend {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: none;
+    font-weight: 500;
+}
+
+.alert-duplicado-frontend i {
+    margin-right: 10px;
+    color: #dc3545;
+}
+
+
+/* Reforzar color del icono de proformas */
+.fa-file-invoice-dollar {
+    color: #ffc107 !important;
+}
+@media (max-width: 768px) {
+    .page-header .d-flex {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 15px !important;
+    }
+    
+    .page-header .btn-volver {
+        width: 100% !important;
+        justify-content: center !important;
+        margin-top: 10px !important;
+    }
+    
+    .d-flex.justify-content-between.pt-3.border-top {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+    
+    .d-flex.justify-content-between.pt-3.border-top .btn {
+        width: 100% !important;
+        padding: 12px 20px !important;
+        font-size: 1rem !important;
+    }
+    
+    .card-body {
+        padding: 1rem !important;
+    }
+    
+    .form-control, .form-select, .select2-container--default .select2-selection--single {
+        font-size: 16px !important;
+    }
+}
+</style>
+@endpush
+
+@section('content')
+<div class="container-main">
+    <!-- Encabezado de página -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1>
+                    <i class="fas fa-edit" style="color: #ffc107;"></i>
+                    Editar Proforma
+                </h1>
+                <p class="page-subtitle">
+                    Actualice la información de la proforma: {{ $proforma->codigo }}
+                </p>
+            </div>
+            <a href="{{ route('proformas.index') }}" class="btn btn-outline-secondary btn-volver" style="border-radius: 30px; padding: 8px 20px;">
+                <i class="fas fa-arrow-left me-2"></i>
+                Volver al listado
+            </a>
+        </div>
+    </div>
+
+    <!-- Mensajes de error -->
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Por favor corrija los siguientes errores:</strong>
+            <ul class="mb-0 mt-2">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    <!-- Formulario -->
+    <div class="card">
+        <div class="card-header" style="background-color: #ffc107; border-bottom: none;">
+            <h5 class="mb-0" style="color: #000000;">
+                <i class="fas fa-edit me-2" style="color: #000000;"></i>
+                Formulario de Edición
+            </h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ route('proformas.update', $proforma) }}" method="POST" id="proformaForm">
+                @csrf
+                @method('PUT')
+                
+                <!-- SECCIÓN 1: DATOS CLIENTE -->
+                <div class="mb-4">
+                    <h6 class="border-bottom pb-2 mb-3">
+                        <i class="fas fa-user-tie me-2" style="color: #ffc107;"></i>
+                        Datos del Cliente
+                    </h6>
+                    
+                    <div class="mb-3">
+                        <label for="cliente_id" class="form-label">Cliente *</label>
+                        <select class="form-select @error('cliente_id') is-invalid @enderror" 
+                                id="cliente_id" name="cliente_id" required style="width: 100%;">
+                            <option value="">Buscar cliente...</option>
+                            @if(old('cliente_id', $proforma->cliente_id))
+                                @php
+                                    $clienteSeleccionado = \App\Models\Cliente::find(old('cliente_id', $proforma->cliente_id));
+                                @endphp
+                                @if($clienteSeleccionado)
+                                    <option value="{{ $clienteSeleccionado->id }}" selected>
+                                        {{ $clienteSeleccionado->razon_social }} - {{ $clienteSeleccionado->persona_contacto }}
+                                    </option>
+                                @endif
+                            @endif
+                        </select>
+                        @error('cliente_id')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 2: DATOS BÁSICOS -->
+                <div class="mb-4">
+                    <h6 class="border-bottom pb-2 mb-3">
+                        <i class="fas fa-info-circle me-2" style="color: #ffc107;"></i>
+                        Datos Básicos de la Proforma
+                    </h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="tipo" class="form-label">Tipo de Proforma *</label>
+                            <select class="form-select @error('tipo') is-invalid @enderror" 
+                                    id="tipo" name="tipo" required 
+                                    onchange="calcularTotalesEstimados()">
+                                <option value="AMBIENTAL" {{ old('tipo', $proforma->tipo) == 'AMBIENTAL' ? 'selected' : '' }}>AMBIENTAL</option>
+                                <option value="AGUA" {{ old('tipo', $proforma->tipo) == 'AGUA' ? 'selected' : '' }}>AGUA</option>
+                                <option value="INVESTIGACION" {{ old('tipo', $proforma->tipo) == 'INVESTIGACION' ? 'selected' : '' }}>INVESTIGACIÓN (20% descuento)</option>
+                            </select>
+                            @error('tipo')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="tipo_muestra" class="form-label">Tipo de Muestra *</label>
+                            <input type="text" 
+                                   class="form-control @error('tipo_muestra') is-invalid @enderror" 
+                                   id="tipo_muestra" 
+                                   name="tipo_muestra" 
+                                   value="{{ old('tipo_muestra', $proforma->tipo_muestra) }}"
+                                   placeholder="Ej: AGUA RESIDUAL, SUELO, SEDIMENTO"
+                                   required>
+                            <small class="text-muted">Ingrese el tipo de muestra libremente</small>
+                            @error('tipo_muestra')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    
+                    <!-- CAMPO UNIDAD - NUEVO -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="unidad" class="form-label">Unidad (Opcional)</label>
+                            <select class="form-select @error('unidad') is-invalid @enderror" 
+                                    id="unidad" name="unidad">
+                                <option value="">Seleccionar unidad...</option>
+                                <option value="UIA" {{ old('unidad', $proforma->unidad) == 'UIA' ? 'selected' : '' }}>UIA - Unidad de Investigación Ambiental</option>
+                                <option value="UAQ" {{ old('unidad', $proforma->unidad) == 'UAQ' ? 'selected' : '' }}>UAQ - Unidad de Análisis Químico</option>
+                            </select>
+                            <small class="text-muted">Seleccione la unidad responsable de la proforma</small>
+                            @error('unidad')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha_emision" class="form-label">Fecha de Emisión *</label>
+                            <input type="date" class="form-control @error('fecha_emision') is-invalid @enderror" 
+                                   id="fecha_emision" name="fecha_emision" 
+                                   value="{{ old('fecha_emision', $proforma->fecha_emision->format('Y-m-d')) }}" required>
+                            @error('fecha_emision')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha_recepcion" class="form-label">Fecha de Recepción *</label>
+                            <input type="date" class="form-control @error('fecha_recepcion') is-invalid @enderror" 
+                                   id="fecha_recepcion" name="fecha_recepcion" 
+                                   value="{{ old('fecha_recepcion', $proforma->fecha_recepcion->format('Y-m-d')) }}" required>
+                            @error('fecha_recepcion')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 3: DATOS DE CONTACTO -->
+                <div class="mb-4">
+                    <h6 class="border-bottom pb-2 mb-3">
+                        <i class="fas fa-address-card me-2" style="color: #ffc107;"></i>
+                        Datos de Contacto
+                    </h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="persona_contacto" class="form-label">Persona de Contacto</label>
+                            <input type="text" class="form-control @error('persona_contacto') is-invalid @enderror" 
+                                   id="persona_contacto" name="persona_contacto" 
+                                   value="{{ old('persona_contacto', $proforma->persona_contacto) }}">
+                            @error('persona_contacto')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="telefono_contacto" class="form-label">Teléfono de Contacto</label>
+                            <input type="text" class="form-control @error('telefono_contacto') is-invalid @enderror" 
+                                   id="telefono_contacto" name="telefono_contacto" 
+                                   value="{{ old('telefono_contacto', $proforma->telefono_contacto) }}">
+                            @error('telefono_contacto')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 4: DATOS DE MUESTREO -->
+                <div class="mb-4">
+                    <h6 class="border-bottom pb-2 mb-3">
+                        <i class="fas fa-map-marker-alt me-2" style="color: #ffc107;"></i>
+                        Datos de Muestreo
+                    </h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="procedencia" class="form-label">Procedencia</label>
+                            <input type="text" class="form-control @error('procedencia') is-invalid @enderror" 
+                                   id="procedencia" name="procedencia" 
+                                   value="{{ old('procedencia', $proforma->procedencia) }}">
+                            @error('procedencia')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="coordenadas" class="form-label">Coordenadas</label>
+                            <input type="text" class="form-control @error('coordenadas') is-invalid @enderror" 
+                                   id="coordenadas" name="coordenadas" 
+                                   value="{{ old('coordenadas', $proforma->coordenadas) }}">
+                            @error('coordenadas')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="muestreado_por" class="form-label">Muestreado por</label>
+                            <select class="form-select @error('muestreado_por') is-invalid @enderror" 
+                                    id="muestreado_por" name="muestreado_por">
+                                <option value="">Seleccionar...</option>
+                                @foreach($muestreadoPorOpciones as $opcion)
+                                    <option value="{{ $opcion }}" {{ old('muestreado_por', $proforma->muestreado_por) == $opcion ? 'selected' : '' }}>
+                                        {{ $opcion }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('muestreado_por')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="adelanto" class="form-label">Adelanto (Bs.)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">Bs.</span>
+                                <input type="number" class="form-control @error('adelanto') is-invalid @enderror" 
+                                       id="adelanto" name="adelanto" 
+                                       value="{{ old('adelanto', $proforma->adelanto) }}" min="0" step="0.01"
+                                       oninput="calcularTotalesEstimados()">
+                            </div>
+                            @error('adelanto')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 5: PARÁMETROS -->
+                <div class="mb-4">
+                    <h6 class="border-bottom pb-2 mb-3">
+                        <i class="fas fa-flask me-2" style="color: #ffc107;"></i>
+                        Parámetros a Analizar
+                    </h6>
+                    
+                    <div id="parametros-container">
+                        @php $paramIndex = 0; @endphp
+                        
+                        @foreach($proforma->parametros as $parametro)
+                        <div class="parametro-row mb-3 border p-3 rounded" id="parametro-row-{{ $paramIndex }}">
+                            <div class="row align-items-center">
+                                <div class="col-md-5 mb-2 mb-md-0">
+                                    <label class="form-label small">Parámetro *</label>
+                                    <select name="parametros[{{ $paramIndex }}][id]" 
+                                            class="form-control parametro-select" 
+                                            id="parametro-select-{{ $paramIndex }}"
+                                            style="width: 100%;"
+                                            data-row-id="{{ $paramIndex }}"
+                                            required>
+                                        <option value="">Buscar parámetro...</option>
+                                        @if($parametro)
+                                            <option value="{{ $parametro->id }}" selected
+                                                    data-precio="{{ $parametro->precio_unitario }}"
+                                                    data-metodo="{{ $parametro->metodo }}">
+                                                {{ $parametro->nombre }} ({{ $parametro->tipo }}) - Bs. {{ number_format($parametro->precio_unitario, 2) }}
+                                            </option>
+                                        @endif
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-3 mb-2 mb-md-0">
+                                    <label class="form-label small">N° Muestras *</label>
+                                    <input type="number" class="form-control muestra-input" 
+                                           name="parametros[{{ $paramIndex }}][cantidad]" 
+                                           value="{{ old('parametros.' . $paramIndex . '.cantidad', $parametro->pivot->cantidad_muestras) }}" 
+                                           min="1" 
+                                           oninput="calcularTotalesEstimados()" required>
+                                </div>
+                                
+                                <div class="col-md-3 mb-2 mb-md-0">
+                                    <label class="form-label small">Precio Unitario</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Bs.</span>
+                                        <input type="text" class="form-control precio-unitario" 
+                                               id="precio-{{ $paramIndex }}" 
+                                               value="{{ number_format($parametro->pivot->precio_unitario, 2) }}" readonly>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-1 text-center">
+                                    <label class="form-label small">&nbsp;</label>
+                                    <button type="button" class="btn btn-danger btn-sm remove-parametro" 
+                                            onclick="eliminarParametro(this)"
+                                            {{ $proforma->parametros->count() <= 1 ? 'disabled' : '' }}>
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Método de ensayo -->
+                            <div class="row mt-2 metodo-container" id="metodo-{{ $paramIndex }}" style="display: block;">
+                                <div class="col-12">
+                                    <small class="text-muted">
+                                        <i class="fas fa-microscope me-1"></i> 
+                                        Método: <span class="metodo-text">{{ $parametro->metodo }}</span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        @php $paramIndex++; @endphp
+                        @endforeach
+                    </div>
+                    
+                    <button type="button" id="add-parametro" class="btn" 
+                            style="background-color: #ffc107; color: #000000; border: none; border-radius: 30px; padding: 8px 20px; font-weight: 500; transition: all 0.3s ease;">
+                        <i class="fas fa-plus me-1"></i> Agregar parámetro
+                    </button>
+                </div>
+
+                <!-- SECCIÓN 6: OBSERVACIONES -->
+                <div class="mb-4">
+                    <h6 class="border-bottom pb-2 mb-3">
+                        <i class="fas fa-sticky-note me-2" style="color: #ffc107;"></i>
+                        Observaciones
+                    </h6>
+                    
+                    <div class="mb-3">
+                        <label for="observaciones" class="form-label">Observaciones</label>
+                        <textarea class="form-control @error('observaciones') is-invalid @enderror" 
+                                  id="observaciones" name="observaciones" rows="3">{{ old('observaciones', $proforma->observaciones) }}</textarea>
+                        @error('observaciones')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 7: JUSTIFICACIÓN DE MODIFICACIÓN -->
+                <div id="justificacion-section" style="display: none;" class="mb-4">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Modificación de Parámetros Detectada</strong>
+                        <p class="mb-0 mt-2">Ha realizado cambios en los parámetros de la proforma. Esto requiere una justificación:</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="justificacion_modificacion" class="form-label">
+                            Justificación de Modificación <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control @error('justificacion_modificacion') is-invalid @enderror" 
+                                  id="justificacion_modificacion" 
+                                  name="justificacion_modificacion" 
+                                  rows="3"
+                                  placeholder="Explique detalladamente por qué se están modificando los parámetros de esta proforma...">{{ old('justificacion_modificacion') }}</textarea>
+                        <small class="text-muted">Esta justificación quedará registrada en el sistema y será visible en la vista de la proforma.</small>
+                        @error('justificacion_modificacion')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 8: RESUMEN FINANCIERO -->
+                <div class="card mt-4 border-warning">
+                    <div class="card-header" style="background-color: #ffc107; border-bottom: none;">
+                        <h6 class="mb-0" style="color: #000000;">
+                            <i class="fas fa-calculator me-2" style="color: #000000;"></i> Resumen Financiero
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <p class="mb-1"><strong>Subtotal</strong></p>
+                                <h4 class="text-primary">Bs. <span id="subtotal-estimado">{{ number_format($proforma->subtotal, 2) }}</span></h4>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <p class="mb-1"><strong>Descuento</strong></p>
+                                <h4 class="text-danger">Bs. <span id="descuento-estimado">{{ number_format($proforma->descuento, 2) }}</span></h4>
+                                <small class="text-muted" id="descuento-nota">
+                                    {{ $proforma->tipo == 'INVESTIGACION' ? '(20% descuento aplicado)' : '(No aplica)' }}
+                                </small>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <p class="mb-1"><strong>Total</strong></p>
+                                <h3 class="text-success">Bs. <span id="total-estimado">{{ number_format($proforma->total, 2) }}</span></h3>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <p class="mb-1"><strong>Saldo</strong></p>
+                                <h4 class="text-info">Bs. <span id="saldo-estimado">{{ number_format($proforma->saldo, 2) }}</span></h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 9: BOTONES -->
+                <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                    <a href="{{ route('proformas.show', $proforma) }}" class="btn btn-secondary" style="border-radius: 30px; padding: 10px 25px;">
+                        <i class="fas fa-times me-2"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn" style="background-color: #ffc107; border-radius: 30px; padding: 10px 25px; color: #000000; border: none; transition: all 0.3s ease;">
+                        <i class="fas fa-save me-2"></i> Actualizar Proforma
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<!-- jQuery y Select2 desde CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<style>
+.select2-container--default .select2-selection--single {
+    height: 38px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 36px;
+    padding-left: 12px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 36px;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.15);
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #ffc107 !important;
+    color: #000000 !important;
+}
+
+/* Estilo para el mensaje de búsqueda */
+.select2-container--default .select2-search--dropdown .select2-search__field::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+/* Mensaje personalizado en el placeholder */
+.select2-selection__placeholder {
+    color: #6c757d !important;
+    font-style: italic;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    console.log('Documento listo - iniciando Select2 en edición');
+    
+    // Array para IDs seleccionados (evitar duplicados)
+    let parametrosSeleccionados = [];
+    
+    // Inicializar array con los parámetros existentes
+    $('.parametro-select').each(function() {
+        const valor = $(this).val();
+        if (valor) {
+            parametrosSeleccionados.push(parseInt(valor));
+        }
+    });
+    console.log('Parámetros iniciales:', parametrosSeleccionados);
+    
+    // ===== SELECT DE CLIENTES CON SELECT2 =====
+    $('#cliente_id').select2({
+        placeholder: '🔍 Buscar cliente por nombre o contacto...',
+        minimumInputLength: 2,
+        allowClear: true,
+        language: {
+            inputTooShort: function() {
+                return 'Ingrese al menos 2 caracteres para buscar';
+            },
+            searching: function() {
+                return 'Buscando...';
+            },
+            noResults: function() {
+                return 'No se encontraron clientes';
+            },
+            errorLoading: function() {
+                return 'Error al cargar resultados';
+            }
+        },
+        ajax: {
+            url: '{{ route("clientes.buscar") }}',
+            dataType: 'json',
+            delay: 300,
+            data: function(params) {
+                return { q: params.term };
+            },
+            processResults: function(data) {
+                return { results: data };
+            }
+        }
+    });
+    
+    // ===== FUNCIÓN PARA INICIALIZAR SELECT2 EN PARÁMETROS =====
+    function initParametroSelect(selector) {
+        console.log('Inicializando Select2 en:', selector);
+        
+        $(selector).select2({
+            placeholder: '🔬 Buscar parámetro por nombre...',
+            minimumInputLength: 2,
+            allowClear: true,
+            language: {
+                inputTooShort: function() {
+                    return 'Ingrese al menos 2 caracteres para buscar el parámetro';
+                },
+                searching: function() {
+                    return '🔍 Buscando parámetros...';
+                },
+                noResults: function() {
+                    return '❌ No se encontraron parámetros';
+                },
+                errorLoading: function() {
+                    return '⚠️ Error al cargar resultados';
+                }
+            },
+            ajax: {
+                url: '{{ route("parametros.buscar") }}',
+                dataType: 'json',
+                delay: 300,
+                data: function(params) {
+                    return { q: params.term };
+                },
+                processResults: function(data) {
+                    console.log('Parámetros recibidos:', data);
+                    
+                    // Filtrar parámetros ya seleccionados
+                    let resultadosFiltrados = data.filter(item => {
+                        return !parametrosSeleccionados.includes(item.id);
+                    });
+                    
+                    console.log('Parámetros disponibles:', resultadosFiltrados);
+                    return { results: resultadosFiltrados };
+                }
+            }
+        });
+    }
+    
+    // Inicializar Select2 en todos los parámetros existentes
+    $('.parametro-select').each(function() {
+        const select = $(this);
+        const valor = select.val();
+        
+        // Inicializar Select2
+        initParametroSelect(select);
+        
+        // Si ya tiene un valor seleccionado, aseguramos que se muestre correctamente
+        if (valor) {
+            const row = select.closest('.parametro-row');
+            const rowId = row.attr('id').split('-')[2];
+            
+            // Actualizar si es necesario (los datos ya están en el HTML)
+            setTimeout(() => {
+                const precio = select.find('option:selected').data('precio');
+                const metodo = select.find('option:selected').data('metodo');
+                if (precio) {
+                    $('#precio-' + rowId).val(parseFloat(precio).toFixed(2));
+                }
+                if (metodo) {
+                    $('#metodo-' + rowId + ' .metodo-text').text(metodo);
+                }
+            }, 100);
+        }
+        
+        // Evento de selección
+        select.off('select2:select').on('select2:select', function(e) {
+            const data = e.params.data;
+            const row = $(this).closest('.parametro-row');
+            const rowId = row.attr('id').split('-')[2];
+            const valorAnterior = $(this).data('valor-anterior');
+            
+            // Si había un valor anterior, removerlo de la lista
+            if (valorAnterior) {
+                const index = parametrosSeleccionados.indexOf(parseInt(valorAnterior));
+                if (index > -1) {
+                    parametrosSeleccionados.splice(index, 1);
+                }
+            }
+            
+            // Verificar si el nuevo valor ya está seleccionado
+            if (parametrosSeleccionados.includes(data.id)) {
+                alert('⚠️ Este parámetro ya ha sido seleccionado. Por favor, elija otro.');
+                $(this).val(valorAnterior).trigger('change');
+                return;
+            }
+            
+            // Agregar nuevo valor
+            parametrosSeleccionados.push(data.id);
+            $(this).data('valor-anterior', data.id);
+            
+            // Actualizar precio y método
+            $('#precio-' + rowId).val(parseFloat(data.precio_unitario).toFixed(2));
+            
+            const metodoText = row.find('.metodo-text');
+            const metodoContainer = row.find('.metodo-container');
+            
+            metodoText.text(data.metodo || '');
+            metodoContainer.show();
+            
+            calcularTotalesEstimados();
+            detectarCambiosParametros();
+        });
+        
+        // Guardar valor inicial
+        select.data('valor-anterior', valor);
+    });
+    
+    // ===== BOTÓN AGREGAR PARÁMETRO =====
+    $('#add-parametro').click(function() {
+        const container = $('#parametros-container');
+        const index = container.find('.parametro-row').length;
+        const firstRow = $('.parametro-row:first');
+        const newRow = firstRow.clone();
+        
+        // Actualizar IDs
+        newRow.attr('id', 'parametro-row-' + index);
+        
+        // Limpiar select
+        const newSelect = newRow.find('.parametro-select');
+        newSelect.attr('id', 'parametro-select-' + index)
+                .attr('name', 'parametros[' + index + '][id]')
+                .val('')
+                .removeAttr('data-select2-id')
+                .removeData('valor-anterior')
+                .removeAttr('data-valor-anterior')
+                .next('.select2-container').remove();
+        
+        // Limpiar opciones
+        newSelect.empty().append('<option value="">Buscar parámetro...</option>');
+        
+        // Limpiar otros campos
+        newRow.find('.muestra-input')
+              .attr('name', 'parametros[' + index + '][cantidad]')
+              .val(1);
+        
+        newRow.find('.precio-unitario')
+              .attr('id', 'precio-' + index)
+              .val('0.00');
+        
+        newRow.find('.metodo-container')
+              .attr('id', 'metodo-' + index)
+              .hide();
+        
+        newRow.find('.metodo-text').text('');
+        
+        // Botón eliminar
+        const removeBtn = newRow.find('.remove-parametro');
+        removeBtn.prop('disabled', false)
+                .off('click')
+                .click(function() { eliminarParametro(this); });
+        
+        container.append(newRow);
+        
+        // Inicializar Select2 para el nuevo select
+        setTimeout(() => {
+            initParametroSelect(newSelect);
+        }, 100);
+        
+        calcularTotalesEstimados();
+        setTimeout(detectarCambiosParametros, 200);
+    });
+    
+    // ===== ELIMINAR PARÁMETRO =====
+    window.eliminarParametro = function(btn) {
+        if ($('.parametro-row').length <= 1) {
+            alert('⚠️ Debe haber al menos un parámetro');
+            return;
+        }
+        
+        if (confirm('¿Eliminar este parámetro?')) {
+            const row = $(btn).closest('.parametro-row');
+            const select = row.find('.parametro-select');
+            
+            // Obtener el ID del parámetro seleccionado para removerlo de la lista
+            const selectedId = select.val();
+            if (selectedId) {
+                const idNum = parseInt(selectedId);
+                const idIndex = parametrosSeleccionados.indexOf(idNum);
+                if (idIndex > -1) {
+                    parametrosSeleccionados.splice(idIndex, 1);
+                }
+            }
+            
+            // Destruir Select2 antes de eliminar
+            if (select.data('select2')) {
+                select.select2('destroy');
+            }
+            
+            row.remove();
+            console.log('Parámetros restantes:', parametrosSeleccionados);
+            calcularTotalesEstimados();
+            detectarCambiosParametros();
+        }
+    };
+    
+    // ===== FUNCIÓN PARA DETECTAR CAMBIOS EN PARÁMETROS =====
+    function detectarCambiosParametros() {
+        // Obtener parámetros actuales (originales)
+        let parametrosOriginales = [];
+        @foreach($proforma->parametros as $parametro)
+            parametrosOriginales.push({{ $parametro->id }});
+        @endforeach
+        
+        // Obtener parámetros nuevos del formulario
+        let parametrosNuevos = [];
+        $('.parametro-select').each(function() {
+            let valor = $(this).val();
+            if (valor) {
+                parametrosNuevos.push(parseInt(valor));
+            }
+        });
+        
+        // Comparar arrays
+        let parametrosAgregados = parametrosNuevos.filter(x => !parametrosOriginales.includes(x));
+        let parametrosEliminados = parametrosOriginales.filter(x => !parametrosNuevos.includes(x));
+        
+        // Si hay cambios, mostrar la sección de justificación
+        if (parametrosAgregados.length > 0 || parametrosEliminados.length > 0) {
+            $('#justificacion-section').slideDown();
+            $('#justificacion_modificacion').prop('required', true);
+        } else {
+            $('#justificacion-section').slideUp();
+            $('#justificacion_modificacion').prop('required', false);
+        }
+    }
+    
+    // ===== VALIDACIÓN FINAL ANTES DE ENVIAR =====
+    $('#proformaForm').on('submit', function(e) {
+        console.log('Validando formulario antes de enviar...');
+        
+        // Obtener todos los IDs de parámetros seleccionados
+        let parametrosEnFormulario = [];
+        let duplicados = false;
+        let mensajeError = '';
+        
+        $('.parametro-select').each(function() {
+            const valor = $(this).val();
+            if (valor) {
+                const idNum = parseInt(valor);
+                if (parametrosEnFormulario.includes(idNum)) {
+                    duplicados = true;
+                    mensajeError = '❌ Error: Hay parámetros duplicados en el formulario.';
+                    console.error('Parámetro duplicado encontrado:', idNum);
+                } else {
+                    parametrosEnFormulario.push(idNum);
+                }
+            }
+        });
+        
+        if (duplicados) {
+            e.preventDefault();
+            
+            const alertDiv = $('<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
+                '<i class="fas fa-exclamation-triangle me-2"></i>' +
+                mensajeError + ' Por favor, revise que todos los parámetros sean únicos.' +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>');
+            
+            $('.card-body').prepend(alertDiv);
+            
+            $('html, body').animate({
+                scrollTop: $('.card-body').offset().top - 100
+            }, 500);
+            
+            return false;
+        }
+        
+        // Verificar justificación si hay cambios
+        let parametrosOriginales = [];
+        @foreach($proforma->parametros as $parametro)
+            parametrosOriginales.push({{ $parametro->id }});
+        @endforeach
+        
+        let parametrosNuevos = [];
+        $('.parametro-select').each(function() {
+            let valor = $(this).val();
+            if (valor) {
+                parametrosNuevos.push(parseInt(valor));
+            }
+        });
+        
+        let parametrosAgregados = parametrosNuevos.filter(x => !parametrosOriginales.includes(x));
+        let parametrosEliminados = parametrosOriginales.filter(x => !parametrosNuevos.includes(x));
+        
+        if ((parametrosAgregados.length > 0 || parametrosEliminados.length > 0) && !$('#justificacion_modificacion').val()) {
+            e.preventDefault();
+            alert('⚠️ Debe proporcionar una justificación para modificar los parámetros.');
+            $('#justificacion-section').slideDown();
+            $('#justificacion_modificacion').focus();
+            return false;
+        }
+        
+        console.log('Validación exitosa - No hay duplicados');
+        return true;
+    });
+    
+    // ===== CALCULAR TOTALES =====
+    window.calcularTotalesEstimados = function() {
+        let subtotal = 0;
+        
+        $('.parametro-row').each(function() {
+            const precio = parseFloat($(this).find('.precio-unitario').val()) || 0;
+            const cantidad = parseInt($(this).find('.muestra-input').val()) || 0;
+            subtotal += precio * cantidad;
+        });
+        
+        const tipo = $('#tipo').val();
+        const descuento = (tipo === 'INVESTIGACION') ? subtotal * 0.20 : 0;
+        const total = subtotal - descuento;
+        const adelanto = parseFloat($('#adelanto').val()) || 0;
+        const saldo = total - adelanto;
+        
+        $('#subtotal-estimado').text(subtotal.toFixed(2));
+        $('#descuento-estimado').text(descuento.toFixed(2));
+        $('#total-estimado').text(total.toFixed(2));
+        $('#saldo-estimado').text(saldo.toFixed(2));
+        $('#descuento-nota').text((tipo === 'INVESTIGACION') ? '(20% descuento aplicado)' : '(No aplica)');
+    };
+    
+    // ===== EVENTOS =====
+    $('#tipo, #adelanto').on('change keyup', calcularTotalesEstimados);
+    $(document).on('input', '.muestra-input', calcularTotalesEstimados);
+    $(document).on('change', '.parametro-select', function() {
+        setTimeout(detectarCambiosParametros, 100);
+    });
+    
+    // Calcular totales inicial y detectar cambios
+    calcularTotalesEstimados();
+    setTimeout(detectarCambiosParametros, 500);
+});
+</script>
+@endpush

@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # Servicio PHP
+  php:
+    build:
+      context: ./docker          # ← CAMBIADO
+      dockerfile: php/Dockerfile  # ← Se mantiene igual (relativo a context)
+    container_name: cima-php
+    working_dir: /var/www
+    volumes:
+      - ./application:/var/www
+    networks:
+      - cima-network
+
+  # Servicio Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: cima-nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - ./application:/var/www
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf  # ← CAMBIADO
+    depends_on:
+      - php
+    networks:
+      - cima-network
+
+  # Servicio PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: cima-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: cima_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: CIMA2026
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - cima-network
+
+  # pgAdmin
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: cima-pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@cima.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    depends_on:
+      - postgres
+    networks:
+      - cima-network
+
+volumes:
+  postgres_data:
+
+networks:
+  cima-network:
+    driver: bridge
