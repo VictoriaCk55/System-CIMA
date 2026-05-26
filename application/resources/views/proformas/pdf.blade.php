@@ -9,6 +9,15 @@
         @page {
             margin: 15mm 10mm 15mm 10mm;
         }
+
+        @page horizontal {
+            size: letter landscape;
+        }
+
+        .horizontal-page {
+            page: horizontal;
+        }
+
         
         body {
             font-family: 'Arial', sans-serif;
@@ -112,10 +121,31 @@
             background-color: #f8f9fa;
         }
         
-        .doc-option.selected {
+        .doc-option.selected.proforma {
             background-color: #2c5282;
             color: white;
             border-color: #2c5282;
+            font-weight: bold;
+        }
+        
+        .doc-option.selected.cotizacion {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+            font-weight: bold;
+        }
+        
+        .doc-option.selected.contrato {
+            background-color: #fd7e14;
+            color: white;
+            border-color: #fd7e14;
+            font-weight: bold;
+        }
+        
+        .doc-option.selected.contrato-modificado {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
             font-weight: bold;
         }
         
@@ -380,10 +410,22 @@
                 </div>
                 
                 <div class="document-options">
-                    <span class="doc-option {{ $proforma->tipo == 'AMBIENTAL' ? 'selected' : '' }}">PROFORMA</span>
-                    <span class="doc-option {{ $proforma->tipo == 'INVESTIGACION' ? 'selected' : '' }}">COTIZACIÓN</span>
-                    <span class="doc-option">CONTRATO</span>
-                    <span class="doc-option {{ $proforma->parametros_modificados ? 'selected' : '' }}">CONTRATO MODIFICADO</span>
+                    @php $td = $proforma->tipo_documento ?? []; @endphp
+                    <span class="doc-option{{ in_array('PROFORMA', $td) ? ' selected proforma' : '' }}">
+                        PROFORMA
+                    </span>
+
+                    <span class="doc-option{{ in_array('COTIZACION', $td) ? ' selected cotizacion' : '' }}">
+                        COTIZACIÓN
+                    </span>
+
+                    <span class="doc-option{{ in_array('CONTRATO', $td) ? ' selected contrato' : '' }}">
+                        CONTRATO
+                    </span>
+
+                    <span class="doc-option{{ in_array('CONTRATO MODIFICADO', $td) ? ' selected contrato-modificado' : '' }}">
+                        CONTRATO MODIFICADO
+                    </span>
                 </div>
                 
                 @if($proforma->unidad)
@@ -391,12 +433,12 @@
                     <i class="fas fa-building"></i> {{ $proforma->unidad == 'UIA' ? 'Unidad de Investigación Ambiental' : 'Unidad de Análisis Químico' }}
                 </div>
                 @endif
-             </td>
+            </td>
             
             <td class="codigo-cell">
                 <div class="codigo-box">
                     <div><strong>PO01-FR02</strong></div>
-                    <div>VERSIÓN: 05</div>
+                    <div>VERSIÓN: 06</div>
                     <div>FECHA: {{ $proforma->fecha_emision->format('Y-m-d') }}</div>
                     <div style="margin-top: 5px; border-top: 1px solid #ccc; padding-top: 3px;">
                         <strong>CÓDIGO:</strong> {{ $proforma->codigo }}
@@ -404,7 +446,7 @@
                 </div>
              </td>
          </tr>
-     </table>
+    </table>
     
     <div class="separator"></div>
 
@@ -413,26 +455,30 @@
         <div class="section-title">1.- DATOS DEL CLIENTE</div>
         
         <table class="data-table">
-             <tr>
-                <td style="width: 25%;"><strong>Nombre/Razón Social:</strong></td>
-                <td style="width: 75%;">{{ $proforma->cliente->razon_social }}</td>
-             </tr>
-             <tr>
-                <td><strong>Persona en contacto:</strong></td>
-                <td>{{ $proforma->persona_contacto ?? $proforma->cliente->persona_contacto }}</td>
-             </tr>
-             <tr>
-                <td><strong>NIT:</strong></td>
-                <td>{{ $proforma->cliente->nit ?? 'N/A' }}</td>
-             </tr>
-             <tr>
-                <td><strong>Teléfono/Celular:</strong></td>
-                <td>{{ $proforma->telefono_contacto ?? $proforma->cliente->telefono ?? 'N/A' }}</td>
-             </tr>
-             <tr>
-                <td><strong>Dirección:</strong></td>
-                <td>{{ $proforma->cliente->direccion ?? 'N/A' }}</td>
-             </tr>
+              <tr>
+                    <td style="width: 25%;"><strong>Nombre/Razón Social:</strong></td>
+                    <td style="width: 75%;">{{ $proforma->cliente->razon_social }}</td>
+                 </tr>
+                 <tr>
+                    <td><strong>Código de Cliente:</strong></td>
+                    <td>{{ $proforma->codigo_cliente ?? 'N/A' }}</td>
+                 </tr>
+                 <tr>
+                    <td><strong>Persona en contacto:</strong></td>
+                    <td>{{ $proforma->persona_contacto ?? $proforma->cliente->persona_contacto }}</td>
+                 </tr>
+                 <tr>
+                    <td><strong>NIT:</strong></td>
+                    <td>{{ $proforma->cliente->nit ?? 'N/A' }}</td>
+                 </tr>
+                 <tr>
+                    <td><strong>Teléfono/Celular:</strong></td>
+                    <td>{{ $proforma->telefono_contacto ?? $proforma->cliente->telefono ?? 'N/A' }}</td>
+                 </tr>
+                 <tr>
+                    <td><strong>Dirección:</strong></td>
+                    <td>{{ $proforma->cliente->direccion ?? 'N/A' }}</td>
+                 </tr>
          </table>
     </div>
 
@@ -441,26 +487,32 @@
         <div class="section-title">2.- DATOS DE LA MUESTRA</div>
         
         <table class="data-table">
-             <tr>
-                <td style="width: 25%;"><strong>Tipo de muestra:</strong></td>
-                <td style="width: 25%;">{{ $proforma->tipo_muestra }}</td>
-                <td style="width: 25%;"><strong>Muestreado por:</strong></td>
-                <td style="width: 25%;">{{ $proforma->muestreado_por ?? 'N/A' }}</td>
-             </tr>
-             <tr>
-                <td><strong>Fecha de muestreo:</strong></td>
-                <td>{{ $proforma->fecha_emision->format('d/m/Y') }}</td>
-                <td><strong>Fecha recepción:</strong></td>
-                <td>{{ $proforma->fecha_recepcion->format('d/m/Y') }}</td>
-             </tr>
-             <tr>
-                <td><strong>Procedencia:</strong></td>
-                <td colspan="3">{{ $proforma->procedencia ?? 'N/A' }}</td>
-             </tr>
-             <tr>
-                <td><strong>Coordenadas:</strong></td>
-                <td colspan="3">{{ $proforma->coordenadas ?? 'N/A' }}</td>
-             </tr>
+              <tr>
+                    <td style="width: 25%;"><strong>Tipo de muestra:</strong></td>
+                    <td style="width: 25%;">{{ $proforma->tipo_muestra }}</td>
+                    <td style="width: 25%;"><strong>Muestreado por:</strong></td>
+                    <td style="width: 25%;">{{ $proforma->muestreado_por ?? 'N/A' }}</td>
+                 </tr>
+                 <tr>
+                    <td><strong>Fecha de muestreo:</strong></td>
+                    <td>{{ $proforma->fecha_emision->format('d/m/Y') }}</td>
+                    <td><strong>Fecha recepción:</strong></td>
+                    <td>{{ $proforma->fecha_recepcion->format('d/m/Y') }}</td>
+                 </tr>
+                 <tr>
+                    <td><strong>Hora recepción:</strong></td>
+                    <td>{{ $proforma->hora_recepcion ?? 'N/A' }}</td>
+                    <td><strong>Nro. Recepción:</strong></td>
+                    <td>{{ $proforma->numero_recepcion ?? 'N/A' }}</td>
+                 </tr>
+                 <tr>
+                    <td><strong>Procedencia:</strong></td>
+                    <td colspan="3">{{ $proforma->procedencia ?? 'N/A' }}</td>
+                 </tr>
+                 <tr>
+                    <td><strong>Coordenadas:</strong></td>
+                    <td colspan="3">{{ $proforma->coordenadas ?? 'N/A' }}</td>
+                 </tr>
          </table>
     </div>
 

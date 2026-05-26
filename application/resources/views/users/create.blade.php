@@ -59,6 +59,7 @@
                         <option value="">Seleccionar rol...</option>
                         <option value="tecnico" {{ old('role') == 'tecnico' ? 'selected' : '' }}>Técnico (solo lectura)</option>
                         <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Administrador (acceso total)</option>
+                        <option value="analista" {{ old('role') == 'analista' ? 'selected' : '' }}>Analista (resultados de ensayo)</option>
                     </select>
                     @error('role')
                         <div class="invalid-feedback">{{ $message }}</div>

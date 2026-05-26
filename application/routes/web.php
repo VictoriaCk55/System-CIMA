@@ -10,6 +10,9 @@ use App\Http\Controllers\InformeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FinancieroController;
 use App\Http\Controllers\UserController;
+//use App\Http\Controllers\CadenaCustodiaController;
+//use App\Http\Controllers\BitacoraController; 
+use App\Http\Controllers\ResultadosController;
 
 // ==================== RUTAS PÚBLICAS ====================
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -121,7 +124,24 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/proformas', [ProformaController::class, 'index'])->name('proformas.index');
     Route::get('/proformas/{proforma}', [ProformaController::class, 'show'])->name('proformas.show');
     Route::get('/proformas/{proforma}/pdf', [ProformaController::class, 'pdf'])->name('proformas.pdf');
+
+    // ========== RUTA DE RESULTADOS DE ENSAYO ==========
+    Route::get('/resultados/{id}', [ResultadosController::class, 'index'])->name('resultados.index');
+    Route::post('/resultados/{id}/guardar', [ResultadosController::class, 'guardarResultados'])->name('resultados.guardar');
+    Route::get('/resultados/{id}/cargar', [ResultadosController::class, 'cargarResultados'])->name('resultados.cargar');
+    //Route::get('/proforma/{proforma}/resultados-pdf', [ResultadosEnsayoController::class, 'exportarPDF'])->name('resultados.pdf');
+    Route::get( '/proformas/{id}/resultados-pdf', [ResultadosController::class, 'generarPdfResultados'] )->name('proformas.resultados.pdf');
+    //pruebas
+   // Route::post('/proformas/{id}/guardar-resultados', [ProformaController::class, 'guardarResultados'])->name('proformas.guardar-resultados');
+   // Route::get('/proformas/{id}/cargar-resultados', [ProformaController::class, 'cargarResultados'])->name('proformas.cargar-resultados');
+    Route::post('/proformas/{id}/limpiar-resultados', [ResultadosController::class, 'limpiarResultados'])->name('proformas.limpiar-resultados');
     
+    Route::get('/proformas/{id}/resultados', [ResultadosController::class, 'index'])->name('proformas.resultados');
+    Route::post('/proformas/{id}/resultados/guardar', [ResultadosController::class, 'guardarResultados'])->name('proformas.resultados.guardar');
+    Route::get('/proformas/{id}/resultados/cargar', [ResultadosController::class, 'cargarResultados'])->name('proformas.resultados.cargar');
+    Route::get('/proformas/{id}/resultados/pdf', [ResultadosController::class, 'generarPdfResultados'])->name('proformas.resultados.pdf');
+    Route::get('/proformas/{id}/imprimir-resultados', [ResultadosController::class, 'imprimirResultados'])->name('proformas.informe-resultados-pdf');
+
     // INFORMES - Lectura
     Route::get('/informes', [InformeController::class, 'index'])->name('informes.index');
     Route::get('/informes/{informe}', [InformeController::class, 'show'])->name('informes.show');
@@ -134,6 +154,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/cliente/{cliente}', [FinancieroController::class, 'cliente'])->name('cliente');
         Route::get('/exportar', [FinancieroController::class, 'exportar'])->name('exportar');
     });
+    
+    // ========== BITÁCORA (SOLO ADMIN - AGREGADO NUEVO) ==========
+   // Route::middleware(['admin'])->prefix('bitacora')->name('bitacora.')->group(function () {
+       // Route::get('/', [BitacoraController::class, 'index'])->name('index');
+       // Route::get('/{bitacora}', [BitacoraController::class, 'show'])->name('show');
+        //Route::get('/export/csv', [BitacoraController::class, 'export'])->name('export');
+   // });
 });
 
 // ========== RUTA DE FALLBACK ==========
@@ -141,3 +168,8 @@ Route::fallback(function () {
     return redirect()->route('home')
         ->with('error', '⛔ La página que buscas no existe.');
 });
+
+// ==========================================
+// CADENA DE CUSTODIA - MÓDULO NUEVO
+// ==========================================
+Route::get('proformas/{proforma}/cadena-custodia', [ProformaController::class, 'pdfCadenaCustodia'])->name('proformas.cadena-custodia');

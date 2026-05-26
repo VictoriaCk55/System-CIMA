@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class AdminMiddleware
+class TecnicoMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
@@ -17,10 +17,10 @@ class AdminMiddleware
 
         $user = Auth::user();
 
-        // Solo admin y tecnico pueden pasar por rutas protegidas
-        if (!in_array($user->role, ['admin', 'tecnico'])) {
+        // Solo tecnico puede acceder
+        if ($user->role !== 'tecnico') {
             return redirect()->route('home')
-                ->with('error', '⛔ Acceso denegado.');
+                ->with('error', '⛔ Acceso denegado. Solo el Técnico puede realizar esta acción.');
         }
 
         return $next($request);

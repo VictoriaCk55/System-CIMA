@@ -31,11 +31,15 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
+        
         $credentials = $request->only('email', 'password');
-
+        
+        // dd($credentials);
         // Intentar autenticación
+        // dd(Auth::attempt($credentials, $request->filled('remember')));
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
+
             
             // Redirigir al dashboard
             return redirect()->intended('/')

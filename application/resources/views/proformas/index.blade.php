@@ -37,7 +37,7 @@
     <!-- BUSCADOR Y FILTROS -->
     <div class="card mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('proformas.index') }}" class="row g-3">
+            <form method="GET" action="{{ route('proformas.index') }}" class="row">
                 <!-- Buscador general -->
                 <div class="col-md-12 mb-3">
                     <label for="search" class="form-label fw-semibold">
@@ -197,7 +197,7 @@
 
             @if($proformas->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover" style="font-size: 0.75rem;">
                         <thead>
                             <tr style="background-color: #ffc107; color: #000;">
                                 <th width="100" style="background-color: #ffc107; color: #000; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; padding: 12px 15px;">Código</th>
@@ -215,8 +215,7 @@
                             @foreach($proformas as $proforma)
                                 <tr>
                                     <td>
-                                        <span class="badge bg-info fs-6">
-                                            <i class="fas fa-hashtag me-1"></i>
+                                        <span style="font-weight: bold;">
                                             {{ $proforma->codigo }}
                                         </span>
                                     </td>
@@ -229,7 +228,7 @@
                                         </small>
                                     </td>
                                     <td>
-                                        <span class="badge 
+                                        <span class="badge rounded-pill 
                                             @if($proforma->tipo == 'AMBIENTAL') bg-warning text-dark
                                             @elseif($proforma->tipo == 'AGUA') bg-info
                                             @else bg-secondary
@@ -282,8 +281,8 @@
                                             }
                                         @endphp
                                         
-                                        <span class="badge {{ $bgColor }}" style="color: {{ $textColor }}; padding: 8px 12px; {{ $estado === 'FINALIZADA' ? 'border: 1px solid #ddd;' : '' }}">
-                                            <i class="fas {{ $icono }} me-1" style="color: {{ $textColor }};"></i>
+                                        <span class="badge rounded-pill {{ $bgColor }}" style="color: {{ $textColor }}; padding: 8px 12px; {{ $estado === 'FINALIZADA' ? 'border: 1px solid #ddd;' : '' }}">
+                                            <!-- <i class="fas {{ $icono }} me-1" style="color: {{ $textColor }};"></i> -->
                                             {{ $estado }}
                                         </span>
                                     </td>
@@ -292,7 +291,7 @@
                                     </td>
                                     <td>
                                         <small>
-                                            <i class="far fa-calendar me-1"></i>
+                                            <!-- <i class="far fa-calendar me-1"></i> -->
                                             {{ $proforma->fecha_emision->format('d/m/Y') }}
                                         </small>
                                     </td>
@@ -305,54 +304,90 @@
                                         {{ number_format($proforma->adelanto, 2) }}
                                     </td>
                                     <td class="text-center">
-                                        <div class="btn-group" role="group">
-                                            <!-- Botón VER en color CELESTE -->
-                                            <a href="{{ route('proformas.show', $proforma) }}" 
-                                               class="btn btn-sm"
-                                               style="color: #0dcaf0; border: 1px solid #0dcaf0; background: transparent; border-radius: 6px; padding: 0.5rem; width: 38px; height: 38px; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center;"
-                                               data-bs-toggle="tooltip" 
-                                               data-bs-placement="top"
-                                               title="Ver detalles de la proforma"
-                                               onmouseover="this.style.backgroundColor='#0dcaf0'; this.style.color='white';"
-                                               onmouseout="this.style.backgroundColor='transparent'; this.style.color='#0dcaf0';">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            
-                                            @auth
-                                                @if(Auth::user()->email === 'admin@cima.edu.bo' && $proforma->estado == 'BORRADOR')
-                                                    <a href="{{ route('proformas.edit', $proforma) }}" 
-                                                       class="btn btn-outline-warning btn-sm"
-                                                       data-bs-toggle="tooltip" 
-                                                       data-bs-placement="top"
-                                                       title="Editar proforma">
-                                                        <i class="fas fa-edit"></i>
+                                        <div class="dropdown">
+                                            <button class="btn btn-xs btn-secondary dropdown-toggle" 
+                                                    type="button" 
+                                                    data-bs-toggle="dropdown" 
+                                                    aria-expanded="false"
+                                                    style="border-radius: 6px; padding: 0.25rem 0.6rem; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px;">
+                                                <i class="fas fa-bars-staggered" style="font-size: 0.7rem;"></i>
+                                                Opciones
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <!-- Ver detalles -->
+                                                <li>
+                                                    <a class="dropdown-item" 
+                                                    href="{{ route('proformas.show', $proforma) }}"
+                                                    title="Ver detalles de la proforma">
+                                                        <i class="fas fa-eye me-2" style="color: #0dcaf0;"></i>
+                                                        Ver detalles
                                                     </a>
-                                                    
-                                                    <form action="{{ route('proformas.destroy', $proforma) }}" 
-                                                          method="POST" 
-                                                          class="d-inline"
-                                                          onsubmit="return confirm('¿Está seguro de eliminar la proforma {{ $proforma->codigo }}?');">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" 
-                                                                class="btn btn-outline-danger btn-sm"
-                                                                data-bs-toggle="tooltip" 
-                                                                data-bs-placement="top"
-                                                                title="Eliminar proforma">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            @endauth
-                                            
-                                            <a href="{{ route('proformas.pdf', $proforma) }}" 
-                                               class="btn btn-outline-success btn-sm"
-                                               data-bs-toggle="tooltip" 
-                                               data-bs-placement="top"
-                                               title="Generar PDF"
-                                               target="_blank">
-                                                <i class="fas fa-file-pdf"></i>
-                                            </a>
+                                                </li>
+                                                
+                                                <!-- Editar (solo admin y borrador) -->
+                                                @auth
+                                                    @if(Auth::user()->email === 'admin@cima.edu.bo' && $proforma->estado == 'BORRADOR')
+                                                        <li>
+                                                            <a class="dropdown-item" 
+                                                            href="{{ route('proformas.edit', $proforma) }}"
+                                                            title="Editar proforma">
+                                                                <i class="fas fa-edit me-2" style="color: #ffc107;"></i>
+                                                                Editar
+                                                            </a>
+                                                        </li>
+                                                        
+                                                        <!-- Eliminar -->
+                                                        <li>
+                                                            <form action="{{ route('proformas.destroy', $proforma) }}" 
+                                                                method="POST" 
+                                                                class="d-inline"
+                                                                onsubmit="return confirm('¿Está seguro de eliminar la proforma {{ $proforma->codigo }}?');">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" 
+                                                                        class="dropdown-item"
+                                                                        style="background: none; border: none; width: 100%; text-align: left;">
+                                                                    <i class="fas fa-trash me-2" style="color: #dc3545;"></i>
+                                                                    Eliminar
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                    @endif
+                                                @endauth
+                                                
+                                                <!-- Generar PDF -->
+                                                <li>
+                                                    <a class="dropdown-item" 
+                                                    href="{{ route('proformas.pdf', $proforma) }}"
+                                                    target="_blank"
+                                                    title="Generar PDF">
+                                                        <i class="fas fa-file-pdf me-2" style="color: #dc3545;"></i>
+                                                        Generar PDF
+                                                    </a>
+                                                </li>
+                                                
+                                                <!-- Cadena de Custodia -->
+                                                <li>
+                                                    <a class="dropdown-item" 
+                                                    href="{{ route('proformas.cadena-custodia', $proforma) }}"
+                                                    target="_blank"
+                                                    title="Generar Cadena de Custodia">
+                                                        <i class="fas fa-clipboard-list me-2" style="color: #198754;"></i>
+                                                        Cadena de Custodia
+                                                    </a>
+                                                </li>
+                                                
+                                                <!-- Formulario de resultados -->
+                                                <li>
+                                                    <a class="dropdown-item" 
+                                                    href="{{ route('resultados.index', $proforma->id) }}"
+                                                    title="Abrir formulario de resultados">
+                                                        <i class="fas fa-file-alt me-2" style="color: #0d6efd;"></i>
+                                                        Formulario de resultados
+                                                    </a>
+                                                </li>
+                                            </ul>
                                         </div>
                                     </td>
                                 </tr>

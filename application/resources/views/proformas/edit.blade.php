@@ -296,12 +296,73 @@
                     </div>
                     
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label for="fecha_recepcion" class="form-label">Fecha de Recepción *</label>
                             <input type="date" class="form-control @error('fecha_recepcion') is-invalid @enderror" 
                                    id="fecha_recepcion" name="fecha_recepcion" 
                                    value="{{ old('fecha_recepcion', $proforma->fecha_recepcion->format('Y-m-d')) }}" required>
                             @error('fecha_recepcion')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="hora_recepcion" class="form-label">Hora</label>
+                            <input type="time" class="form-control @error('hora_recepcion') is-invalid @enderror" 
+                                   id="hora_recepcion" name="hora_recepcion" 
+                                   value="{{ old('hora_recepcion', $proforma->hora_recepcion) }}">
+                            @error('hora_recepcion')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="numero_recepcion" class="form-label">Nro. de Recepción</label>
+                            <input type="text" class="form-control @error('numero_recepcion') is-invalid @enderror" 
+                                   id="numero_recepcion" name="numero_recepcion" 
+                                   value="{{ old('numero_recepcion', $proforma->numero_recepcion) }}"
+                                   placeholder="Ej: 001">
+                            @error('numero_recepcion')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="codigo_cliente" class="form-label">Código de Cliente</label>
+                            <input type="text" class="form-control @error('codigo_cliente') is-invalid @enderror" 
+                                   id="codigo_cliente" name="codigo_cliente" 
+                                   value="{{ old('codigo_cliente', $proforma->codigo_cliente) }}"
+                                   placeholder="Ej: CL-001">
+                            @error('codigo_cliente')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tipo de Documento</label>
+                            <div class="border rounded p-3" style="background: #f8f9fa;">
+                                @php $tds = old('tipo_documento', $proforma->tipo_documento ?? []); @endphp
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="tipo_documento[]" value="PROFORMA" 
+                                           id="td-proforma" {{ in_array('PROFORMA', $tds) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="td-proforma">PROFORMA</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="tipo_documento[]" value="COTIZACION" 
+                                           id="td-cotizacion" {{ in_array('COTIZACION', $tds) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="td-cotizacion">COTIZACIÓN</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="tipo_documento[]" value="CONTRATO" 
+                                           id="td-contrato" {{ in_array('CONTRATO', $tds) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="td-contrato">CONTRATO</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="tipo_documento[]" value="CONTRATO MODIFICADO" 
+                                           id="td-contrato-mod" {{ in_array('CONTRATO MODIFICADO', $tds) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="td-contrato-mod">CONTRATO MODIFICADO</label>
+                                </div>
+                            </div>
+                            @error('tipo_documento')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                         </div>

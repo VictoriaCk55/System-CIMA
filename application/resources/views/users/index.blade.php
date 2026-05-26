@@ -47,9 +47,13 @@
                                 <span class="badge bg-danger">
                                     <i class="fas fa-shield-alt me-1"></i> Administrador
                                 </span>
-                            @else
+                            @elseif($user->role === 'tecnico')
                                 <span class="badge bg-info">
                                     <i class="fas fa-user me-1"></i> Técnico
+                                </span>
+                            @else
+                                <span class="badge bg-success">
+                                    <i class="fas fa-flask me-1"></i> Analista
                                 </span>
                             @endif
                         </td>

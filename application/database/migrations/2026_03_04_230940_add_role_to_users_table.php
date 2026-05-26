@@ -8,15 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['admin', 'tecnico'])->default('tecnico');
-        });
+        // Schema::table('users', function (Blueprint $table) {
+        //     $table->enum('role', ['admin', 'tecnico', 'analista'])->default('tecnico')->change();
+        // });
     }
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('role');
-        });
+        // Schema::table('users', function (Blueprint $table) {
+        //     $table->enum('role', ['admin', 'tecnico'])->default('tecnico')->change();
+        // });
     }
 };

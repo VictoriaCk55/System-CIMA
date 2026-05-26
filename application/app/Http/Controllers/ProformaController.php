@@ -194,6 +194,11 @@ class ProformaController extends Controller
             'unidad' => 'nullable|string|in:UIA,UAQ',
             'fecha_emision' => 'required|date',
             'fecha_recepcion' => 'required|date',
+            'codigo_cliente' => 'nullable|string|max:100',
+            'numero_recepcion' => 'nullable|string|max:50',
+            'hora_recepcion' => 'nullable|date_format:H:i',
+            'tipo_documento' => 'nullable|array',
+            'tipo_documento.*' => 'string|in:PROFORMA,COTIZACION,CONTRATO,CONTRATO MODIFICADO',
             'persona_contacto' => 'nullable|string',
             'telefono_contacto' => 'nullable|string',
             'procedencia' => 'nullable|string',
@@ -242,12 +247,16 @@ class ProformaController extends Controller
             // Crear proforma
             $proforma = Proforma::create([
                 'codigo' => $codigo,
+                'codigo_cliente' => $request->codigo_cliente,
                 'cliente_id' => $request->cliente_id,
                 'tipo' => $request->tipo,
+                'tipo_documento' => $request->tipo_documento,
                 'tipo_muestra' => $request->tipo_muestra,
+                'numero_recepcion' => $request->numero_recepcion,
                 'unidad' => $request->unidad,
                 'fecha_emision' => $request->fecha_emision,
                 'fecha_recepcion' => $request->fecha_recepcion,
+                'hora_recepcion' => $request->hora_recepcion,
                 'persona_contacto' => $request->persona_contacto,
                 'telefono_contacto' => $request->telefono_contacto,
                 'procedencia' => $request->procedencia,
@@ -373,6 +382,11 @@ class ProformaController extends Controller
             'unidad' => 'nullable|string|in:UIA,UAQ',
             'fecha_emision' => 'required|date',
             'fecha_recepcion' => 'required|date',
+            'codigo_cliente' => 'nullable|string|max:100',
+            'numero_recepcion' => 'nullable|string|max:50',
+            'hora_recepcion' => 'nullable|date_format:H:i',
+            'tipo_documento' => 'nullable|array',
+            'tipo_documento.*' => 'string|in:PROFORMA,COTIZACION,CONTRATO,CONTRATO MODIFICADO',
             'persona_contacto' => 'nullable|string',
             'telefono_contacto' => 'nullable|string',
             'procedencia' => 'nullable|string',
@@ -431,6 +445,10 @@ class ProformaController extends Controller
                 'unidad' => $request->unidad,
                 'fecha_emision' => $request->fecha_emision,
                 'fecha_recepcion' => $request->fecha_recepcion,
+                'codigo_cliente' => $request->codigo_cliente,
+                'numero_recepcion' => $request->numero_recepcion,
+                'hora_recepcion' => $request->hora_recepcion,
+                'tipo_documento' => $request->tipo_documento,
                 'persona_contacto' => $request->persona_contacto,
                 'telefono_contacto' => $request->telefono_contacto,
                 'procedencia' => $request->procedencia,
@@ -612,6 +630,8 @@ class ProformaController extends Controller
             ];
             
             $pdf = Pdf::loadView('proformas.pdf', $data);
+            //CONFIGURAR ORIENTACION DEL DOCUMENTO
+            $pdf->setPaper('letter', 'portrait');
             return $pdf->download("proforma-{$proforma->codigo}.pdf");
             
         } catch (\Exception $e) {
@@ -619,7 +639,144 @@ class ProformaController extends Controller
             return back()->with('error', '❌ Error al generar PDF');
         }
     }
+/**
+     * GENERAR PDF2- CADENA DE CUSTODIA
+     */
+    public function pdfCadenaCustodia(Proforma $proforma)
+{
+    try {
+        // NO cargar 'muestras' porque no existe la relación
+        $proforma->load(['cliente', 'parametros', 'usuarioModificacion']);
+        
+        // Calcular total en letras
+        $entero = intval($proforma->total);
+        $decimal = round(($proforma->total - $entero) * 100);
+        
+        $mapaNumeros = [
+            0 => 'CERO', 1 => 'UN', 2 => 'DOS', 3 => 'TRES', 4 => 'CUATRO',
+            5 => 'CINCO', 6 => 'SEIS', 7 => 'SIETE', 8 => 'OCHO', 9 => 'NUEVE',
+            10 => 'DIEZ', 11 => 'ONCE', 12 => 'DOCE', 13 => 'TRECE', 14 => 'CATORCE',
+            15 => 'QUINCE', 16 => 'DIECISÉIS', 17 => 'DIECISIETE', 18 => 'DIECIOCHO',
+            19 => 'DIECINUEVE', 20 => 'VEINTE', 30 => 'TREINTA', 40 => 'CUARENTA',
+            50 => 'CINCUENTA', 60 => 'SESENTA', 70 => 'SETENTA', 80 => 'OCHENTA',
+            90 => 'NOVENTA', 100 => 'CIEN', 200 => 'DOSCIENTOS', 300 => 'TRESCIENTOS',
+            400 => 'CUATROCIENTOS', 500 => 'QUINIENTOS', 600 => 'SEISCIENTOS',
+            700 => 'SETECIENTOS', 800 => 'OCHOCIENTOS', 900 => 'NOVECIENTOS'
+        ];
+        
+        $numeroEnLetras = function($numero) use (&$numeroEnLetras, $mapaNumeros) {
+            if ($numero <= 20) {
+                return $mapaNumeros[$numero];
+            } elseif ($numero < 100) {
+                $decena = floor($numero / 10) * 10;
+                $unidad = $numero % 10;
+                if ($unidad == 0) {
+                    return $mapaNumeros[$decena];
+                } else {
+                    return $mapaNumeros[$decena] . ' Y ' . $mapaNumeros[$unidad];
+                }
+            } elseif ($numero < 1000) {
+                $centena = floor($numero / 100) * 100;
+                $resto = $numero % 100;
+                if ($resto == 0) {
+                    return $mapaNumeros[$centena];
+                } else {
+                    return $mapaNumeros[$centena] . ' ' . $numeroEnLetras($resto);
+                }
+            }
+            return number_format($numero, 0);
+        };
+        
+        $letras = $numeroEnLetras($entero);
+        $totalEnLetras = 'SON: ' . strtoupper($letras) . ' ' . str_pad($decimal, 2, '0', STR_PAD_LEFT) . '/100 BOLIVIANOS';
+        
+        // Agrupar parámetros por método analítico
+        $parametrosAgrupados = $this->agruparParametrosCadena($proforma->parametros ?? collect());
+        
+        // Crear datos de muestra a partir de los campos de la proforma
+        $muestraData = (object) [
+            'tipo_muestra' => $proforma->tipo_muestra ?? 'No especificado',
+            'identificacion' => $proforma->codigo ?? 'M-001',
+            'codigo' => $proforma->codigo,
+            'codigo_lab' => 'LAB-' . str_pad($proforma->id ?? '1', 4, '0', STR_PAD_LEFT),
+            'campo_id' => $proforma->procedencia ?? 'Campo',
+            'fecha_muestreo' => $proforma->fecha_recepcion,
+            'fecha_recepcion' => $proforma->fecha_emision,
+            'hora_muestreo' => null,
+            'punto_muestreo' => $proforma->coordenadas ?? 'No especificado',
+            'muestreado_por' => $proforma->muestreado_por ?? 'No especificado',
+            'observaciones' => $proforma->observaciones,
+            'procedencia' => $proforma->procedencia,
+            'coordenadas' => $proforma->coordenadas,
+            'persona_contacto' => $proforma->persona_contacto,
+            'telefono_contacto' => $proforma->telefono_contacto,
+        ];
+        
+        $data = [
+            'proforma' => $proforma,
+            'totalEnLetras' => $totalEnLetras,
+            'fechaActual' => now()->format('d/m/Y H:i'),
+            'numeroContrato' => $proforma->codigo ?? 'S/N',
+            'fechaContrato' => $proforma->fecha_emision?->format('Y-m-d') ?? now()->format('Y-m-d'),
+            'fechaRecepcion' => $proforma->fecha_recepcion?->format('Y-m-d') ?? 'No registrada',
+            'parametrosAgrupados' => $parametrosAgrupados,
+            'muestra' => $muestraData,
+            'muestreadoPorOpciones' => $this->muestreadoPorOpciones,
+        ];
+        
+        // Importante: Usar la vista de CADENA DE CUSTODIA
+        $pdf = Pdf::loadView('proformas.cadena_custodia', $data);
+        $pdf->setPaper('letter', 'landscape'); // HORIZONTAL
+        // MOSTRAR EN EL NAVEGADOR EN LUGAR DE DESCARGAR
+        return $pdf->stream("cadena-custodia-{$proforma->codigo}.pdf");
+        
+    } catch (\Exception $e) {
+        Log::error('Error al generar Cadena de Custodia PDF: ' . $e->getMessage());
+        return back()->with('error', '❌ Error al generar Cadena de Custodia: ' . $e->getMessage());
+    }
+}
 
+/**
+ * Agrupa los parámetros según las categorías de la tabla para Cadena de Custodia
+ */
+    private function agruparParametrosCadena($parametros)
+    {
+        $categorias = [
+            'volumetria' => [],
+            'ionometria' => [],
+            'uv_visible' => [],
+            'gravimetria' => [],
+            'potenciometria' => [],
+            'espectrofotometria' => [],
+            'cromatografia' => [],
+            'microbiologia' => [],
+            'otros' => [],
+        ];
+        
+        $metodos = [
+            'Volumetria' => 'volumetria',
+            'Ionometria' => 'ionometria',
+            'UV - Visible' => 'uv_visible',
+            'Gravimetria' => 'gravimetria',
+            'Potenciometria' => 'potenciometria',
+            'Espectrofotometria' => 'espectrofotometria',
+            'Cromatografia' => 'cromatografia',
+            'Microbiologia' => 'microbiologia',
+        ];
+        
+        foreach ($parametros as $parametro) {
+            $metodo = $parametro->metodo ?? $parametro->metodo_analitico ?? 'Otros';
+            $categoriaClave = $metodos[$metodo] ?? 'otros';
+            $categorias[$categoriaClave][] = [
+                'nombre' => $parametro->nombre ?? $parametro->parametro ?? 'N/A',
+                'unidad' => $parametro->unidad ?? '',
+                'metodo' => $metodo,
+                'precio' => $parametro->precio_unitario ?? 0,
+            ];
+        }
+        
+        return $categorias;
+    }
     /**
      * Actualizar solo el adelanto de la proforma
      * Permite editar el adelanto en estados ENVIADA y APROBADA

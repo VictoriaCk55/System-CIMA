@@ -12,12 +12,18 @@ class Proforma extends Model
 
     protected $fillable = [
         'codigo',
+        'codigo_cliente',
         'cliente_id',
         'tipo',
+        'tipo_documento',
         'tipo_muestra',
+        'numero_recepcion',
+        'hora_recepcion',
         'unidad',
         'fecha_emision',
         'fecha_recepcion',
+        'fecha_inicio_ensayo',
+        'fecha_conclusion_ensayo',
         'persona_contacto',
         'telefono_contacto',
         'procedencia',
@@ -39,6 +45,8 @@ class Proforma extends Model
     protected $casts = [
         'fecha_emision' => 'date',
         'fecha_recepcion' => 'date',
+        'fecha_inicio_ensayo' => 'date',
+        'fecha_conclusion_ensayo' => 'date',
         'adelanto' => 'decimal:2',
         'subtotal' => 'decimal:2',
         'descuento' => 'decimal:2',
@@ -46,6 +54,7 @@ class Proforma extends Model
         'saldo' => 'decimal:2',
         'aplica_descuento_institucional' => 'boolean',
         'parametros_modificados' => 'boolean',
+        'tipo_documento' => 'array',
     ];
 
     protected $dates = ['deleted_at'];
@@ -139,6 +148,82 @@ class Proforma extends Model
         
         return $unidadAbr . '-' . $tipoAbr . '-' . str_pad($nuevoNumero, 3, '0', STR_PAD_LEFT);
     }
+
+     /**
+     * =====================================================
+     * GENERAR CODIGO DE LABORATORIO
+     * =====================================================
+     * FORMATO:
+     * UAQ-1-024-1
+     * [UNIDAD]-[TIPO]-[RECEPCION]-[MUESTRA]
+     */
+
+    public function generarCodigoLaboratorio($numeroMuestra = 1)
+    {
+
+        /*
+        |--------------------------------------------------------------------------
+        | UNIDAD
+        |--------------------------------------------------------------------------
+        */
+
+        $unidad = $this->unidad ?? 'NULL';
+
+        /*
+        |--------------------------------------------------------------------------
+        | TIPO DE MUESTRA
+        |--------------------------------------------------------------------------
+        | 1 = AGUA
+        | 2 = SUELO
+        | 3 = OTROS
+        |
+        */
+
+        $tipoMuestra = strtoupper($this->tipo_muestra);
+
+        if (
+            str_contains($tipoMuestra, 'AGUA')
+        ) {
+
+            $tipoCodigo = 1;
+
+        } elseif (
+
+            str_contains($tipoMuestra, 'SUELO')
+
+        ) {
+
+            $tipoCodigo = 2;
+
+        } else {
+
+            $tipoCodigo = 3;
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | NUMERO RECEPCION
+        |--------------------------------------------------------------------------
+        */
+
+        $recepcion = str_pad($this->id, 3, '0', STR_PAD_LEFT);
+
+        /*
+        |--------------------------------------------------------------------------
+        | CODIGO FINAL
+        |--------------------------------------------------------------------------
+        */
+
+        return $unidad
+            . '-'
+            . $tipoCodigo
+            . '-'
+            . $recepcion
+            . '-'
+            . $numeroMuestra;
+    }
+
 
     // ========== SCOPES ==========
     

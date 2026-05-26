@@ -38,6 +38,7 @@ return [
         Illuminate\View\ViewServiceProvider::class,
         App\Providers\AppServiceProvider::class,
         Barryvdh\DomPDF\ServiceProvider::class,
+        Spatie\Permission\PermissionServiceProvider::class,
     ],
     
     'aliases' => [

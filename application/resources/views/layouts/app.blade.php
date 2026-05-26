@@ -503,7 +503,7 @@
                     </li>
                     @endif
                     @endauth
-                </ul>
+                </ul>   
                 
                 <ul class="navbar-nav">
                     @auth
@@ -585,7 +585,7 @@
     </nav>
 
     <main>
-        <div class="container container-main">
+        <div class="container-fluid">
             @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle me-2"></i> {{ session('success') }}

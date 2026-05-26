@@ -359,7 +359,16 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <!-- PDF - Verde outline con texto negro, hover verde sólido texto blanco -->
+                        <div style="text-align: center; margin-top: 20px;">
+                            <a href="{{ route('resultados.index', $proforma->id) }}" 
+                            class="btn"
+                           style="color: #000000; border: 2px solid #6b0d7b; background-color: transparent; border-radius: 30px; padding: 10px 25px; transition: all 0.3s ease; font-weight: 500; text-decoration: none; display: block; text-align: center;"
+                           onmouseover="this.style.backgroundColor='#6b0d7b'; this.style.color='#ffffff'; this.style.borderColor='#6b0d7b';"
+                           onmouseout="this.style.backgroundColor='transparent'; this.style.color='#000000'; this.style.borderColor='#6b0d7b';">
+                                📝 Resultados de Ensayo
+                            </a>
+                        </div>
+                                        <!-- PDF - Verde outline con texto negro, hover verde sólido texto blanco -->
                         <a href="{{ route('proformas.pdf', $proforma) }}" 
                            class="btn"
                            style="color: #000000; border: 2px solid #198754; background-color: transparent; border-radius: 30px; padding: 10px 25px; transition: all 0.3s ease; font-weight: 500; text-decoration: none; display: block; text-align: center;"

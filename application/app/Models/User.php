@@ -3,79 +3,49 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, HasRoles, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',
+        'name', 'email', 'password', 'role',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password', 'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'deleted_at' => 'datetime',
-        ];
-    }
-    
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'deleted_at' => 'datetime',
+    ];
+
     /**
      * Verifica si el usuario es administrador
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->hasRole('admin');
     }
-    
+
     /**
      * Verifica si el usuario es técnico
      */
     public function isTecnico(): bool
     {
-        return $this->role === 'tecnico';
+        return $this->hasRole('tecnico');
     }
-    
+
     /**
-     * Scope para usuarios activos (no eliminados)
+     * Verifica si el usuario es analista
      */
-    public function scopeActive($query)
+    public function isAnalista(): bool
     {
-        return $query->whereNull('deleted_at');
-    }
-    
-    /**
-     * Scope para usuarios inactivos (eliminados)
-     */
-    public function scopeInactive($query)
-    {
-        return $query->onlyTrashed();
+        return $this->hasRole('analista');
     }
 }

@@ -45,7 +45,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:admin,tecnico',
+            'role' => 'required|in:admin,tecnico,analista',
         ]);
         
         $user = User::create([
@@ -91,7 +91,7 @@ class UserController extends Controller
                 'email',
                 Rule::unique('users')->ignore($user->id),
             ],
-            'role' => 'required|in:admin,tecnico',
+            'role' => 'required|in:admin,tecnico,analista',
         ]);
         
         $user->update([

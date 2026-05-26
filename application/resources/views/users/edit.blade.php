@@ -43,6 +43,7 @@
                     <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required>
                         <option value="tecnico" {{ old('role', $user->role) == 'tecnico' ? 'selected' : '' }}>Técnico (solo lectura)</option>
                         <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Administrador (acceso total)</option>
+                        <option value="analista" {{ old('role', $user->role) == 'analista' ? 'selected' : '' }}>Analista (resultados de ensayo)</option>
                     </select>
                     @error('role')
                         <div class="invalid-feedback">{{ $message }}</div>
