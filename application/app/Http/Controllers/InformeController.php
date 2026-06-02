@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Informe;
 use App\Models\Proforma;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class InformeController extends Controller
 {
@@ -19,7 +19,7 @@ class InformeController extends Controller
      */
     private function esAdmin()
     {
-        return Auth::check() && Auth::user()->email === 'admin@cima.edu.bo';
+        return Auth::check() && Auth::user()->hasAnyRole(['admin', 'tecnico']);
     }
 
     /**
@@ -36,32 +36,32 @@ class InformeController extends Controller
     public function index(Request $request)
     {
         $query = Informe::with(['proforma.cliente', 'creador']);
-        
+
         if ($request->filled('mes') && $request->filled('anio')) {
             $query->whereMonth('fecha_emision', $request->mes)
-                  ->whereYear('fecha_emision', $request->anio);
-        } elseif ($request->filled('mes') && !$request->filled('anio')) {
+                ->whereYear('fecha_emision', $request->anio);
+        } elseif ($request->filled('mes') && ! $request->filled('anio')) {
             $query->whereMonth('fecha_emision', $request->mes)
-                  ->whereYear('fecha_emision', date('Y'));
-        } elseif (!$request->filled('mes') && $request->filled('anio')) {
+                ->whereYear('fecha_emision', date('Y'));
+        } elseif (! $request->filled('mes') && $request->filled('anio')) {
             $query->whereYear('fecha_emision', $request->anio);
         }
-        
+
         if ($request->filled('estado')) {
             $query->where('estado', $request->estado);
         }
-        
+
         $añosDisponibles = Informe::selectRaw('DISTINCT EXTRACT(YEAR FROM fecha_emision) as año')
             ->orderBy('año', 'desc')
             ->pluck('año')
             ->toArray();
-        
+
         $informes = $query->latest()
             ->paginate(15)
             ->withQueryString();
-        
+
         $estadisticas = $this->obtenerEstadisticas($request);
-        
+
         return view('informes.index', compact('informes', 'estadisticas', 'añosDisponibles'));
     }
 
@@ -70,7 +70,7 @@ class InformeController extends Controller
      */
     public function trash()
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('informes.index')
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede ver informes eliminados.');
         }
@@ -79,7 +79,7 @@ class InformeController extends Controller
             ->with(['proforma.cliente', 'creador'])
             ->latest('deleted_at')
             ->paginate(15);
-        
+
         return view('informes.trash', compact('informes'));
     }
 
@@ -88,7 +88,7 @@ class InformeController extends Controller
      */
     public function restore($id)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('informes.index')
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede restaurar informes.');
         }
@@ -101,10 +101,10 @@ class InformeController extends Controller
                 ->with('success', '✅ Informe restaurado exitosamente.');
 
         } catch (\Exception $e) {
-            Log::error('Error al restaurar informe: ' . $e->getMessage());
-            
+            Log::error('Error al restaurar informe: '.$e->getMessage());
+
             return redirect()->route('informes.trash')
-                ->with('error', '❌ Error al restaurar el informe: ' . $e->getMessage());
+                ->with('error', '❌ Error al restaurar el informe: '.$e->getMessage());
         }
     }
 
@@ -113,14 +113,14 @@ class InformeController extends Controller
      */
     public function forceDelete($id)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('informes.index')
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede eliminar permanentemente.');
         }
 
         try {
             $informe = Informe::onlyTrashed()->findOrFail($id);
-            
+
             // Eliminar archivos si existen
             if ($informe->archivo_adjunto) {
                 Storage::disk('public')->delete($informe->archivo_adjunto);
@@ -128,17 +128,17 @@ class InformeController extends Controller
             if ($informe->archivo_resultados) {
                 Storage::disk('public')->delete($informe->archivo_resultados);
             }
-            
+
             $informe->forceDelete();
 
             return redirect()->route('informes.trash')
                 ->with('success', '✅ Informe eliminado permanentemente.');
 
         } catch (\Exception $e) {
-            Log::error('Error al eliminar permanentemente: ' . $e->getMessage());
-            
+            Log::error('Error al eliminar permanentemente: '.$e->getMessage());
+
             return redirect()->route('informes.trash')
-                ->with('error', '❌ Error al eliminar permanentemente: ' . $e->getMessage());
+                ->with('error', '❌ Error al eliminar permanentemente: '.$e->getMessage());
         }
     }
 
@@ -148,21 +148,21 @@ class InformeController extends Controller
     private function obtenerEstadisticas($request)
     {
         $query = Informe::query();
-        
+
         if ($request->filled('mes') && $request->filled('anio')) {
             $query->whereMonth('fecha_emision', $request->mes)
-                  ->whereYear('fecha_emision', $request->anio);
+                ->whereYear('fecha_emision', $request->anio);
         } elseif ($request->filled('mes')) {
             $query->whereMonth('fecha_emision', $request->mes)
-                  ->whereYear('fecha_emision', date('Y'));
+                ->whereYear('fecha_emision', date('Y'));
         } elseif ($request->filled('anio')) {
             $query->whereYear('fecha_emision', $request->anio);
         }
-        
+
         if ($request->filled('estado')) {
             $query->where('estado', $request->estado);
         }
-        
+
         return [
             'total' => $query->count(),
             'borrador' => (clone $query)->where('estado', 'BORRADOR')->count(),
@@ -178,7 +178,7 @@ class InformeController extends Controller
      */
     public function create(Request $request)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('informes.index')
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede crear informes.');
         }
@@ -199,9 +199,10 @@ class InformeController extends Controller
             return view('informes.create', compact('proformasSinInforme', 'proforma'));
 
         } catch (\Exception $e) {
-            Log::error('Error en create de informes: ' . $e->getMessage());
+            Log::error('Error en create de informes: '.$e->getMessage());
+
             return redirect()->route('informes.index')
-                ->with('error', 'Error al cargar el formulario: ' . $e->getMessage());
+                ->with('error', 'Error al cargar el formulario: '.$e->getMessage());
         }
     }
 
@@ -210,7 +211,7 @@ class InformeController extends Controller
      */
     public function store(Request $request)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('informes.index')
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede crear informes.');
         }
@@ -243,16 +244,16 @@ class InformeController extends Controller
 
             // ✅ Generar código único
             $codigo = Informe::generarCodigo();
-            
+
             $contador = 1;
             $codigoOriginal = $codigo;
             while (Informe::where('codigo', $codigo)->exists()) {
                 $numero = intval(substr($codigoOriginal, 4)) + $contador;
-                $codigo = 'INF-' . str_pad($numero, 3, '0', STR_PAD_LEFT);
+                $codigo = 'INF-'.str_pad($numero, 3, '0', STR_PAD_LEFT);
                 $contador++;
             }
 
-            $informe = new Informe();
+            $informe = new Informe;
             $informe->codigo = $codigo;
             $informe->proforma_id = $request->proforma_id;
             $informe->fecha_emision = $request->fecha_emision;
@@ -282,18 +283,20 @@ class InformeController extends Controller
             DB::commit();
 
             return redirect()->route('informes.show', $informe)
-                ->with('success', '✅ Informe creado exitosamente con código: ' . $informe->codigo);
+                ->with('success', '✅ Informe creado exitosamente con código: '.$informe->codigo);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
+
             return redirect()->back()
                 ->withErrors($e->validator)
                 ->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al crear informe: ' . $e->getMessage());
+            Log::error('Error al crear informe: '.$e->getMessage());
+
             return redirect()->back()
-                ->with('error', '❌ Error al crear el informe: ' . $e->getMessage())
+                ->with('error', '❌ Error al crear el informe: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -309,9 +312,9 @@ class InformeController extends Controller
             'creador',
             'revisor',
             'aprobador',
-            'entregador'
+            'entregador',
         ]);
-        
+
         return view('informes.show', compact('informe'));
     }
 
@@ -320,19 +323,19 @@ class InformeController extends Controller
      */
     public function edit(Informe $informe)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('informes.show', $informe)
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede editar informes.');
         }
 
-        if (!in_array($informe->estado, ['BORRADOR', 'EN_PROCESO'])) {
+        if (! in_array($informe->estado, ['BORRADOR', 'EN_PROCESO'])) {
             return redirect()->route('informes.show', $informe)
-                ->with('error', 'No se puede editar un informe en estado: ' . $informe->estado_texto);
+                ->with('error', 'No se puede editar un informe en estado: '.$informe->estado_texto);
         }
-        
+
         $informe->load('proforma.cliente');
         $usuarios = User::orderBy('name')->get();
-        
+
         return view('informes.edit', compact('informe', 'usuarios'));
     }
 
@@ -341,7 +344,7 @@ class InformeController extends Controller
      */
     public function update(Request $request, Informe $informe)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('informes.show', $informe)
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede actualizar informes.');
         }
@@ -378,9 +381,10 @@ class InformeController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al actualizar informe: ' . $e->getMessage());
+            Log::error('Error al actualizar informe: '.$e->getMessage());
+
             return redirect()->back()
-                ->with('error', '❌ Error al actualizar el informe: ' . $e->getMessage())
+                ->with('error', '❌ Error al actualizar el informe: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -390,7 +394,7 @@ class InformeController extends Controller
      */
     public function destroy(Informe $informe)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('informes.index')
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede eliminar informes.');
         }
@@ -402,9 +406,10 @@ class InformeController extends Controller
                 ->with('success', '✅ Informe movido a la papelera exitosamente.');
 
         } catch (\Exception $e) {
-            Log::error('Error al eliminar informe: ' . $e->getMessage());
+            Log::error('Error al eliminar informe: '.$e->getMessage());
+
             return redirect()->route('informes.index')
-                ->with('error', '❌ Error al eliminar el informe: ' . $e->getMessage());
+                ->with('error', '❌ Error al eliminar el informe: '.$e->getMessage());
         }
     }
 
@@ -413,7 +418,7 @@ class InformeController extends Controller
      */
     public function cambiarEstado(Request $request, Informe $informe)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return back()->with('error', '⛔ Acceso denegado. Solo el administrador puede cambiar el estado de informes.');
         }
 
@@ -425,9 +430,9 @@ class InformeController extends Controller
             DB::beginTransaction();
 
             $informe->estado = $request->estado;
-            
+
             $userId = $this->getCurrentUserId();
-            switch($request->estado) {
+            switch ($request->estado) {
                 case 'REVISADO':
                     $informe->revisado_por = $userId;
                     break;
@@ -438,18 +443,19 @@ class InformeController extends Controller
                     $informe->entregado_por = $userId;
                     break;
             }
-            
+
             $informe->save();
 
             DB::commit();
 
             return redirect()->route('informes.show', $informe)
-                ->with('success', '✅ Estado actualizado a: ' . $informe->estado_texto);
+                ->with('success', '✅ Estado actualizado a: '.$informe->estado_texto);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al cambiar estado: ' . $e->getMessage());
-            return back()->with('error', '❌ Error al cambiar el estado: ' . $e->getMessage());
+            Log::error('Error al cambiar estado: '.$e->getMessage());
+
+            return back()->with('error', '❌ Error al cambiar el estado: '.$e->getMessage());
         }
     }
 
@@ -465,15 +471,17 @@ class InformeController extends Controller
                 'creador',
                 'revisor',
                 'aprobador',
-                'entregador'
+                'entregador',
             ]);
-            
+
             $pdf = Pdf::loadView('informes.pdf.informe', compact('informe'));
-            return $pdf->download('informe-' . $informe->codigo . '.pdf');
-            
+
+            return $pdf->download('informe-'.$informe->codigo.'.pdf');
+
         } catch (\Exception $e) {
-            Log::error('Error al generar PDF de informe: ' . $e->getMessage());
-            return back()->with('error', '❌ Error al generar PDF: ' . $e->getMessage());
+            Log::error('Error al generar PDF de informe: '.$e->getMessage());
+
+            return back()->with('error', '❌ Error al generar PDF: '.$e->getMessage());
         }
     }
 
@@ -484,16 +492,17 @@ class InformeController extends Controller
     {
         try {
             $path = $tipo === 'resultados' ? $informe->archivo_resultados : $informe->archivo_adjunto;
-            
-            if (!$path || !Storage::disk('public')->exists($path)) {
+
+            if (! $path || ! Storage::disk('public')->exists($path)) {
                 return back()->with('error', '❌ El archivo no existe.');
             }
 
             return Storage::disk('public')->download($path);
 
         } catch (\Exception $e) {
-            Log::error('Error al descargar archivo: ' . $e->getMessage());
-            return back()->with('error', '❌ Error al descargar archivo: ' . $e->getMessage());
+            Log::error('Error al descargar archivo: '.$e->getMessage());
+
+            return back()->with('error', '❌ Error al descargar archivo: '.$e->getMessage());
         }
     }
 
@@ -504,46 +513,47 @@ class InformeController extends Controller
     {
         try {
             $term = $request->get('q', '');
-            
-            Log::info('Buscando proformas con término: ' . $term);
-            
+
+            Log::info('Buscando proformas con término: '.$term);
+
             $query = Proforma::with('cliente')
                 ->whereDoesntHave('informe');
-            
-            if (!empty($term)) {
-                $query->where(function($q) use ($term) {
-                    $q->where('codigo', 'ILIKE', '%' . $term . '%')
-                      ->orWhere('tipo', 'ILIKE', '%' . $term . '%')
-                      ->orWhere('tipo_muestra', 'ILIKE', '%' . $term . '%')
-                      ->orWhereHas('cliente', function($clientQuery) use ($term) {
-                          $clientQuery->where('razon_social', 'ILIKE', '%' . $term . '%')
-                                     ->orWhere('persona_contacto', 'ILIKE', '%' . $term . '%');
-                      });
+
+            if (! empty($term)) {
+                $query->where(function ($q) use ($term) {
+                    $q->where('codigo', 'ILIKE', '%'.$term.'%')
+                        ->orWhere('tipo', 'ILIKE', '%'.$term.'%')
+                        ->orWhere('tipo_muestra', 'ILIKE', '%'.$term.'%')
+                        ->orWhereHas('cliente', function ($clientQuery) use ($term) {
+                            $clientQuery->where('razon_social', 'ILIKE', '%'.$term.'%')
+                                ->orWhere('persona_contacto', 'ILIKE', '%'.$term.'%');
+                        });
                 });
             }
-            
+
             $proformas = $query->orderBy('created_at', 'desc')
                 ->limit(20)
                 ->get();
-            
+
             $results = [];
             foreach ($proformas as $proforma) {
                 $clienteNombre = $proforma->cliente->razon_social ?? $proforma->cliente->nombre ?? 'Sin cliente';
                 $tipoMuestra = $proforma->tipo_muestra ?? $proforma->tipo ?? 'N/A';
-                
+
                 $results[] = [
                     'id' => $proforma->id,
-                    'text' => $proforma->codigo . ' - ' . $clienteNombre . ' (' . $tipoMuestra . ')',
+                    'text' => $proforma->codigo.' - '.$clienteNombre.' ('.$tipoMuestra.')',
                     'codigo' => $proforma->codigo,
                     'cliente' => $clienteNombre,
-                    'tipo' => $tipoMuestra
+                    'tipo' => $tipoMuestra,
                 ];
             }
-            
+
             return response()->json($results);
-            
+
         } catch (\Exception $e) {
-            Log::error('ERROR en búsqueda de proformas: ' . $e->getMessage());
+            Log::error('ERROR en búsqueda de proformas: '.$e->getMessage());
+
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }

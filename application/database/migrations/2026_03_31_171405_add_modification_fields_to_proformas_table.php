@@ -11,16 +11,16 @@ return new class extends Migration
         Schema::table('proformas', function (Blueprint $table) {
             // Campo para la unidad (UIA o UAQ) - después de tipo_muestra
             $table->string('unidad', 10)->nullable()->after('tipo_muestra');
-            
+
             // Campo para indicar si los parámetros fueron modificados
             $table->boolean('parametros_modificados')->default(false)->after('estado');
-            
+
             // Campo para almacenar la justificación
             $table->text('justificacion_modificacion')->nullable()->after('parametros_modificados');
-            
+
             // Campo para registrar quién modificó
             $table->foreignId('modificado_por')->nullable()->after('justificacion_modificacion')
-                  ->constrained('users')->onDelete('set null');
+                ->constrained('users')->onDelete('set null');
         });
     }
 
@@ -32,7 +32,7 @@ return new class extends Migration
                 'unidad',
                 'parametros_modificados',
                 'justificacion_modificacion',
-                'modificado_por'
+                'modificado_por',
             ]);
         });
     }

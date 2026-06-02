@@ -229,7 +229,7 @@
             
             <!-- Acciones -->
             @auth
-                @if(Auth::user()->email === 'admin@cima.edu.bo')
+                @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
                     <div class="card">
                         <div class="card-header" style="background-color: #2798F5; border-bottom: none;">
                             <h5 class="mb-0 text-white">

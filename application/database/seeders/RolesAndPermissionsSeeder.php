@@ -2,105 +2,164 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use App\Models\User;
-use database\seeders\UserSeeder;
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        // Limpiar caché de permisos
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // ── CREAR PERMISOS ──────────────────────────────────────────────
+        // ── PERFILES ─────────────────────────────────────────────────────
+        Permission::firstOrCreate(['name' => 'edit.profile']);
+        Permission::firstOrCreate(['name' => 'update.profile']);
+        Permission::firstOrCreate(['name' => 'update.password']);
 
-        // Usuarios
-        Permission::firstOrCreate(['name' => 'ver usuarios']);
-        Permission::firstOrCreate(['name' => 'crear usuarios']);
-        Permission::firstOrCreate(['name' => 'editar usuarios']);
-        Permission::firstOrCreate(['name' => 'eliminar usuarios']);
+        // ── USUARIOS ─────────────────────────────────────────────────────
+        foreach (['ver', 'crear', 'editar', 'eliminar', 'restore', 'force-delete'] as $verb) {
+            Permission::firstOrCreate(['name' => "$verb usuarios"]);
+        }
+        Permission::firstOrCreate(['name' => 'ver papelera usuarios']);
 
-        // Clientes
-        Permission::firstOrCreate(['name' => 'ver clientes']);
-        Permission::firstOrCreate(['name' => 'crear clientes']);
-        Permission::firstOrCreate(['name' => 'editar clientes']);
-        Permission::firstOrCreate(['name' => 'eliminar clientes']);
+        // ── ROLES ────────────────────────────────────────────────────────
+        foreach (['ver', 'crear', 'editar', 'eliminar'] as $verb) {
+            Permission::firstOrCreate(['name' => "$verb roles"]);
+        }
 
-        // Parámetros
-        Permission::firstOrCreate(['name' => 'ver parametros']);
-        Permission::firstOrCreate(['name' => 'crear parametros']);
-        Permission::firstOrCreate(['name' => 'editar parametros']);
-        Permission::firstOrCreate(['name' => 'eliminar parametros']);
+        // ── PERMISOS ─────────────────────────────────────────────────────
+        foreach (['ver', 'crear', 'editar', 'eliminar'] as $verb) {
+            Permission::firstOrCreate(['name' => "$verb permisos"]);
+        }
 
-        // Proformas
-        Permission::firstOrCreate(['name' => 'ver proformas']);
-        Permission::firstOrCreate(['name' => 'crear proformas']);
-        Permission::firstOrCreate(['name' => 'editar proformas']);
-        Permission::firstOrCreate(['name' => 'eliminar proformas']);
+        // ── CLIENTES ─────────────────────────────────────────────────────
+        foreach (['ver', 'crear', 'editar', 'eliminar', 'restore', 'force-delete'] as $verb) {
+            Permission::firstOrCreate(['name' => "$verb clientes"]);
+        }
+        Permission::firstOrCreate(['name' => 'ver papelera clientes']);
+        Permission::firstOrCreate(['name' => 'registrar pago clientes']);
+        Permission::firstOrCreate(['name' => 'actualizar saldo clientes']);
 
-        // Informes
-        Permission::firstOrCreate(['name' => 'ver informes']);
-        Permission::firstOrCreate(['name' => 'crear informes']);
-        Permission::firstOrCreate(['name' => 'editar informes']);
-        Permission::firstOrCreate(['name' => 'eliminar informes']);
+        // ── PARÁMETROS ───────────────────────────────────────────────────
+        foreach (['ver', 'crear', 'editar', 'eliminar', 'restore', 'force-delete'] as $verb) {
+            Permission::firstOrCreate(['name' => "$verb parametros"]);
+        }
+        Permission::firstOrCreate(['name' => 'ver papelera parametros']);
 
-        // Resultados de ensayo
-        Permission::firstOrCreate(['name' => 'ver resultados']);
-        Permission::firstOrCreate(['name' => 'crear resultados']);
-        Permission::firstOrCreate(['name' => 'editar resultados']);
+        // ── PROFORMAS ────────────────────────────────────────────────────
+        foreach (['ver', 'crear', 'editar', 'eliminar', 'restore', 'force-delete'] as $verb) {
+            Permission::firstOrCreate(['name' => "$verb proformas"]);
+        }
+        Permission::firstOrCreate(['name' => 'cambiar estado proformas']);
+        Permission::firstOrCreate(['name' => 'actualizar adelanto proformas']);
+        Permission::firstOrCreate(['name' => 'ver papelera proformas']);
+        Permission::firstOrCreate(['name' => 'generar pdf proformas']);
 
-        // Financiero
+        // ── RESULTADOS ───────────────────────────────────────────────────
+        foreach (['ver', 'crear', 'editar'] as $verb) {
+            Permission::firstOrCreate(['name' => "$verb resultados"]);
+        }
+        Permission::firstOrCreate(['name' => 'guardar resultados']);
+        Permission::firstOrCreate(['name' => 'cargar resultados']);
+        Permission::firstOrCreate(['name' => 'limpiar resultados']);
+        Permission::firstOrCreate(['name' => 'generar pdf resultados']);
+        Permission::firstOrCreate(['name' => 'generar informe resultados']);
+
+        // ── INFORMES ─────────────────────────────────────────────────────
+        foreach (['ver', 'crear', 'editar', 'eliminar', 'restore', 'force-delete'] as $verb) {
+            Permission::firstOrCreate(['name' => "$verb informes"]);
+        }
+        Permission::firstOrCreate(['name' => 'cambiar estado informes']);
+        Permission::firstOrCreate(['name' => 'ver papelera informes']);
+        Permission::firstOrCreate(['name' => 'generar pdf informes']);
+        Permission::firstOrCreate(['name' => 'descargar informes']);
+
+        // ── FINANCIERO ───────────────────────────────────────────────────
         Permission::firstOrCreate(['name' => 'ver financiero']);
+        Permission::firstOrCreate(['name' => 'exportar financiero']);
 
-        // ── CREAR ROLES Y ASIGNAR PERMISOS ─────────────────────────────
+        // ── CADENA DE CUSTODIA ───────────────────────────────────────────
+        Permission::firstOrCreate(['name' => 'generar cadena custodia']);
 
-        // 👑 ADMIN — acceso total
+        // ── ASIGNAR PERMISOS A ROLES ─────────────────────────────────────
+
+        // Administrador — acceso total
         $admin = Role::firstOrCreate(['name' => 'admin']);
         $admin->syncPermissions(Permission::all());
 
-        // 🔧 TÉCNICO — clientes, parámetros, proformas, informes
+        // Técnico — gestión completa excepto roles/permisos
         $tecnico = Role::firstOrCreate(['name' => 'tecnico']);
         $tecnico->syncPermissions([
-            'ver usuarios',
+            'edit.profile', 'update.profile', 'update.password',
+
+            'ver usuarios', 'crear usuarios', 'editar usuarios', 'eliminar usuarios',
+            'restore usuarios', 'force-delete usuarios', 'ver papelera usuarios',
+
             'ver clientes', 'crear clientes', 'editar clientes', 'eliminar clientes',
+            'restore clientes', 'force-delete clientes', 'ver papelera clientes',
+            'registrar pago clientes', 'actualizar saldo clientes',
+
             'ver parametros', 'crear parametros', 'editar parametros', 'eliminar parametros',
+            'restore parametros', 'force-delete parametros', 'ver papelera parametros',
+
             'ver proformas', 'crear proformas', 'editar proformas', 'eliminar proformas',
+            'cambiar estado proformas', 'actualizar adelanto proformas',
+            'restore proformas', 'force-delete proformas', 'ver papelera proformas',
+            'generar pdf proformas',
+
+            'ver resultados', 'crear resultados', 'editar resultados',
+            'guardar resultados', 'cargar resultados', 'limpiar resultados',
+            'generar pdf resultados', 'generar informe resultados',
+
             'ver informes', 'crear informes', 'editar informes', 'eliminar informes',
-            'ver financiero',
+            'cambiar estado informes', 'restore informes', 'force-delete informes',
+            'ver papelera informes', 'generar pdf informes', 'descargar informes',
+
+            'ver financiero', 'exportar financiero',
+            'generar cadena custodia',
         ]);
 
-        // 🔬 ANALISTA — solo lectura + resultados de ensayo
+        // Analista — solo lectura + resultados
         $analista = Role::firstOrCreate(['name' => 'analista']);
         $analista->syncPermissions([
+            'edit.profile', 'update.profile', 'update.password',
+
+            'ver usuarios',
+
             'ver clientes',
             'ver parametros',
-            'ver proformas',
-            'ver informes',
+
+            'ver proformas', 'generar pdf proformas',
+
             'ver resultados', 'crear resultados', 'editar resultados',
+            'guardar resultados', 'cargar resultados', 'limpiar resultados',
+            'generar pdf resultados', 'generar informe resultados',
+
+            'ver informes', 'generar pdf informes',
+
             'ver financiero',
+            'generar cadena custodia',
         ]);
 
         // ── ASIGNAR ROLES A USUARIOS ────────────────────────────────────
 
-        // Admin
-        $user = User::where('email', 'marcela@cima.edu.bo')->first();
-        if ($user) $user->syncRoles('admin');
-
-        // Técnicos
-        foreach (['carla@cima.edu.bo', 'tatiana@cima.edu.bo', 'felix@cima.edu.bo'] as $email) {
+        foreach ([
+            'admin@cima.edu.bo' => 'admin',
+            'carla@cima.edu.bo' => 'tecnico',
+            'tatiana@cima.edu.bo' => 'tecnico',
+            'felix@cima.edu.bo' => 'tecnico',
+            'mayra@cima.edu.bo' => 'analista',
+            'elena@cima.edu.bo' => 'analista',
+            'yasmin@cima.edu.bo' => 'analista',
+        ] as $email => $role) {
             $user = User::where('email', $email)->first();
-            if ($user) $user->syncRoles('tecnico');
+            if ($user) {
+                $user->syncRoles($role);
+            }
         }
 
-        // Analistas
-        foreach (['mayra@cima.edu.bo', 'elena@cima.edu.bo', 'yasmin@cima.edu.bo'] as $email) {
-            $user = User::where('email', $email)->first();
-            if ($user) $user->syncRoles('analista');
-        }
-
-        $this->command->info('✅ Roles y permisos creados y asignados correctamente');
+        $this->command->info('Roles y permisos creados y asignados correctamente');
     }
 }

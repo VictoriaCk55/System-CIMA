@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Proforma;
 use App\Models\CadenaResultado;
+use App\Models\Proforma;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class ResultadosController extends Controller
 {
@@ -137,7 +137,7 @@ class ResultadosController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Resultados guardados correctamente'
+                'message' => 'Resultados guardados correctamente',
             ]);
 
         } catch (\Exception $e) {
@@ -147,7 +147,7 @@ class ResultadosController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error al guardar resultados',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -184,7 +184,7 @@ class ResultadosController extends Controller
             }
 
             $proforma = Proforma::find($id);
-            $tieneDatos = !empty($resultados) || !empty($responsables) || !empty($fechas) || !empty($vbs)
+            $tieneDatos = ! empty($resultados) || ! empty($responsables) || ! empty($fechas) || ! empty($vbs)
                 || ($proforma && ($proforma->fecha_inicio_ensayo || $proforma->fecha_conclusion_ensayo));
 
             return response()->json([
@@ -202,7 +202,7 @@ class ResultadosController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error al cargar resultados',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -227,14 +227,15 @@ class ResultadosController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Resultados eliminados correctamente'
+                'message' => 'Resultados eliminados correctamente',
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al limpiar resultados',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -291,12 +292,11 @@ class ResultadosController extends Controller
             )
         );
 
-
         // Configuración PDF
         $pdf->setPaper('letter', 'landscape');
 
         return $pdf->stream(
-            'resultados-ensayo-' . $proforma->codigo . '.pdf'
+            'resultados-ensayo-'.$proforma->codigo.'.pdf'
         );
     }
 
@@ -343,8 +343,7 @@ class ResultadosController extends Controller
         $pdf->setPaper('letter', 'portrait');
 
         return $pdf->stream(
-            'imprimir-' . $proforma->codigo . '.pdf'
+            'imprimir-'.$proforma->codigo.'.pdf'
         );
     }
-    
 }

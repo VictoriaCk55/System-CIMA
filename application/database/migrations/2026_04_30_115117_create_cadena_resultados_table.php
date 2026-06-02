@@ -11,11 +11,11 @@ return new class extends Migration
         Schema::create('cadena_resultados', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cadena_custodia_id')->constrained('cadenas_custodia')->onDelete('cascade');
-            
+
             // Puede vincularse al parámetro existente o ser libre
             $table->foreignId('parametro_id')->nullable()->constrained('parametros')->nullOnDelete();
             $table->string('parametro_nombre'); // copia por si el parámetro se edita después
-            
+
             // Resultados (Hoja 3)
             $table->string('metodo_ensayo')->nullable();
             $table->string('limite_cuantificacion')->nullable();
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->date('fecha_analisis')->nullable();
             $table->string('analizado_por')->nullable();
             $table->text('observaciones')->nullable();
-            
+
             $table->integer('orden')->default(0);
             $table->timestamps();
         });

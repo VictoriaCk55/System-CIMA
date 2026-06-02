@@ -1,18 +1,19 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ProformaController;
-use App\Http\Controllers\ClienteController;
-use App\Http\Controllers\ParametroController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\InformeController;
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\FinancieroController;
-use App\Http\Controllers\UserController;
-//use App\Http\Controllers\CadenaCustodiaController;
-//use App\Http\Controllers\BitacoraController; 
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InformeController;
+use App\Http\Controllers\ParametroController;
+use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProformaController;
 use App\Http\Controllers\ResultadosController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 // ==================== RUTAS PÚBLICAS ====================
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -21,155 +22,165 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
 // ==================== RUTAS PROTEGIDAS ====================
 Route::middleware(['auth'])->group(function () {
-    
+
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    
+
     // ========== PERFIL DE USUARIO ==========
     Route::prefix('profile')->name('profile.')->group(function () {
-        Route::get('/', [ProfileController::class, 'edit'])->name('edit');
-        Route::put('/', [ProfileController::class, 'update'])->name('update');
-        Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password');
+        Route::get('/', [ProfileController::class, 'edit'])->name('edit')->middleware('permission:edit.profile');
+        Route::put('/', [ProfileController::class, 'update'])->name('update')->middleware('permission:update.profile');
+        Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password')->middleware('permission:update.password');
     });
-    
+
     // ========== RUTAS DE BÚSQUEDA - PRIMERO (MUY IMPORTANTE) ==========
-    Route::get('/clientes/buscar', [ClienteController::class, 'buscar'])->name('clientes.buscar');
-    Route::get('/parametros/buscar', [ParametroController::class, 'buscar'])->name('parametros.buscar');
-    Route::get('/informes/buscar-proformas', [InformeController::class, 'buscarProformas'])->name('informes.buscar-proformas');
-    
+    Route::get('/clientes/buscar', [ClienteController::class, 'buscar'])->name('clientes.buscar')->middleware('permission:ver clientes');
+    Route::get('/parametros/buscar', [ParametroController::class, 'buscar'])->name('parametros.buscar')->middleware('permission:ver parametros');
+    Route::get('/informes/buscar-proformas', [InformeController::class, 'buscarProformas'])->name('informes.buscar-proformas')->middleware('permission:ver informes');
+
     // ========== RUTAS DE ADMIN (SOLO ADMINISTRADORES) ==========
     Route::middleware(['admin'])->group(function () {
-        
-        // ===== USUARIOS (SOLO ADMIN) =====
-        Route::resource('users', UserController::class)->except(['show']);
-        Route::get('/users/trash', [UserController::class, 'trash'])->name('users.trash');
-        Route::post('/users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
-        Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
-        
+
+        // ===== USUARIOS =====
+        Route::get('/users', [UserController::class, 'index'])->name('users.index')->middleware('permission:ver usuarios');
+        Route::get('/users/create', [UserController::class, 'create'])->name('users.create')->middleware('permission:crear usuarios');
+        Route::post('/users', [UserController::class, 'store'])->name('users.store')->middleware('permission:crear usuarios');
+        Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit')->middleware('permission:editar usuarios');
+        Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update')->middleware('permission:editar usuarios');
+        Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show')->middleware('permission:ver usuarios');
+
+        Route::get('/users/trash', [UserController::class, 'trash'])->name('users.trash')->middleware('permission:ver papelera usuarios');
+        Route::post('/users/{id}/restore', [UserController::class, 'restore'])->name('users.restore')->middleware('permission:restore usuarios');
+
         // Rutas de eliminación con protección de administrador único
         Route::middleware(['ensure.admin'])->group(function () {
-            Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
-            Route::delete('/users/{id}/force-delete', [UserController::class, 'forceDelete'])->name('users.force-delete');
+            Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy')->middleware('permission:eliminar usuarios');
+            Route::delete('/users/{id}/force-delete', [UserController::class, 'forceDelete'])->name('users.force-delete')->middleware('permission:force-delete usuarios');
         });
-        
+
+        // ===== ROLES Y PERMISOS (SPATIE) =====
+        Route::get('/roles', [RoleController::class, 'index'])->name('roles.index')->middleware('permission:ver roles');
+        Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create')->middleware('permission:crear roles');
+        Route::post('/roles', [RoleController::class, 'store'])->name('roles.store')->middleware('permission:crear roles');
+        Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])->name('roles.edit')->middleware('permission:editar roles');
+        Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update')->middleware('permission:editar roles');
+        Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy')->middleware('permission:eliminar roles');
+
+        Route::get('/permissions', [PermissionController::class, 'index'])->name('permissions.index')->middleware('permission:ver permisos');
+        Route::get('/permissions/create', [PermissionController::class, 'create'])->name('permissions.create')->middleware('permission:crear permisos');
+        Route::post('/permissions', [PermissionController::class, 'store'])->name('permissions.store')->middleware('permission:crear permisos');
+        Route::get('/permissions/{permission}/edit', [PermissionController::class, 'edit'])->name('permissions.edit')->middleware('permission:editar permisos');
+        Route::put('/permissions/{permission}', [PermissionController::class, 'update'])->name('permissions.update')->middleware('permission:editar permisos');
+        Route::delete('/permissions/{permission}', [PermissionController::class, 'destroy'])->name('permissions.destroy')->middleware('permission:eliminar permisos');
+
         // ===== CLIENTES =====
-        Route::get('/clientes/create', [ClienteController::class, 'create'])->name('clientes.create');
-        Route::post('/clientes', [ClienteController::class, 'store'])->name('clientes.store');
-        Route::get('/clientes/{cliente}/edit', [ClienteController::class, 'edit'])->name('clientes.edit');
-        Route::put('/clientes/{cliente}', [ClienteController::class, 'update'])->name('clientes.update');
-        Route::delete('/clientes/{cliente}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
-        Route::post('/clientes/api', [ClienteController::class, 'storeApi'])->name('clientes.api.store');
-        
+        Route::get('/clientes/create', [ClienteController::class, 'create'])->name('clientes.create')->middleware('permission:crear clientes');
+        Route::post('/clientes', [ClienteController::class, 'store'])->name('clientes.store')->middleware('permission:crear clientes');
+        Route::get('/clientes/{cliente}/edit', [ClienteController::class, 'edit'])->name('clientes.edit')->middleware('permission:editar clientes');
+        Route::put('/clientes/{cliente}', [ClienteController::class, 'update'])->name('clientes.update')->middleware('permission:editar clientes');
+        Route::delete('/clientes/{cliente}', [ClienteController::class, 'destroy'])->name('clientes.destroy')->middleware('permission:eliminar clientes');
+        Route::post('/clientes/api', [ClienteController::class, 'storeApi'])->name('clientes.api.store')->middleware('permission:crear clientes');
+
         // PAPELERA DE CLIENTES
-        Route::get('/clientes/trash', [ClienteController::class, 'trash'])->name('clientes.trash');
-        Route::post('/clientes/{id}/restore', [ClienteController::class, 'restore'])->name('clientes.restore');
-        Route::delete('/clientes/{id}/force-delete', [ClienteController::class, 'forceDelete'])->name('clientes.force-delete');
-        
+        Route::get('/clientes/trash', [ClienteController::class, 'trash'])->name('clientes.trash')->middleware('permission:ver papelera clientes');
+        Route::post('/clientes/{id}/restore', [ClienteController::class, 'restore'])->name('clientes.restore')->middleware('permission:restore clientes');
+        Route::delete('/clientes/{id}/force-delete', [ClienteController::class, 'forceDelete'])->name('clientes.force-delete')->middleware('permission:force-delete clientes');
+
         // NUEVAS RUTAS PARA PAGOS MANUALES Y ACTUALIZAR SALDO
-        Route::post('/clientes/{id}/registrar-pago', [ClienteController::class, 'registrarPago'])->name('clientes.registrar-pago');
-        Route::post('/clientes/{id}/actualizar-saldo', [ClienteController::class, 'actualizarSaldo'])->name('clientes.actualizar-saldo');
-        
+        Route::post('/clientes/{id}/registrar-pago', [ClienteController::class, 'registrarPago'])->name('clientes.registrar-pago')->middleware('permission:registrar pago clientes');
+        Route::post('/clientes/{id}/actualizar-saldo', [ClienteController::class, 'actualizarSaldo'])->name('clientes.actualizar-saldo')->middleware('permission:actualizar saldo clientes');
+
         // ===== PARÁMETROS =====
-        Route::get('/parametros/create', [ParametroController::class, 'create'])->name('parametros.create');
-        Route::post('/parametros', [ParametroController::class, 'store'])->name('parametros.store');
-        Route::get('/parametros/{parametro}/edit', [ParametroController::class, 'edit'])->name('parametros.edit');
-        Route::put('/parametros/{parametro}', [ParametroController::class, 'update'])->name('parametros.update');
-        Route::delete('/parametros/{parametro}', [ParametroController::class, 'destroy'])->name('parametros.destroy');
-        
+        Route::get('/parametros/create', [ParametroController::class, 'create'])->name('parametros.create')->middleware('permission:crear parametros');
+        Route::post('/parametros', [ParametroController::class, 'store'])->name('parametros.store')->middleware('permission:crear parametros');
+        Route::get('/parametros/{parametro}/edit', [ParametroController::class, 'edit'])->name('parametros.edit')->middleware('permission:editar parametros');
+        Route::put('/parametros/{parametro}', [ParametroController::class, 'update'])->name('parametros.update')->middleware('permission:editar parametros');
+        Route::delete('/parametros/{parametro}', [ParametroController::class, 'destroy'])->name('parametros.destroy')->middleware('permission:eliminar parametros');
+
         // PAPELERA DE PARÁMETROS
-        Route::get('/parametros/trash', [ParametroController::class, 'trash'])->name('parametros.trash');
-        Route::post('/parametros/{id}/restore', [ParametroController::class, 'restore'])->name('parametros.restore');
-        Route::delete('/parametros/{id}/force-delete', [ParametroController::class, 'forceDelete'])->name('parametros.force-delete');
-        
+        Route::get('/parametros/trash', [ParametroController::class, 'trash'])->name('parametros.trash')->middleware('permission:ver papelera parametros');
+        Route::post('/parametros/{id}/restore', [ParametroController::class, 'restore'])->name('parametros.restore')->middleware('permission:restore parametros');
+        Route::delete('/parametros/{id}/force-delete', [ParametroController::class, 'forceDelete'])->name('parametros.force-delete')->middleware('permission:force-delete parametros');
+
         // ===== PROFORMAS =====
-        Route::get('/proformas/create', [ProformaController::class, 'create'])->name('proformas.create');
-        Route::post('/proformas', [ProformaController::class, 'store'])->name('proformas.store');
-        Route::get('/proformas/{proforma}/edit', [ProformaController::class, 'edit'])->name('proformas.edit');
-        Route::put('/proformas/{proforma}', [ProformaController::class, 'update'])->name('proformas.update');
-        Route::delete('/proformas/{proforma}', [ProformaController::class, 'destroy'])->name('proformas.destroy');
-        Route::post('/proformas/{proforma}/cambiar-estado', [ProformaController::class, 'cambiarEstado'])->name('proformas.cambiar-estado');
-        
+        Route::get('/proformas/create', [ProformaController::class, 'create'])->name('proformas.create')->middleware('permission:crear proformas');
+        Route::post('/proformas', [ProformaController::class, 'store'])->name('proformas.store')->middleware('permission:crear proformas');
+        Route::get('/proformas/{proforma}/edit', [ProformaController::class, 'edit'])->name('proformas.edit')->middleware('permission:editar proformas');
+        Route::put('/proformas/{proforma}', [ProformaController::class, 'update'])->name('proformas.update')->middleware('permission:editar proformas');
+        Route::delete('/proformas/{proforma}', [ProformaController::class, 'destroy'])->name('proformas.destroy')->middleware('permission:eliminar proformas');
+        Route::post('/proformas/{proforma}/cambiar-estado', [ProformaController::class, 'cambiarEstado'])->name('proformas.cambiar-estado')->middleware('permission:cambiar estado proformas');
+
         // RUTA PARA ACTUALIZAR SOLO ADELANTO
-        Route::put('/proformas/{proforma}/actualizar-adelanto', [ProformaController::class, 'actualizarAdelanto'])->name('proformas.actualizar-adelanto');
-        
+        Route::put('/proformas/{proforma}/actualizar-adelanto', [ProformaController::class, 'actualizarAdelanto'])->name('proformas.actualizar-adelanto')->middleware('permission:actualizar adelanto proformas');
+
         // PAPELERA DE PROFORMAS
-        Route::get('/proformas/trash', [ProformaController::class, 'trash'])->name('proformas.trash');
-        Route::post('/proformas/{id}/restore', [ProformaController::class, 'restore'])->name('proformas.restore');
-        Route::delete('/proformas/{id}/force-delete', [ProformaController::class, 'forceDelete'])->name('proformas.force-delete');
-        
+        Route::get('/proformas/trash', [ProformaController::class, 'trash'])->name('proformas.trash')->middleware('permission:ver papelera proformas');
+        Route::post('/proformas/{id}/restore', [ProformaController::class, 'restore'])->name('proformas.restore')->middleware('permission:restore proformas');
+        Route::delete('/proformas/{id}/force-delete', [ProformaController::class, 'forceDelete'])->name('proformas.force-delete')->middleware('permission:force-delete proformas');
+
         // ===== INFORMES =====
-        Route::get('/informes/create', [InformeController::class, 'create'])->name('informes.create');
-        Route::post('/informes', [InformeController::class, 'store'])->name('informes.store');
-        Route::get('/informes/{informe}/edit', [InformeController::class, 'edit'])->name('informes.edit');
-        Route::put('/informes/{informe}', [InformeController::class, 'update'])->name('informes.update');
-        Route::delete('/informes/{informe}', [InformeController::class, 'destroy'])->name('informes.destroy');
-        Route::post('/informes/{informe}/cambiar-estado', [InformeController::class, 'cambiarEstado'])->name('informes.cambiar-estado');
-        
+        Route::get('/informes/create', [InformeController::class, 'create'])->name('informes.create')->middleware('permission:crear informes');
+        Route::post('/informes', [InformeController::class, 'store'])->name('informes.store')->middleware('permission:crear informes');
+        Route::get('/informes/{informe}/edit', [InformeController::class, 'edit'])->name('informes.edit')->middleware('permission:editar informes');
+        Route::put('/informes/{informe}', [InformeController::class, 'update'])->name('informes.update')->middleware('permission:editar informes');
+        Route::delete('/informes/{informe}', [InformeController::class, 'destroy'])->name('informes.destroy')->middleware('permission:eliminar informes');
+        Route::post('/informes/{informe}/cambiar-estado', [InformeController::class, 'cambiarEstado'])->name('informes.cambiar-estado')->middleware('permission:cambiar estado informes');
+
         // PAPELERA DE INFORMES
-        Route::get('/informes/trash', [InformeController::class, 'trash'])->name('informes.trash');
-        Route::post('/informes/{id}/restore', [InformeController::class, 'restore'])->name('informes.restore');
-        Route::delete('/informes/{id}/force-delete', [InformeController::class, 'forceDelete'])->name('informes.force-delete');
+        Route::get('/informes/trash', [InformeController::class, 'trash'])->name('informes.trash')->middleware('permission:ver papelera informes');
+        Route::post('/informes/{id}/restore', [InformeController::class, 'restore'])->name('informes.restore')->middleware('permission:restore informes');
+        Route::delete('/informes/{id}/force-delete', [InformeController::class, 'forceDelete'])->name('informes.force-delete')->middleware('permission:force-delete informes');
+
+        // ===== CONFIGURACIONES =====
+        Route::get('/configuraciones/{documento?}', [ConfiguracionController::class, 'index'])->name('configuraciones.index');
+        Route::put('/configuraciones/{documento}', [ConfiguracionController::class, 'update'])->name('configuraciones.update');
     });
-    
+
     // ========== RUTAS DE LECTURA (TODOS LOS USUARIOS) ==========
-    
+
     // CLIENTES - Lectura
-    Route::get('/clientes', [ClienteController::class, 'index'])->name('clientes.index');
-    Route::get('/clientes/{cliente}', [ClienteController::class, 'show'])->name('clientes.show');
-    
+    Route::get('/clientes', [ClienteController::class, 'index'])->name('clientes.index')->middleware('role:admin|tecnico|analista');
+    Route::get('/clientes/{cliente}', [ClienteController::class, 'show'])->name('clientes.show')->middleware('permission:ver clientes');
+
     // PARÁMETROS - Lectura
-    Route::get('/parametros', [ParametroController::class, 'index'])->name('parametros.index');
-    Route::get('/parametros/{parametro}', [ParametroController::class, 'show'])->name('parametros.show');
-    
+    Route::get('/parametros', [ParametroController::class, 'index'])->name('parametros.index')->middleware('role:admin|tecnico|analista');
+    Route::get('/parametros/{parametro}', [ParametroController::class, 'show'])->name('parametros.show')->middleware('permission:ver parametros');
+
     // PROFORMAS - Lectura
-    Route::get('/proformas', [ProformaController::class, 'index'])->name('proformas.index');
-    Route::get('/proformas/{proforma}', [ProformaController::class, 'show'])->name('proformas.show');
-    Route::get('/proformas/{proforma}/pdf', [ProformaController::class, 'pdf'])->name('proformas.pdf');
+    Route::get('/proformas', [ProformaController::class, 'index'])->name('proformas.index')->middleware('role:admin|tecnico|analista');
+    Route::get('/proformas/{proforma}', [ProformaController::class, 'show'])->name('proformas.show')->middleware('permission:ver proformas');
+    Route::get('/proformas/{proforma}/pdf', [ProformaController::class, 'pdf'])->name('proformas.pdf')->middleware('permission:generar pdf proformas');
 
     // ========== RUTA DE RESULTADOS DE ENSAYO ==========
-    Route::get('/resultados/{id}', [ResultadosController::class, 'index'])->name('resultados.index');
-    Route::post('/resultados/{id}/guardar', [ResultadosController::class, 'guardarResultados'])->name('resultados.guardar');
-    Route::get('/resultados/{id}/cargar', [ResultadosController::class, 'cargarResultados'])->name('resultados.cargar');
-    //Route::get('/proforma/{proforma}/resultados-pdf', [ResultadosEnsayoController::class, 'exportarPDF'])->name('resultados.pdf');
-    Route::get( '/proformas/{id}/resultados-pdf', [ResultadosController::class, 'generarPdfResultados'] )->name('proformas.resultados.pdf');
-    //pruebas
-   // Route::post('/proformas/{id}/guardar-resultados', [ProformaController::class, 'guardarResultados'])->name('proformas.guardar-resultados');
-   // Route::get('/proformas/{id}/cargar-resultados', [ProformaController::class, 'cargarResultados'])->name('proformas.cargar-resultados');
-    Route::post('/proformas/{id}/limpiar-resultados', [ResultadosController::class, 'limpiarResultados'])->name('proformas.limpiar-resultados');
-    
-    Route::get('/proformas/{id}/resultados', [ResultadosController::class, 'index'])->name('proformas.resultados');
-    Route::post('/proformas/{id}/resultados/guardar', [ResultadosController::class, 'guardarResultados'])->name('proformas.resultados.guardar');
-    Route::get('/proformas/{id}/resultados/cargar', [ResultadosController::class, 'cargarResultados'])->name('proformas.resultados.cargar');
-    Route::get('/proformas/{id}/resultados/pdf', [ResultadosController::class, 'generarPdfResultados'])->name('proformas.resultados.pdf');
-    Route::get('/proformas/{id}/imprimir-resultados', [ResultadosController::class, 'imprimirResultados'])->name('proformas.informe-resultados-pdf');
+    Route::get('/resultados/{id}', [ResultadosController::class, 'index'])->name('resultados.index')->middleware('role:admin|analista');
+    Route::post('/resultados/{id}/guardar', [ResultadosController::class, 'guardarResultados'])->name('resultados.guardar')->middleware('permission:guardar resultados');
+    Route::get('/resultados/{id}/cargar', [ResultadosController::class, 'cargarResultados'])->name('resultados.cargar')->middleware('permission:cargar resultados');
+    Route::post('/proformas/{id}/limpiar-resultados', [ResultadosController::class, 'limpiarResultados'])->name('proformas.limpiar-resultados')->middleware('permission:limpiar resultados');
+
+    Route::get('/proformas/{id}/resultados', [ResultadosController::class, 'index'])->name('proformas.resultados')->middleware('role:admin|analista');
+    Route::post('/proformas/{id}/resultados/guardar', [ResultadosController::class, 'guardarResultados'])->name('proformas.resultados.guardar')->middleware('permission:guardar resultados');
+    Route::get('/proformas/{id}/resultados/cargar', [ResultadosController::class, 'cargarResultados'])->name('proformas.resultados.cargar')->middleware('permission:cargar resultados');
+    Route::get('/proformas/{id}/resultados/pdf', [ResultadosController::class, 'generarPdfResultados'])->name('proformas.resultados.pdf')->middleware('permission:generar pdf resultados');
+    Route::get('/proformas/{id}/imprimir-resultados', [ResultadosController::class, 'imprimirResultados'])->name('proformas.informe-resultados-pdf')->middleware('permission:generar informe resultados');
 
     // INFORMES - Lectura
-    Route::get('/informes', [InformeController::class, 'index'])->name('informes.index');
-    Route::get('/informes/{informe}', [InformeController::class, 'show'])->name('informes.show');
-    Route::get('/informes/{informe}/pdf', [InformeController::class, 'pdf'])->name('informes.pdf');
-    Route::get('/informes/{informe}/descargar/{tipo}', [InformeController::class, 'descargarArchivo'])->name('informes.descargar');
-    
+    Route::get('/informes', [InformeController::class, 'index'])->name('informes.index')->middleware('role:admin|tecnico|analista');
+    Route::get('/informes/{informe}', [InformeController::class, 'show'])->name('informes.show')->middleware('permission:ver informes');
+    Route::get('/informes/{informe}/pdf', [InformeController::class, 'pdf'])->name('informes.pdf')->middleware('permission:generar pdf informes');
+    Route::get('/informes/{informe}/descargar/{tipo}', [InformeController::class, 'descargarArchivo'])->name('informes.descargar')->middleware('permission:descargar informes');
+
     // ========== RUTAS DEL MÓDULO FINANCIERO ==========
     Route::prefix('financiero')->name('financiero.')->group(function () {
-        Route::get('/', [FinancieroController::class, 'index'])->name('index');
-        Route::get('/cliente/{cliente}', [FinancieroController::class, 'cliente'])->name('cliente');
-        Route::get('/exportar', [FinancieroController::class, 'exportar'])->name('exportar');
+        Route::get('/', [FinancieroController::class, 'index'])->name('index')->middleware('role:admin|tecnico|analista');
+        Route::get('/cliente/{cliente}', [FinancieroController::class, 'cliente'])->name('cliente')->middleware('role:admin|tecnico|analista');
+        Route::get('/exportar', [FinancieroController::class, 'exportar'])->name('exportar')->middleware('permission:exportar financiero');
     });
-    
-    // ========== BITÁCORA (SOLO ADMIN - AGREGADO NUEVO) ==========
-   // Route::middleware(['admin'])->prefix('bitacora')->name('bitacora.')->group(function () {
-       // Route::get('/', [BitacoraController::class, 'index'])->name('index');
-       // Route::get('/{bitacora}', [BitacoraController::class, 'show'])->name('show');
-        //Route::get('/export/csv', [BitacoraController::class, 'export'])->name('export');
-   // });
 });
 
 // ========== RUTA DE FALLBACK ==========
 Route::fallback(function () {
     return redirect()->route('home')
-        ->with('error', '⛔ La página que buscas no existe.');
+        ->with('error', 'La pagina que buscas no existe.');
 });
 
-// ==========================================
-// CADENA DE CUSTODIA - MÓDULO NUEVO
-// ==========================================
-Route::get('proformas/{proforma}/cadena-custodia', [ProformaController::class, 'pdfCadenaCustodia'])->name('proformas.cadena-custodia');
+// ========== CADENA DE CUSTODIA ==========
+Route::get('proformas/{proforma}/cadena-custodia', [ProformaController::class, 'pdfCadenaCustodia'])->name('proformas.cadena-custodia')->middleware('permission:generar cadena custodia');

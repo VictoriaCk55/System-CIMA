@@ -12,7 +12,7 @@
         }
 
         body{
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: "Times New Roman", Times, serif;
             font-size: 10px;
             color: #000;
         }
@@ -211,7 +211,13 @@
 
                 <div class="logo-container">
 
-                    @if(file_exists(public_path('images/logo-cima.jpg')))
+                    @php
+                        $cfg = \App\Models\Documento::whereSlug('cadena-custodia')->first() ?? new \App\Models\Documento;
+                        $logo = $cfg->config('logo_path');
+                    @endphp
+                    @if($logo && file_exists(storage_path('app/public/' . $logo)))
+                        <img src="{{ storage_path('app/public/' . $logo) }}" alt="Logo">
+                    @elseif(file_exists(public_path('images/logo-cima.jpg')))
                         <img src="{{ public_path('images/logo-cima.jpg') }}" alt="Logo">
                     @elseif(file_exists(public_path('images/logo-cima.png')))
                         <img src="{{ public_path('images/logo-cima.png') }}" alt="Logo">
@@ -232,7 +238,7 @@
 
             <!-- CODIGO -->
             <td class="codigo-cell" style="width:35mm;">
-                <strong>PO04-FR01</strong>
+                <strong>{{ $cfg->codigo_documento }}</strong>
             </td>
 
         </tr>
@@ -240,7 +246,7 @@
         <tr>
 
             <td class="codigo-cell">
-                VERSIÓN: 05
+                VERSIÓN: {{ $cfg->version }}
             </td>
 
         </tr>
@@ -248,7 +254,7 @@
         <tr>
 
             <td class="codigo-cell">
-                FECHA: 2024-08-15
+                FECHA: {{ $cfg->fecha_documento }}
             </td>
 
         </tr>
@@ -458,8 +464,7 @@
                 <td class="w-small vertical">
 
                     <span class="vertical-text">
-
-                        {{ $proforma->parametros[$i]->metodo ?? '' }}
+                        {{ $proforma->parametros[$i]->tecnica ?? '' }}
 
                     </span>
 
@@ -498,7 +503,7 @@
 
             <!-- IDENTIFICACION -->
             <td colspan="4">
-                {{ $fila == 0 ? $proforma->procedencia : '' }}
+                {{ $cliente->codigo_cliente ?? '---' }}
             </td>
 
             <!-- CODIGO -->
@@ -578,8 +583,22 @@
         </tr>
 
         @endfor
+        
 
     </table>
+        <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+            <tr>
+                <td style="border:1px solid black; padding:5px; font-size: 12px; background-color: #2c5282; color: #fff">
+                    <strong>OBSERVACIONES</strong>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="border:1px solid black; height:100px;">
+                    {{ $observacion ?? '' }}
+                </td>
+            </tr>
+        </table>
 
 </body>
 

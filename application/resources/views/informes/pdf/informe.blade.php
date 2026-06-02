@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>INFORME {{ $informe->codigo }} - CIMA</title>
+    @php $cfg = \App\Models\Documento::whereSlug('informe-final')->first() ?? new \App\Models\Documento; @endphp
+    <title>INFORME {{ $informe->codigo }} - {{ $cfg->config('institucion_sigla', 'CIMA') }}</title>
     <style>
         /* ========== CONFIGURACIÓN BASE ========== */
         @page {
@@ -11,7 +12,7 @@
         }
         
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: "Times New Roman", Times, serif;
             font-size: 11px;
             line-height: 1.3;
             color: #000;
@@ -350,15 +351,16 @@
             <td class="logo-cell">
                 <div class="logo-container">
                     @php
-                        $logoPath = public_path('images/logo-cima.jpg');
-                        $logoExists = file_exists($logoPath);
+                        $logo = $cfg->config('logo_path');
                     @endphp
-                    @if($logoExists)
-                        <img src="{{ $logoPath }}" alt="Logo CIMA">
+                    @if($logo && file_exists(storage_path('app/public/' . $logo)))
+                        <img src="{{ storage_path('app/public/' . $logo) }}" alt="Logo">
+                    @elseif(file_exists(public_path('images/logo-cima.jpg')))
+                        <img src="{{ public_path('images/logo-cima.jpg') }}" alt="Logo CIMA">
                     @elseif(file_exists(public_path('images/logo-cima.png')))
                         <img src="{{ public_path('images/logo-cima.png') }}" alt="Logo CIMA">
                     @else
-                        <div style="width: 85px; height: 85px; background: #2c5282; color: white; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold;">CIMA</div>
+                        <div style="width: 85px; height: 85px; background: #2c5282; color: white; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold;">{{ $cfg->config('institucion_sigla', 'CIMA') }}</div>
                     @endif
                 </div>
             </td>
@@ -366,11 +368,11 @@
             <!-- Título centrado -->
             <td class="center-cell">
                 <h1>INFORME TÉCNICO</h1>
-                <h2>CENTRO DE INVESTIGACIÓN MINERO AMBIENTAL</h2>
-                <h3>Unidad de Análisis Químico "UAQ"</h3>
+                <h2>{{ strtoupper($cfg->config('laboratorio_nombre')) }}</h2>
+                <h3>{{ $cfg->config('footer_texto') }}</h3>
                 
                 <div class="document-subtitle">
-                    ANÁLISIS QUÍMICO - BACTERIOLÓGICO: AGUAS, SUELOS, SEDIMENTOS Y MINERALES
+                    {{ $cfg->config('footer_texto') }}
                 </div>
                 
                 <div class="document-options">
@@ -384,7 +386,7 @@
             <td class="codigo-cell">
                 <div class="codigo-box">
                     <div><strong>{{ $informe->codigo }}</strong></div>
-                    <div>VERSIÓN: 01</div>
+                    <div>VERSIÓN: {{ $cfg->version }}</div>
                     <div>FECHA: {{ $informe->fecha_emision->format('Y-m-d') }}</div>
                 </div>
             </td>
@@ -603,16 +605,16 @@
                 <div class="signature-line"></div>
                 <div class="signature-text">
                     <div style="height: 25px;">&nbsp;</div>
-                    Responsable Técnico<br>
-                    Centro de Investigación Minero Ambiental
+                    {{ $cfg->config('responsable_nombre') }}<br>
+                    {{ $cfg->config('responsable_cargo') }}
                 </div>
             </td>
             <td>
                 <div class="signature-line"></div>
                 <div class="signature-text">
                     <div style="height: 25px;">&nbsp;</div>
-                    Director<br>
-                    Centro de Investigación Minero Ambiental
+                    {{ $cfg->config('director_nombre') }}<br>
+                    {{ $cfg->config('director_cargo') }}
                 </div>
             </td>
         </tr>
@@ -622,14 +624,14 @@
     <div style="font-size: 10px; margin-top: 20px; padding: 8px; background-color: #f8f9fa; border-radius: 3px; border-left: 3px solid #2c5282;">
         <p><strong>Nota 1:</strong> Este informe es válido únicamente con las firmas correspondientes.</p>
         <p><strong>Nota 2:</strong> Los resultados reportados corresponden exclusivamente a las muestras analizadas.</p>
-        <p><strong>Nota 3:</strong> Prohibida la reproducción parcial de este informe sin autorización del CIMA.</p>
+        <p><strong>Nota 3:</strong> Prohibida la reproducción parcial de este informe sin autorización del {{ $cfg->config('institucion_sigla', 'CIMA') }}.</p>
     </div>
 
     <!-- ========== FOOTER ========== -->
     <div class="footer">
-        <p><strong>Centro de Investigación Minero Ambiental (CIMA)</strong></p>
-        <p>Av. Arce esq. Villazón s/n; Edificio Facultad de Ingeniería Minera Subsuelo, Universidad Autónoma "Tomás Frías"</p>
-        <p>Teléfono/Fax: 6229711 | Email: cima@cima.edu.bo</p>
+        <p><strong>{{ $cfg->config('institucion_nombre') }}</strong></p>
+        <p>{{ $cfg->config('footer_direccion') }}</p>
+        <p>{{ $cfg->config('footer_telefono') }} | {{ $cfg->config('footer_email') }}</p>
         <p class="mt-10" style="font-size: 8px; color: #999;">
             Informe generado el {{ now()->format('d/m/Y H:i:s') }} - Código: {{ $informe->codigo }} | Proforma: {{ $informe->proforma->codigo ?? 'N/A' }}
         </p>

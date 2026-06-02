@@ -15,6 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('nombre');
             $table->string('metodo');
+            $table->string('codigo_poe')->nullable();
+            $table->string('limite_cuantificacion')->nullable();
+            $table->string('unidad')->nullable();
+            $table->string('matriz')->nullable();
+            $table->string('tecnica')->nullable();
             $table->decimal('precio_unitario', 12, 2);
             $table->enum('tipo', ['AMBIENTAL', 'AGUA', 'INVESTIGACION']);
             $table->timestamps();

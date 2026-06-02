@@ -16,9 +16,9 @@ trait RegistraMovimientoFinanciero
         $ultimoMovimiento = MovimientoFinanciero::where('cliente_id', $clienteId)
             ->latest()
             ->first();
-        
+
         $saldoAnterior = $ultimoMovimiento ? $ultimoMovimiento->saldo_cliente : 0;
-        
+
         // Calcular nuevo saldo según tipo
         switch ($tipo) {
             case 'DEUDA':
@@ -34,7 +34,7 @@ trait RegistraMovimientoFinanciero
             default:
                 $nuevoSaldo = $saldoAnterior;
         }
-        
+
         return MovimientoFinanciero::create([
             'origen_id' => $origen->id,
             'origen_type' => get_class($origen),

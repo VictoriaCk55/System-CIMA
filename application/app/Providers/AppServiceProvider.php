@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,10 +20,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Configurar paginación Bootstrap 5
         Paginator::useBootstrapFive();
-        
-        // Opcional: Si quieres usar una vista personalizada
-        // Paginator::defaultView('vendor.pagination.bootstrap-5');
     }
 }

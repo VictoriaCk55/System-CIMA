@@ -76,7 +76,7 @@ class Proforma extends Model
     ];
 
     // ========== ACCESSORS ==========
-    
+
     public function getEstadoTextoAttribute()
     {
         return self::ESTADOS[$this->estado] ?? $this->estado;
@@ -84,7 +84,7 @@ class Proforma extends Model
 
     public function getEstadoColorAttribute()
     {
-        return match($this->estado) {
+        return match ($this->estado) {
             'BORRADOR' => 'secondary',
             'ENVIADA' => 'info',
             'APROBADA' => 'success',
@@ -96,7 +96,7 @@ class Proforma extends Model
 
     public function getEstadoIconoAttribute()
     {
-        return match($this->estado) {
+        return match ($this->estado) {
             'BORRADOR' => 'fa-edit',
             'ENVIADA' => 'fa-paper-plane',
             'APROBADA' => 'fa-check-circle',
@@ -114,16 +114,16 @@ class Proforma extends Model
     {
         // Obtener el tipo abreviado
         $tipoAbr = self::TIPOS[$tipo] ?? 'GEN';
-        
+
         // Si no hay unidad, usar 'GEN'
         $unidadAbr = $unidad ?? 'GEN';
-        
+
         // Buscar el último número para esta combinación unidad-tipo
         // Buscar en formato nuevo: {unidad}-{tipo}-{numero}
-        $ultimo = self::where('codigo', 'LIKE', $unidadAbr . '-' . $tipoAbr . '-%')
+        $ultimo = self::where('codigo', 'LIKE', $unidadAbr.'-'.$tipoAbr.'-%')
             ->orderBy('id', 'desc')
             ->first();
-        
+
         if ($ultimo) {
             $partes = explode('-', $ultimo->codigo);
             $ultimoNumero = intval(end($partes));
@@ -131,11 +131,11 @@ class Proforma extends Model
         } else {
             // Si no hay códigos con el nuevo formato, buscar en formato antiguo
             // Formato antiguo: {numero}-{tipo} (ejemplo: 001-INV)
-            $ultimoAntiguo = self::where('codigo', 'LIKE', '%-' . $tipoAbr)
+            $ultimoAntiguo = self::where('codigo', 'LIKE', '%-'.$tipoAbr)
                 ->where('codigo', 'NOT LIKE', '%-%-%')
                 ->orderBy('id', 'desc')
                 ->first();
-            
+
             if ($ultimoAntiguo) {
                 // Extraer el número del formato antiguo
                 $partes = explode('-', $ultimoAntiguo->codigo);
@@ -145,11 +145,11 @@ class Proforma extends Model
                 $nuevoNumero = 1;
             }
         }
-        
-        return $unidadAbr . '-' . $tipoAbr . '-' . str_pad($nuevoNumero, 3, '0', STR_PAD_LEFT);
+
+        return $unidadAbr.'-'.$tipoAbr.'-'.str_pad($nuevoNumero, 3, '0', STR_PAD_LEFT);
     }
 
-     /**
+    /**
      * =====================================================
      * GENERAR CODIGO DE LABORATORIO
      * =====================================================
@@ -157,7 +157,6 @@ class Proforma extends Model
      * UAQ-1-024-1
      * [UNIDAD]-[TIPO]-[RECEPCION]-[MUESTRA]
      */
-
     public function generarCodigoLaboratorio($numeroMuestra = 1)
     {
 
@@ -216,17 +215,16 @@ class Proforma extends Model
         */
 
         return $unidad
-            . '-'
-            . $tipoCodigo
-            . '-'
-            . $recepcion
-            . '-'
-            . $numeroMuestra;
+            .'-'
+            .$tipoCodigo
+            .'-'
+            .$recepcion
+            .'-'
+            .$numeroMuestra;
     }
 
-
     // ========== SCOPES ==========
-    
+
     public function scopePorEstado($query, $estado)
     {
         return $query->where('estado', $estado);
@@ -251,8 +249,8 @@ class Proforma extends Model
     public function parametros()
     {
         return $this->belongsToMany(Parametro::class, 'proforma_parametro')
-                    ->withPivot('cantidad_muestras', 'precio_unitario')
-                    ->withTimestamps();
+            ->withPivot('cantidad_muestras', 'precio_unitario')
+            ->withTimestamps();
     }
 
     public function informe()
@@ -274,22 +272,22 @@ class Proforma extends Model
     public function calcularTotales()
     {
         $subtotal = 0;
-        
+
         foreach ($this->parametros as $parametro) {
             $subtotal += $parametro->pivot->precio_unitario * $parametro->pivot->cantidad_muestras;
         }
-        
+
         $this->aplica_descuento_institucional = ($this->tipo == 'INVESTIGACION');
         $descuento = $this->aplica_descuento_institucional ? $subtotal * 0.20 : 0;
-        
+
         $total = $subtotal - $descuento;
         $saldo = $total - $this->adelanto;
-        
+
         $this->subtotal = $subtotal;
         $this->descuento = $descuento;
         $this->total = $total;
         $this->saldo = $saldo;
-        
+
         return $this;
     }
 }

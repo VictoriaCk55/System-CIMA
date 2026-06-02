@@ -1,7 +1,9 @@
 <?php
+
 namespace Database\Seeders;
-use Illuminate\Database\Seeder;
+
 use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
@@ -14,7 +16,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Carla Salinas',
                 'password' => Hash::make('cima2026'),
-                'role' => 'admin'
+                'role' => 'admin',
             ]
         );
 
@@ -24,7 +26,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Carla S',
                 'password' => Hash::make('tecnico123'),
-                'role' => 'tecnico'
+                'role' => 'tecnico',
             ]
         );
         User::firstOrCreate(
@@ -32,7 +34,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Tatiana Canaza',
                 'password' => Hash::make('tecnico123'),
-                'role' => 'tecnico'
+                'role' => 'tecnico',
             ]
         );
         User::firstOrCreate(
@@ -40,7 +42,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Felix Rodriguez',
                 'password' => Hash::make('tecnico123'),
-                'role' => 'tecnico'
+                'role' => 'tecnico',
             ]
         );
 
@@ -50,7 +52,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Mayra Calderon',
                 'password' => Hash::make('analista123'),
-                'role' => 'analista'
+                'role' => 'analista',
             ]
         );
         User::firstOrCreate(
@@ -58,7 +60,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Elena Uño',
                 'password' => Hash::make('analista123'),
-                'role' => 'analista'
+                'role' => 'analista',
             ]
         );
         User::firstOrCreate(
@@ -66,7 +68,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Yasmin Choque',
                 'password' => Hash::make('analista123'),
-                'role' => 'analista'
+                'role' => 'analista',
             ]
         );
 

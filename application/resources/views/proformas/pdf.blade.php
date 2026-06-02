@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROFORMA {{ $proforma->codigo }} - CIMA</title>
+    @php $cfg = \App\Models\Documento::whereSlug('solicitud-ensayo')->first() ?? new \App\Models\Documento; @endphp
+    <title>PROFORMA {{ $proforma->codigo }} - {{ $cfg->config('institucion_sigla', 'CIMA') }}</title>
     <style>
         /* CONFIGURACIÓN BASE */
         @page {
@@ -20,7 +21,7 @@
 
         
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: "Times New Roman", Times, serif;
             font-size: 11px;
             line-height: 1.3;
             color: #000;
@@ -384,7 +385,12 @@
          <tr>
             <td class="logo-cell">
                 <div class="logo-container">
-                    @if(file_exists(public_path('images/logo-cima.jpg')))
+                    @php
+                        $logo = $cfg->config('logo_path');
+                    @endphp
+                    @if($logo && file_exists(storage_path('app/public/' . $logo)))
+                        <img src="{{ storage_path('app/public/' . $logo) }}" alt="Logo">
+                    @elseif(file_exists(public_path('images/logo-cima.jpg')))
                         <img src="{{ public_path('images/logo-cima.jpg') }}" alt="Logo CIMA">
                     @elseif(file_exists(public_path('images/logo-cima.png')))
                         <img src="{{ public_path('images/logo-cima.png') }}" alt="Logo CIMA">
@@ -394,7 +400,7 @@
             
             <td class="center-cell">
                 <h1>PROFORMA DE SERVICIOS</h1>
-                <h2>CENTRO DE INVESTIGACIÓN MINERO AMBIENTAL</h2>
+                <h2>{{ strtoupper($cfg->config('laboratorio_nombre')) }}</h2>
                 <h3>
                     @if($proforma->unidad == 'UIA')
                         Unidad de Investigación Ambiental "UIA"
@@ -406,7 +412,7 @@
                 </h3>
                 
                 <div class="document-subtitle">
-                    ANÁLISIS QUÍMICO - BACTERIOLÓGICO: AGUAS, SUELOS, SEDIMENTOS Y MINERALES
+                    {{ $cfg->config('footer_texto') }}
                 </div>
                 
                 <div class="document-options">
@@ -437,8 +443,8 @@
             
             <td class="codigo-cell">
                 <div class="codigo-box">
-                    <div><strong>PO01-FR02</strong></div>
-                    <div>VERSIÓN: 06</div>
+                    <div><strong>{{ $cfg->codigo_documento }}</strong></div>
+                    <div>VERSIÓN: {{ $cfg->version }}</div>
                     <div>FECHA: {{ $proforma->fecha_emision->format('Y-m-d') }}</div>
                     <div style="margin-top: 5px; border-top: 1px solid #ccc; padding-top: 3px;">
                         <strong>CÓDIGO:</strong> {{ $proforma->codigo }}
@@ -637,16 +643,16 @@
              <td>
                 <div class="signature-line"></div>
                 <div class="signature-text">
-                    <strong>Ing. ___________________________</strong><br>
-                    Responsable Técnico<br>
-                    Centro de Investigación Minero Ambiental
+                    <strong>{{ $cfg->config('responsable_nombre') }}</strong><br>
+                    {{ $cfg->config('responsable_cargo') }}<br>
+                    {{ $cfg->config('institucion_nombre') }}
                 </div>
              </td>
              <td>
                 <div class="signature-line"></div>
                 <div class="signature-text">
-                    <strong>___________________________</strong><br>
-                    Representante Legal / Cliente<br>
+                    <strong>{{ $cfg->config('director_nombre') }}</strong><br>
+                    {{ $cfg->config('director_cargo') }}<br>
                     {{ $proforma->cliente->razon_social }}
                 </div>
              </td>
@@ -655,10 +661,10 @@
 
     <!-- FOOTER -->
     <div class="footer">
-        <p><strong>Centro de Investigación Minero Ambiental (CIMA)</strong></p>
-        <p>Av. Arce esq. Villazón s/n; Edificio Facultad de Ingeniería Minera Subsuelo, Universidad Autónoma "Tomás Frías"</p>
-        <p>Teléfono/Fax: 6229711 | Email: cima@cima.edu.bo</p>
-        <p><em>* Por favor llame al CIMA antes de venir a recoger su informe, gracias.</em></p>
+        <p><strong>{{ $cfg->config('institucion_nombre') }}</strong></p>
+        <p>{{ $cfg->config('footer_direccion') }}</p>
+        <p>{{ $cfg->config('footer_telefono') }} | {{ $cfg->config('footer_email') }}</p>
+        <p><em>{{ $cfg->config('footer_texto') }}</em></p>
     </div>
 </body>
 </html>

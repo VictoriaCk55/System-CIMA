@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -17,7 +16,7 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect()->route('home');
         }
-        
+
         return view('auth.login');
     }
 
@@ -31,16 +30,14 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        
         $credentials = $request->only('email', 'password');
-        
+
         // dd($credentials);
         // Intentar autenticación
         // dd(Auth::attempt($credentials, $request->filled('remember')));
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
 
-            
             // Redirigir al dashboard
             return redirect()->intended('/')
                 ->with('success', '¡Bienvenido al sistema CIMA!');
@@ -58,10 +55,10 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         Auth::logout();
-        
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
+
         return redirect('/')
             ->with('success', 'Sesión cerrada exitosamente.');
     }

@@ -14,7 +14,7 @@ class ParametroController extends Controller
      */
     private function esAdmin()
     {
-        return Auth::check() && Auth::user()->email === 'admin@cima.edu.bo';
+        return Auth::check() && Auth::user()->hasAnyRole(['admin', 'tecnico']);
     }
 
     /**
@@ -23,19 +23,24 @@ class ParametroController extends Controller
     public function index(Request $request)
     {
         $query = Parametro::query();
-        
+
         // Búsqueda
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nombre', 'LIKE', "%{$search}%")
-                  ->orWhere('metodo', 'LIKE', "%{$search}%")
-                  ->orWhere('tipo', 'LIKE', "%{$search}%");
+                    ->orWhere('metodo', 'LIKE', "%{$search}%")
+                    ->orWhere('codigo_poe', 'LIKE', "%{$search}%")
+                    ->orWhere('limite_cuantificacion', 'LIKE', "%{$search}%")
+                    ->orWhere('unidad', 'LIKE', "%{$search}%")
+                    ->orWhere('matriz', 'LIKE', "%{$search}%")
+                    ->orWhere('tecnica', 'LIKE', "%{$search}%")
+                    ->orWhere('tipo', 'LIKE', "%{$search}%");
             });
         }
-        
+
         $parametros = $query->latest()->paginate(10);
-        
+
         return view('parametros.index', compact('parametros'));
     }
 
@@ -44,7 +49,7 @@ class ParametroController extends Controller
      */
     public function trash()
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('parametros.index')
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede ver parámetros eliminados.');
         }
@@ -52,7 +57,7 @@ class ParametroController extends Controller
         $parametros = Parametro::onlyTrashed()
             ->latest('deleted_at')
             ->paginate(10);
-        
+
         return view('parametros.trash', compact('parametros'));
     }
 
@@ -61,10 +66,11 @@ class ParametroController extends Controller
      */
     public function create()
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('parametros.index')
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede crear parámetros.');
         }
+
         return view('parametros.create');
     }
 
@@ -73,7 +79,7 @@ class ParametroController extends Controller
      */
     public function store(Request $request)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('parametros.index')
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede crear parámetros.');
         }
@@ -81,6 +87,11 @@ class ParametroController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'metodo' => 'required|string|max:255',
+            'codigo_poe' => 'nullable|string|max:255',
+            'limite_cuantificacion' => 'nullable|string|max:255',
+            'unidad' => 'nullable|string|max:255',
+            'matriz' => 'nullable|string|max:255',
+            'tecnica' => 'nullable|string|max:255',
             'precio_unitario' => 'required|numeric|min:0',
             'tipo' => 'required|in:AMBIENTAL,AGUA,INVESTIGACION',
         ]);
@@ -104,10 +115,11 @@ class ParametroController extends Controller
      */
     public function edit(Parametro $parametro)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('parametros.show', $parametro)
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede editar parámetros.');
         }
+
         return view('parametros.edit', compact('parametro'));
     }
 
@@ -116,7 +128,7 @@ class ParametroController extends Controller
      */
     public function update(Request $request, Parametro $parametro)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('parametros.show', $parametro)
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede actualizar parámetros.');
         }
@@ -124,6 +136,11 @@ class ParametroController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'metodo' => 'required|string|max:255',
+            'codigo_poe' => 'nullable|string|max:255',
+            'limite_cuantificacion' => 'nullable|string|max:255',
+            'unidad' => 'nullable|string|max:255',
+            'matriz' => 'nullable|string|max:255',
+            'tecnica' => 'nullable|string|max:255',
             'precio_unitario' => 'required|numeric|min:0',
             'tipo' => 'required|in:AMBIENTAL,AGUA,INVESTIGACION',
         ]);
@@ -139,14 +156,14 @@ class ParametroController extends Controller
      */
     public function destroy(Parametro $parametro)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('parametros.index')
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede eliminar parámetros.');
         }
 
         try {
             $usoEnProformas = $parametro->proformas()->count();
-            
+
             if ($usoEnProformas > 0) {
                 return redirect()->route('parametros.index')
                     ->with('warning', "⚠️ El parámetro está siendo usado en {$usoEnProformas} proforma(s). Se moverá a la papelera pero las proformas seguirán visibles.");
@@ -158,10 +175,10 @@ class ParametroController extends Controller
                 ->with('success', '✅ Parámetro movido a la papelera exitosamente.');
 
         } catch (\Exception $e) {
-            Log::error('Error al eliminar parámetro: ' . $e->getMessage());
-            
+            Log::error('Error al eliminar parámetro: '.$e->getMessage());
+
             return redirect()->route('parametros.index')
-                ->with('error', '❌ Error al eliminar el parámetro: ' . $e->getMessage());
+                ->with('error', '❌ Error al eliminar el parámetro: '.$e->getMessage());
         }
     }
 
@@ -170,7 +187,7 @@ class ParametroController extends Controller
      */
     public function restore($id)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('parametros.index')
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede restaurar parámetros.');
         }
@@ -183,10 +200,10 @@ class ParametroController extends Controller
                 ->with('success', '✅ Parámetro restaurado exitosamente.');
 
         } catch (\Exception $e) {
-            Log::error('Error al restaurar parámetro: ' . $e->getMessage());
-            
+            Log::error('Error al restaurar parámetro: '.$e->getMessage());
+
             return redirect()->route('parametros.trash')
-                ->with('error', '❌ Error al restaurar el parámetro: ' . $e->getMessage());
+                ->with('error', '❌ Error al restaurar el parámetro: '.$e->getMessage());
         }
     }
 
@@ -195,30 +212,30 @@ class ParametroController extends Controller
      */
     public function forceDelete($id)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('parametros.index')
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede eliminar permanentemente.');
         }
 
         try {
             $parametro = Parametro::onlyTrashed()->findOrFail($id);
-            
+
             // Verificar si tiene proformas
             if ($parametro->proformas()->count() > 0) {
                 return redirect()->route('parametros.trash')
                     ->with('error', '❌ No se puede eliminar permanentemente un parámetro con proformas asociadas.');
             }
-            
+
             $parametro->forceDelete();
 
             return redirect()->route('parametros.trash')
                 ->with('success', '✅ Parámetro eliminado permanentemente.');
 
         } catch (\Exception $e) {
-            Log::error('Error al eliminar permanentemente: ' . $e->getMessage());
-            
+            Log::error('Error al eliminar permanentemente: '.$e->getMessage());
+
             return redirect()->route('parametros.trash')
-                ->with('error', '❌ Error al eliminar permanentemente: ' . $e->getMessage());
+                ->with('error', '❌ Error al eliminar permanentemente: '.$e->getMessage());
         }
     }
 
@@ -230,45 +247,57 @@ class ParametroController extends Controller
         try {
             $term = $request->get('q', '');
             $incluirEliminados = $request->get('incluir_eliminados', false);
-            
-            Log::info('Buscando parámetros con término: ' . $term);
-            
+
+            Log::info('Buscando parámetros con término: '.$term);
+
             $query = Parametro::query();
-            
+
             if ($incluirEliminados) {
                 $query->withTrashed();
             }
-            
+
             if (empty($term)) {
                 $parametros = $query->latest()->limit(10)->get();
             } else {
-                $parametros = $query->where('nombre', 'ILIKE', '%' . $term . '%')
-                    ->orWhere('metodo', 'ILIKE', '%' . $term . '%')
+                $parametros = $query->where('nombre', 'ILIKE', '%'.$term.'%')
+                    ->orWhere('metodo', 'ILIKE', '%'.$term.'%')
+                    ->orWhere('codigo_poe', 'ILIKE', '%'.$term.'%')
+                    // ->orWhere('limite_cuantificacion', 'ILIKE', '%'.$term.'%')
+                    ->orWhere('unidad', 'ILIKE', '%'.$term.'%')
+                    ->orWhere('matriz', 'ILIKE', '%'.$term.'%')
+                    ->orWhere('tecnica', 'ILIKE', '%'.$term.'%')
+                    ->orWhere('tipo', 'ILIKE', '%'.$term.'%')
                     ->limit(20)
                     ->get();
             }
-            
+
             $results = [];
             foreach ($parametros as $parametro) {
-                $texto = $parametro->nombre . ' (' . $parametro->tipo . ') - Bs. ' . number_format($parametro->precio_unitario, 2);
+                $texto = $parametro->nombre.' ('.$parametro->tipo.') - Bs. '.number_format($parametro->precio_unitario, 2);
                 if ($parametro->trashed()) {
                     $texto .= ' (ELIMINADO)';
                 }
-                
+
                 $results[] = [
                     'id' => $parametro->id,
                     'text' => $texto,
                     'precio_unitario' => $parametro->precio_unitario,
                     'metodo' => $parametro->metodo,
+                    'codigo_poe' => $parametro->codigo_poe,
+                    'limite_cuantificacion' => $parametro->limite_cuantificacion,
+                    'unidad' => $parametro->unidad,
+                    'matriz' => $parametro->matriz,
+                    'tecnica' => $parametro->tecnica,
                     'tipo' => $parametro->tipo,
-                    'trashed' => $parametro->trashed()
+                    'trashed' => $parametro->trashed(),
                 ];
             }
-            
+
             return response()->json($results);
-            
+
         } catch (\Exception $e) {
-            Log::error('ERROR en búsqueda de parámetros: ' . $e->getMessage());
+            Log::error('ERROR en búsqueda de parámetros: '.$e->getMessage());
+
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }

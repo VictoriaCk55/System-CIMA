@@ -380,7 +380,7 @@
                         </a>
                         
                         @auth
-                            @if(Auth::user()->email === 'admin@cima.edu.bo')
+                            @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
                                 
                                 @if($proforma->estado == 'BORRADOR')
                                     <!-- Editar Proforma Completa - Amarillo outline -->
@@ -600,7 +600,7 @@
                             <i class="fas fa-file-alt text-muted fa-3x mb-3"></i>
                             <p class="text-muted">Esta proforma no tiene un informe asociado</p>
                             @auth
-                                @if(Auth::user()->email === 'admin@cima.edu.bo' && $proforma->estado == 'APROBADA')
+                                @if(Auth::user()->hasAnyRole(['admin', 'tecnico']) && $proforma->estado == 'APROBADA')
                                     <a href="{{ route('informes.create', ['proforma_id' => $proforma->id]) }}" 
                                        class="btn"
                                        style="color: #000000; border: 2px solid #0dcaf0; background-color: transparent; border-radius: 30px; padding: 10px 25px; transition: all 0.3s ease; font-weight: 500; text-decoration: none; display: inline-block;"
@@ -620,7 +620,7 @@
 
 <!-- Modal para cambiar estado -->
 @auth
-    @if(Auth::user()->email === 'admin@cima.edu.bo')
+    @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
         <div class="modal fade" id="cambiarEstadoModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">

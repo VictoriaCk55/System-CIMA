@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('proformas', function (Blueprint $table) {
-            if (!Schema::hasColumn('proformas', 'tipo_documento')) {
+            if (! Schema::hasColumn('proformas', 'tipo_documento')) {
                 $table->json('tipo_documento')->nullable()->after('tipo');
             }
-            if (!Schema::hasColumn('proformas', 'hora_recepcion')) {
+            if (! Schema::hasColumn('proformas', 'hora_recepcion')) {
                 $table->time('hora_recepcion')->nullable()->after('fecha_recepcion');
             }
         });

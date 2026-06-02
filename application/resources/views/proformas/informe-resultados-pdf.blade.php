@@ -16,7 +16,7 @@
         }
 
         body{
-            font-family: "Times New Roman", serif;
+            font-family: "Times New Roman", Times, serif;
             font-size: 12px;
             color: #000;
             margin: 0;
@@ -166,6 +166,8 @@
 </head>
 <body>
 
+    @php $cfg = \App\Models\Documento::whereSlug('informe-resultados')->first() ?? new \App\Models\Documento; @endphp
+
     <!-- ====================================================== -->
     <!-- HEADER -->
     <!-- ====================================================== -->
@@ -175,25 +177,32 @@
             <tr>
                 <!-- LOGO -->
                 <td width="18%" style="border: none;">
-                    <img src="{{ public_path('images/logo-cima.jpg') }}" class="header-logo">
+                    @php
+                        $logo = $cfg->config('logo_path');
+                    @endphp
+                    @if($logo && file_exists(storage_path('app/public/' . $logo)))
+                        <img src="{{ storage_path('app/public/' . $logo) }}" class="header-logo">
+                    @else
+                        <img src="{{ public_path('images/logo-cima.jpg') }}" class="header-logo">
+                    @endif
                 </td>
 
                 <!-- TITULO -->
-                <td width="64%" class="header-title" style="border: none;">
+                <td width="64%" class="header-title" style="border: none; color: #003366;">
                     <div style="font-size: 13px; font-weight: bold; line-height: 1.2;">
-                        CENTRO DE INVESTIGACIÓN MINERO AMBIENTAL
+                        {{ strtoupper($cfg->config('laboratorio_nombre')) }}
                     </div>
 
                     <div style="font-size: 13px; font-weight: bold; line-height: 1.2;">
-                        UNIVERSIDAD AUTÓNOMA TOMÁS FRÍAS
+                        {{ strtoupper($cfg->config('institucion_nombre')) }}
                     </div>
 
                     <div style="font-size: 18px; font-weight: bold; margin-top: 2px;">
-                        “CIMA-UATF”
+                        {{ strtoupper($cfg->config('institucion_sigla')) }}
                     </div>
 
                     <div style="display: inline-block; padding: 2px 6px; margin-top: 2px; font-size: 8px;">
-                        PO07-FR01/Ver. 08/2025-01-07
+                        {{ $cfg->codigo_documento }}/Ver. {{ $cfg->version }}/{{ $cfg->fecha_documento }}
                     </div>
                 </td>
 
@@ -233,13 +242,14 @@
 
     <br>
 
-    <table style="width: 100%; border-collapse: collapse; font-size: 11px; font-family: DejaVu Sans, sans-serif; table-layout: fixed;">
+    <table style="width: 100%; border-collapse: collapse; color: #003366; font-size: 11px; font-family: "Times New Roman", Times, serif; table-layout: fixed;">
 
     <!-- RAZÓN SOCIAL -->
     <tr>
         <td colspan="2" style="padding: 6px; font-weight: bold; text-align: left;">
+            
             RAZÓN SOCIAL/CLIENTE:
-            <span style="font-weight: normal;">
+            <span style="font-weight: normal; ">
                 {{ $proforma->cliente->razon_social ?? '---' }}
             </span>
         </td>
@@ -291,17 +301,17 @@
 
                 <tr>
                     <td style="font-weight: bold; padding: 3px; text-align: left;">INICIO ENSAYO:</td>
-                    <td style="padding: 3px; text-align: left;">{{ optional($proforma->fecha_inicio_ensayo)->format('Y-m-d') ?? '---' }}</td>
+                    <td style="padding: 3px; text-align: left;">{{ $proforma->fecha_recepcion->format('d/m/Y') }}</td>  //{{ optional($proforma->fecha_inicio_ensayo)->format('Y-m-d') ?? '---' }}
                 </tr>
 
                 <tr>
-                    <td style="font-weight: bold; padding: 3px; text-align: left;">CONCLUSIÓN ENSAYO:</td>
+                    <td style="font-weight: bold; padding: 3px; text-align: left;">CONCLUSIÓN ENSAYO:</td> 
                     <td style="padding: 3px; text-align: left;">{{ optional($proforma->fecha_conclusion_ensayo)->format('Y-m-d') ?? '---' }}</td>
                 </tr>
 
                 <tr>
                     <td style="font-weight: bold; padding: 3px; text-align: left;">FECHA EMISIÓN:</td>
-                    <td style="padding: 3px; text-align: left;">{{ $proforma->fecha_emision->format('Y-m-d') }}</td>
+                    <td style="padding: 3px; text-align: left;">{{ now()->format('Y-m-d') }}</td>
                 </tr>
 
             </table>
@@ -360,7 +370,7 @@
             </td>
 
             <td style="border: 1px solid #000; background: #9bd9e6;">
-                {{ $proforma->fecha_muestreo ?? '---' }}
+                {{ $proforma->fecha_emision->format('d/m/Y') }}
             </td>
 
         </tr>
@@ -425,11 +435,11 @@
             </td>
 
             <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
-                {{ $p->metodo ?? '---' }}
+                {{ $p->codigo_poe ?? '---' }}
             </td>
 
             <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
-                {{ $p->limite ?? '---' }}
+                {{ $p->limite_cuantificacion ?? '---' }}
             </td>
 
             <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
@@ -458,16 +468,21 @@
         </tr>
     </table>
     <br>
-    <table>
+    <!-- <table>
         <tr>
             <td class="small left">
                 La información del presente informe corresponde a los resultados de ensayos en la muestra recepcionada.<br>
-                El CIMA-UATF, NO asume ninguna responsabilidad sobre la información proporcionada por el cliente, que pueda afectar la validez de los resultados.<br>
-                El CIMA-UATF, solo reconoce como válidos, informes de ensayo emitidos en soporte físico, con las firmas y sellos autorizados.
+                {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, NO asume ninguna responsabilidad sobre la información proporcionada por el cliente, que pueda afectar la validez de los resultados.<br>
+                {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, solo reconoce como válidos, informes de ensayo emitidos en soporte físico, con las firmas y sellos autorizados.
             </td>
         </tr>
-    </table>
-    <br><br>
+    </table> -->
+    <!-- <br><br> -->
+    <div style="font-size: 10px; margin-top: 15px; padding: 8px; background-color: #f8f9fa; border-radius: 3px; border-left: 3px solid #2c5282;">
+        <p> La información del presente informe corresponde a los resultados de ensayos en la muestra recepcionada.</p>
+        <p> {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, NO asume ninguna responsabilidad sobre la información proporcionada por el cliente, que pueda afectar la validez de los resultados.</p>
+        <p> {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, solo reconoce como válidos, informes de ensayo emitidos en soporte físico, con las firmas y sellos autorizados.</p>
+    </div>
 
     <footer>
         <table class="sin-borde">
@@ -476,17 +491,17 @@
                     <br><br><br>
                     _________________________
                     <br>
-                    Lic. Mayra Anghela Calderón Rosas
+                    {{ $cfg->config('responsable_nombre') }}
                     <br>
-                    <strong>RESPONSABLE - UAQ</strong>
+                    <strong>{{ $cfg->config('responsable_cargo') }}</strong>
                 </td>
                 <td class="sin-borde center">
                     <br><br><br>
                     _________________________
                     <br>
-                    V.° B.° M.Sc. Ing. Elva Fernández I.
+                    {{ $cfg->config('director_nombre') }}
                     <br>
-                    <strong>DIRECTORA CIMA - UATF</strong>
+                    <strong>{{ $cfg->config('director_cargo') }}</strong>
                 </td>
             </tr>
         </table>
@@ -500,13 +515,11 @@
             <tr>
 
                 <td class="footer-text" style="border: none; text-align: center; font-size: 8px; line-height: 1.1;">
-                    Av. Arce esq. Villazon s/n Edificio Facultad de Ingeniería Minera
-                    Bloque 1. Segundo piso; Teléfono/Fax 62-29711
+                    {{ $cfg->config('footer_direccion') }} Edificio facultad de Ingenieria Minera bloque 1. segundo piso; Telefono/Fax:62-29711
 
                     <br>
 
-                    Cel: 78570522; E-MAIL: cima-uatf@uatf.edu.bo ·
-                    www.uatf.edu.bo
+                    {{ $cfg->config('footer_telefono') }}; {{ $cfg->config('footer_email') }}
 
                     <br>
 

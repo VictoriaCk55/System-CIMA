@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 class ProformaParametro extends Pivot
 {
     protected $table = 'proforma_parametro';
-    
+
     protected $fillable = [
         'proforma_id',
         'parametro_id',
@@ -15,13 +15,13 @@ class ProformaParametro extends Pivot
         'precio_unitario',
         'total',
     ];
-    
+
     protected $casts = [
         'numero_muestras' => 'integer',
         'precio_unitario' => 'decimal:2',
         'total' => 'decimal:2',
     ];
-    
+
     // Método para calcular total automáticamente
     protected static function booted()
     {

@@ -11,14 +11,19 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
         $user = Auth::user();
 
         // Solo admin y tecnico pueden pasar por rutas protegidas
-        if (!in_array($user->role, ['admin', 'tecnico'])) {
+        // Verifica tanto columna role como Spatie roles
+        $allowedRoles = ['admin', 'tecnico'];
+        $hasColumnRole = in_array($user->role, $allowedRoles);
+        $hasSpatieRole = $user->hasAnyRole($allowedRoles);
+
+        if (! $hasColumnRole && ! $hasSpatieRole) {
             return redirect()->route('home')
                 ->with('error', '⛔ Acceso denegado.');
         }

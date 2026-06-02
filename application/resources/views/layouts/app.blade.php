@@ -494,14 +494,39 @@
                             <i class="fas fa-chart-line me-1"></i> Financiero
                         </a>
                     </li>
-                    <!-- ===== ENLACE USUARIOS (SOLO ADMIN) ===== -->
-                    @if(Auth::user() && Auth::user()->role === 'admin')
+                    <!-- ===== ENLACES DE ADMINISTRACIÓN (SOLO ADMIN) ===== -->
+                    @role('admin')
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {{ request()->is('users*') || request()->is('roles*') || request()->is('permissions*') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-cog me-1"></i> Admin
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item {{ request()->is('users*') ? 'active' : '' }}" href="{{ route('users.index') }}">
+                                    <i class="fas fa-users-cog me-2"></i> Usuarios
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{ request()->is('roles*') ? 'active' : '' }}" href="{{ route('roles.index') }}">
+                                    <i class="fas fa-user-tag me-2"></i> Roles
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{ request()->is('permissions*') ? 'active' : '' }}" href="{{ route('permissions.index') }}">
+                                    <i class="fas fa-shield-alt me-2"></i> Permisos
+                                </a>
+                            </li>
+                           
+                        </ul>
+                    </li>
+                    @endrole
+                    @role('admin')
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->is('users*') ? 'active' : '' }}" href="{{ route('users.index') }}">
-                            <i class="fas fa-users-cog me-1"></i> Usuarios
+                        <a class="nav-link {{ request()->is('configuraciones*') ? 'active' : '' }}" href="{{ route('configuraciones.index') }}">
+                            <i class="fas fa-sliders-h me-1"></i> Configuracion
                         </a>
                     </li>
-                    @endif
+                    @endrole
                     @endauth
                 </ul>   
                 
@@ -515,8 +540,12 @@
                                     <small class="user-badge {{ Auth::user()->role === 'admin' ? 'admin' : 'user' }}">
                                         @if(Auth::user()->role === 'admin')
                                             <i class="fas fa-shield-alt me-1"></i> Administrador
+                                        @elseif(Auth::user()->role === 'tecnico')
+                                            <i class="fas fa-user-cog me-1"></i> Técnico
+                                        @elseif(Auth::user()->role === 'analista')
+                                            <i class="fas fa-flask me-1"></i> Analista
                                         @else
-                                            <i class="fas fa-user me-1"></i> Técnico
+                                            <i class="fas fa-user me-1"></i> {{ ucfirst(Auth::user()->role) }}
                                         @endif
                                     </small>
                                 </div>

@@ -425,7 +425,7 @@
                         </a>
                         
                         @auth
-                            @if(Auth::user()->email === 'admin@cima.edu.bo')
+                            @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
                                 <!-- Editar (solo para estados BORRADOR y EN_PROCESO) -->
                                 @if(in_array($informe->estado, ['BORRADOR', 'EN_PROCESO']))
                                     <a href="{{ route('informes.edit', $informe) }}" 
@@ -495,7 +495,7 @@
 
 <!-- Modal para cambiar estado -->
 @auth
-    @if(Auth::user()->email === 'admin@cima.edu.bo')
+    @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
         <div class="modal fade" id="cambiarEstadoModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">

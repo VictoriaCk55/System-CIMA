@@ -13,6 +13,11 @@ class Parametro extends Model
     protected $fillable = [
         'nombre',
         'metodo',
+        'codigo_poe',
+        'limite_cuantificacion',
+        'unidad',
+        'matriz',
+        'tecnica',
         'precio_unitario',
         'tipo',
     ];
@@ -26,7 +31,7 @@ class Parametro extends Model
     public function proformas()
     {
         return $this->belongsToMany(Proforma::class, 'proforma_parametro')
-                    ->withPivot('cantidad_muestras', 'precio_unitario')
-                    ->withTimestamps();
+            ->withPivot('cantidad_muestras', 'precio_unitario')
+            ->withTimestamps();
     }
 }

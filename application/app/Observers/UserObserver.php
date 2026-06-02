@@ -15,7 +15,7 @@ class UserObserver
             $user->syncRoles([$user->role]);
         }
     }
-    
+
     /**
      * Cuando se actualiza la columna 'role', sincronizar con Spatie
      */

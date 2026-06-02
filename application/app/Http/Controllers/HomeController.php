@@ -16,7 +16,7 @@ class HomeController extends Controller
             'proformas' => Proforma::count(),
             'total_bs' => Proforma::sum('total') ?? 0,
         ];
-        
+
         return view('dashboard', compact('stats'));
     }
 }

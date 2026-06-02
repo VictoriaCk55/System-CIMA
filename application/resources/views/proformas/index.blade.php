@@ -19,7 +19,8 @@
             
             <div class="d-flex gap-2">
                 @auth
-                    @if(Auth::user()->email === 'admin@cima.edu.bo')
+
+                    @can('crear proformas')
                         <a href="{{ route('proformas.create') }}" class="btn btn-primary" style="background-color: #ffc107; border-radius: 30px; padding: 10px 25px; color: #000; border: none; transition: all 0.3s ease;">
                             <i class="fas fa-plus-circle"></i>
                             Nueva Proforma
@@ -28,7 +29,7 @@
                         <div class="alert alert-info mb-0 py-2 px-3">
                             <i class="fas fa-eye me-1"></i> Modo solo lectura
                         </div>
-                    @endif
+                    @endcan
                 @endauth
             </div>
         </div>
@@ -326,7 +327,7 @@
                                                 
                                                 <!-- Editar (solo admin y borrador) -->
                                                 @auth
-                                                    @if(Auth::user()->email === 'admin@cima.edu.bo' && $proforma->estado == 'BORRADOR')
+                                                    @if(Auth::user()->hasAnyRole(['admin', 'tecnico']) && $proforma->estado == 'BORRADOR')
                                                         <li>
                                                             <a class="dropdown-item" 
                                                             href="{{ route('proformas.edit', $proforma) }}"
@@ -368,6 +369,7 @@
                                                 </li>
                                                 
                                                 <!-- Cadena de Custodia -->
+                                                @can('generar cadena custodia')
                                                 <li>
                                                     <a class="dropdown-item" 
                                                     href="{{ route('proformas.cadena-custodia', $proforma) }}"
@@ -377,8 +379,10 @@
                                                         Cadena de Custodia
                                                     </a>
                                                 </li>
+                                                @endcan
                                                 
                                                 <!-- Formulario de resultados -->
+                                                @can('ver resultados')
                                                 <li>
                                                     <a class="dropdown-item" 
                                                     href="{{ route('resultados.index', $proforma->id) }}"
@@ -387,6 +391,7 @@
                                                         Formulario de resultados
                                                     </a>
                                                 </li>
+                                                @endcan
                                             </ul>
                                         </div>
                                     </td>
@@ -399,7 +404,7 @@
                 <!-- Botón de Papelera y texto de registros centrado -->
                 <div class="d-flex align-items-center justify-content-center position-relative mt-3">
                     @auth
-                        @if(Auth::user()->email === 'admin@cima.edu.bo')
+                        @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
                             <a href="{{ route('proformas.trash') }}" 
                                class="btn btn-icon-circle position-absolute start-0"
                                style="width: 35px; height: 35px; border-radius: 50%; background-color: #6c757d; color: white; display: inline-flex; align-items: center; justify-content: center; transition: all 0.3s ease; text-decoration: none;"
@@ -431,7 +436,7 @@
                     </p>
                     
                     @auth
-                        @if(Auth::user()->email === 'admin@cima.edu.bo')
+                        @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
                             <a href="{{ route('proformas.create') }}" class="btn btn-primary" style="background-color: #ffc107; border-radius: 30px; padding: 10px 25px; color: #000; border: none; transition: all 0.3s ease;">
                                 <i class="fas fa-plus-circle me-2"></i>
                                 Crear primera proforma

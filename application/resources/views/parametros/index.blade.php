@@ -17,7 +17,7 @@
             
             <div class="d-flex gap-2">
                 @auth
-                    @if(Auth::user()->email === 'admin@cima.edu.bo')
+                     @can('crear parametros')
                         <a href="{{ route('parametros.create') }}" class="btn" style="background-color: #A31800; border-radius: 30px; padding: 10px 25px; color: white; border: none; transition: all 0.3s ease;">
                             <i class="fas fa-plus-circle"></i>
                             Nuevo Parámetro
@@ -26,7 +26,7 @@
                         <div class="alert alert-info mb-0 py-2 px-3">
                             <i class="fas fa-eye me-1"></i> Modo solo lectura
                         </div>
-                    @endif
+                    @endcan
                 @endauth
             </div>
         </div>
@@ -170,7 +170,7 @@
                                             </a>
                                             
                                             @auth
-                                                @if(Auth::user()->email === 'admin@cima.edu.bo')
+                                                @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
                                                     <a href="{{ route('parametros.edit', $parametro) }}" 
                                                        class="btn btn-outline-warning btn-sm"
                                                        data-bs-toggle="tooltip" 
@@ -192,7 +192,7 @@
                                         
                                         <!-- Formulario oculto para eliminar -->
                                         @auth
-                                            @if(Auth::user()->email === 'admin@cima.edu.bo')
+                                            @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
                                                 <form id="delete-form-{{ $parametro->id }}" 
                                                       action="{{ route('parametros.destroy', $parametro) }}" 
                                                       method="POST" class="d-none">
@@ -217,7 +217,7 @@
                 <!-- Botón de Papelera y texto de registros centrado -->
                 <div class="d-flex align-items-center justify-content-center position-relative mt-3">
                     @auth
-                        @if(Auth::user()->email === 'admin@cima.edu.bo')
+                        @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
                             <a href="{{ route('parametros.trash') }}" 
                                class="btn btn-icon-circle position-absolute start-0"
                                style="width: 35px; height: 35px; border-radius: 50%; background-color: #6c757d; color: white; display: inline-flex; align-items: center; justify-content: center; transition: all 0.3s ease; text-decoration: none;"
@@ -248,7 +248,7 @@
                     </p>
                     
                     @auth
-                        @if(Auth::user()->email === 'admin@cima.edu.bo')
+                        @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
                             @if(request('search'))
                                 <a href="{{ route('parametros.index') }}" class="btn btn-outline-secondary" style="border-radius: 30px; padding: 10px 25px;">
                                     <i class="fas fa-times me-2"></i>

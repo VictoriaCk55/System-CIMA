@@ -1,0 +1,543 @@
+{{-- INFORME DE RESULTADOS CON LIMITES PERMISIBLES PDF --}}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <style>
+        @page{
+            /* margin: 20px 12px; */
+            /* size: letter portrait; */
+            /* margin: 20mm; */
+            margin-top: 4cm;
+            margin-bottom: 6cm;
+            margin-left: 2.5cm;
+            margin-right: 2.5cm;
+        }
+
+        body{
+            font-family: "Times New Roman", Times, serif;
+            font-size: 12px;
+            color: #000;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ====================================================== */
+        /* HEADER Y FOOTER */
+        /* ====================================================== */
+
+        header{
+            padding:0.5cm;
+            position: fixed;
+            top: -4cm;
+            left: 0;
+            right:0;
+            /* height: 3.5cm; */
+            margin-bottom: 0.3cm;
+        }
+
+        footer{
+            position: fixed;
+            bottom: -6cm;
+            left: 0;
+            right: 0;
+            margin-bottom: 0.3cm;
+            padding:0.5cm;
+            /* height: 3cm; */ */
+        }
+
+        .header-table{
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .footer-table{
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .header-logo{
+            width: 85px;
+        }
+
+        .header-title{
+            text-align: center;
+        }
+
+        .footer-text{
+            font-size: 8px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .pagenum:before{
+            content: counter(page);
+        }
+
+        .pagecount:before{
+            content: counter(pages);
+        }
+
+        .page-content{
+            /* width: 100%; */
+            padding-bottom: 140px;
+        }
+
+        *{
+            box-sizing: border-box;
+        }
+
+        table{
+            width: 100%;
+            border-collapse: collapse;
+            page-break-inside: auto;
+        }
+
+        td, th{
+            /* border: 1px solid #000; */
+            /* padding: 4px 6px; */
+            padding: 0;
+            text-align: center;
+            vertical-align: middle;
+            overflow: hidden;
+        }
+
+        .encabezado-tabla td{
+            font-size: 12px;
+            padding: 2px 4px;
+            line-height: 1.1;
+        }
+
+        .sin-borde, .sin-borde td, .sin-borde th{
+            border: none !important;
+            font-size: 11px;
+        }
+
+        .left{
+            text-align: left;
+        }
+
+        .center{
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .logo{
+            width: 80px;
+            height: auto;
+        }
+
+        .titulo{
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .subtitulo{
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .small{
+            font-size: 10px;
+            border: 1px solid #000;
+            pading: 2px 3px;
+        }
+
+        .gris{
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+
+        .firma{
+            height: 70px;
+            padding-top: 20px;
+        }
+
+        .vertical-text{
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            white-space: nowrap;
+            text-align: center;
+        }
+
+    </style>
+
+</head>
+<body>
+
+    @php $cfg = \App\Models\Documento::whereSlug('informe-resultados')->first() ?? new \App\Models\Documento; @endphp
+
+    <!-- ====================================================== -->
+    <!-- HEADER -->
+    <!-- ====================================================== -->
+
+    <header>
+        <table class="header-table">
+            <tr>
+                <!-- LOGO -->
+                <td width="18%" style="border: none;">
+                    @php
+                        $logo = $cfg->config('logo_path');
+                    @endphp
+                    @if($logo && file_exists(storage_path('app/public/' . $logo)))
+                        <img src="{{ storage_path('app/public/' . $logo) }}" class="header-logo">
+                    @else
+                        <img src="{{ public_path('images/logo-cima.jpg') }}" class="header-logo">
+                    @endif
+                </td>
+
+                <!-- TITULO -->
+                <td width="64%" class="header-title" style="border: none; color: #003366;">
+                    <div style="font-size: 13px; font-weight: bold; line-height: 1.2;">
+                        {{ strtoupper($cfg->config('laboratorio_nombre')) }}
+                    </div>
+
+                    <div style="font-size: 13px; font-weight: bold; line-height: 1.2;">
+                        {{ strtoupper($cfg->config('institucion_nombre')) }}
+                    </div>
+
+                    <div style="font-size: 18px; font-weight: bold; margin-top: 2px;">
+                        {{ $cfg->config('institucion_nombre') }}
+                    </div>
+
+                    <div style="display: inline-block; padding: 2px 6px; margin-top: 2px; font-size: 8px;">
+                        {{ $cfg->codigo_documento }}/Ver. {{ $cfg->version }}/{{ $cfg->fecha_documento }}
+                    </div>
+                </td>
+
+                <!-- VACIO -->
+                <td width="18%" style="border: none;"></td>
+
+            </tr>
+
+        </table>
+        <!-- LINEA -->
+        <div style="border-top: 2px solid #2d5ea8; margin-top: 4px;"></div>
+
+    </header>
+
+    <!-- ===================================================== -->
+    <!-- TÍTULO Y NÚMERO -->
+    <!-- ===================================================== -->
+    
+    <table>
+        <tr>
+            <td class="titulo center" style="font-size: 18px;">
+                INFORME DE ENSAYO
+            </td>
+            @php
+                $partes = (explode('-', $proforma->codigo));
+                $numero = end($partes);
+            @endphp
+            <td width="100" class="center " style="color: #ef1111;">
+                <strong>Nº:</strong> {{ $numero }}
+            </td>
+        </tr>
+    </table>
+
+    <!-- ===================================================== -->
+    <!-- DATOS DEL CLIENTE Y MUESTRA -->
+    <!-- ===================================================== -->
+
+    <br>
+
+    <table style="width: 100%; border-collapse: collapse; color: #003366; font-size: 11px; font-family: "Times New Roman", Times, serif; table-layout: fixed;">
+
+    <!-- RAZÓN SOCIAL -->
+    <tr>
+        <td colspan="2" style="padding: 6px; font-weight: bold; text-align: left;">
+            
+            RAZÓN SOCIAL/CLIENTE:
+            <span style="font-weight: normal; ">
+                {{ $proforma->cliente->razon_social ?? '---' }}
+            </span>
+        </td>
+    </tr>
+
+    <!-- CUERPO PRINCIPAL -->
+    <tr>
+
+        <!-- IZQUIERDA -->
+        <td style="width: 60%; vertical-align: top; padding: 3px; text-align: left;">
+
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed; text-align: left;">
+
+                <tr>
+                    <td style="width: 60%; font-weight: bold; padding: 3px; text-align: left;">CONTACTO CLIENTE:</td>
+                    <td style="width: 60%; padding: 3px; text-align: left;">{{ $proforma->cliente->persona_contacto ?? '---' }}</td>
+                </tr>
+
+                <tr>
+                    <td style="font-weight: bold; padding: 3px; text-align: left;">TIPO DE MUESTRA:</td>
+                    <td style="padding: 3px; text-align: left;">{{ $proforma->tipo_muestra ?? '---' }}</td>
+                </tr>
+
+                <tr>
+                    <td style="font-weight: bold; padding: 3px; text-align: left;">MUESTREADO POR:</td>
+                    <td style="padding: 3px; text-align: left;">{{ $proforma->muestreado_por ?? 'CLIENTE' }}</td>
+                </tr>
+
+                <tr>
+                    <td style="font-weight: bold; padding: 3px; text-align: left;">PROCEDENCIA:</td>
+                    <td style="padding: 3px; text-align: left;">{{ $proforma->procedencia ?? '---' }}</td>
+                </tr>
+
+            </table>
+
+        </td>
+
+        <!-- DERECHA -->
+        <td style="width: 40%; vertical-align: top; padding: 3px; text-align: left;">
+
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed; text-align: left;">
+
+                <tr>
+                    <td style="width: 40%; font-weight: bold; padding: 3px; text-align: left;">FECHA RECEPCIÓN:</td>
+                    <td style="width: 40%; padding: 3px; text-align: left;">
+                        {{ optional($proforma->fecha_recepcion)->format('Y-m-d') ?? '---' }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="font-weight: bold; padding: 3px; text-align: left;">INICIO ENSAYO:</td>
+                    <td style="padding: 3px; text-align: left;">{{ $proforma->fecha_recepcion->format('d/m/Y') }}</td>  //{{ optional($proforma->fecha_inicio_ensayo)->format('Y-m-d') ?? '---' }}
+                </tr>
+
+                <tr>
+                    <td style="font-weight: bold; padding: 3px; text-align: left;">CONCLUSIÓN ENSAYO:</td> 
+                    <td style="padding: 3px; text-align: left;">{{ optional($proforma->fecha_conclusion_ensayo)->format('Y-m-d') ?? '---' }}</td>
+                </tr>
+
+                <tr>
+                    <td style="font-weight: bold; padding: 3px; text-align: left;">FECHA EMISIÓN:</td>
+                    <td style="padding: 3px; text-align: left;">{{ now()->format('Y-m-d') }}</td>
+                </tr>
+
+            </table>
+
+        </td>
+
+    </tr>
+
+</table>
+
+    <!-- ===================================================== -->
+    <!-- DATOS DE LA MUESTRA Y TABLA DE RESULTADOS -->
+    <!-- ===================================================== -->
+    @php
+        $primeraMuestra = !empty($resultados) ? min(array_keys($resultados)) : 1;
+    @endphp
+    <br>
+    <table style="width: 96%; margin: 0 auto; border-collapse: collapse; table-layout: fixed; border: 2px solid #000;">
+        <!-- FILA SUPERIOR -->
+        <tr>
+            <!-- DATOS DE LA MUESTRA -->
+            <td rowspan="5" style="width: 15%; border: 1px solid #000; text-align: center; vertical-align: middle; font-weight: bold; background: #f5f5f5;">
+                DATOS DE<br>LA MUESTRA
+            </td>
+
+            <!-- TITULO -->
+            <td colspan="3" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 35px;">
+                CÓDIGO DE LABORATORIO:
+            </td>
+
+            <!-- VALOR -->
+            <td style="border: 1px solid #000; background: #9bd9e6;">
+                {{ $proforma->generarCodigoLaboratorio(1) ?? '---' }}
+            </td>
+
+        </tr>
+
+        <!-- FILA -->
+        <tr>
+
+            <td colspan="3" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 24px;">
+                CÓDIGO CLIENTE:
+            </td>
+
+            <td style="border: 1px solid #000; background: #9bd9e6;">
+                {{ $proforma->codigo_cliente ?? '---' }}
+            </td>
+
+        </tr>
+
+        <!-- FILA -->
+        <tr>
+
+            <td colspan="3" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 24px;">
+                FECHA DE MUESTREO:
+            </td>
+
+            <td style="border: 1px solid #000; background: #9bd9e6;">
+                {{ $proforma->fecha_emision->format('d/m/Y') }}
+            </td>
+
+        </tr>
+
+        <!-- COORDENADAS -->
+        <tr>
+
+            <td rowspan="2" colspan="2" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 48px;">
+                COORDENADAS DE PUNTO DE MUESTREO:
+            </td>
+
+            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 24px;">
+                E
+            </td>
+
+            <td style="border: 1px solid #000;background: #9bd9e6;">
+                ---
+            </td>
+
+        </tr>
+
+        <!-- N -->
+        <tr>
+            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 24px;">
+                N
+            </td>
+
+            <td style="border: 1px solid #000; background: #9bd9e6;">
+                ---
+            </td>
+        </tr>
+
+        <!-- CABECERA -->
+        <tr>
+            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 45px;">
+                PARAMETRO
+            </td>
+
+            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold;">
+                METODO DE ENSAYO
+            </td>
+
+            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold;">
+                LIMITES DE CUANTIFICACIÓN
+            </td>
+
+            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold;">
+                UNIDAD
+            </td>
+
+            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold;">
+                RESULTADOS DE ENSAYO
+            </td>
+        </tr>
+
+        <!-- FILAS DINAMICAS -->
+        @foreach($proforma->parametros as $p)
+
+        <tr>
+            <td style="border: 1px solid #000; height: 38px; text-align: center; vertical-align: middle;">
+                {{ $p->nombre }}
+            </td>
+
+            <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
+                {{ $p->codigo_poe ?? '---' }}
+            </td>
+
+            <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
+                {{ $p->limite_cuantificacion ?? '---' }}
+            </td>
+
+            <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
+                {{ $p->unidad ?? '---' }}
+            </td>
+
+            <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
+                {{ $resultados[$primeraMuestra][$p->id] ?? '---' }}
+            </td>
+
+        </tr>
+
+        @endforeach
+
+    </table>
+    <!-- ===================================================== -->
+    <!-- NOTAS Y RESPONSABILIDAD -->
+    <!-- ===================================================== -->
+
+    <br>
+    <table>
+        <tr>
+            <td>
+                <b>POE:</b> Procedimiento Operativo de Ensayo, describo con detalle en la pista general de ensayos ofertados.<br>
+            </td>
+        </tr>
+    </table>
+    <br>
+    <!-- <table>
+        <tr>
+            <td class="small left">
+                La información del presente informe corresponde a los resultados de ensayos en la muestra recepcionada.<br>
+                {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, NO asume ninguna responsabilidad sobre la información proporcionada por el cliente, que pueda afectar la validez de los resultados.<br>
+                {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, solo reconoce como válidos, informes de ensayo emitidos en soporte físico, con las firmas y sellos autorizados.
+            </td>
+        </tr>
+    </table> -->
+    <!-- <br><br> -->
+    <div style="font-size: 10px; margin-top: 15px; padding: 8px; background-color: #f8f9fa; border-radius: 3px; border-left: 3px solid #2c5282;">
+        <p> La información del presente informe corresponde a los resultados de ensayos en la muestra recepcionada.</p>
+        <p> {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, NO asume ninguna responsabilidad sobre la información proporcionada por el cliente, que pueda afectar la validez de los resultados.</p>
+        <p> {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, solo reconoce como válidos, informes de ensayo emitidos en soporte físico, con las firmas y sellos autorizados.</p>
+    </div>
+
+    <footer>
+        <table class="sin-borde">
+            <tr class="sin-borde">
+                <td class="sin-borde center">
+                    <br><br><br>
+                    _________________________
+                    <br>
+                    {{ $cfg->config('responsable_nombre') }}
+                    <br>
+                    <strong>{{ $cfg->config('responsable_cargo') }}</strong>
+                </td>
+                <td class="sin-borde center">
+                    <br><br><br>
+                    _________________________
+                    <br>
+                    {{ $cfg->config('director_nombre') }}
+                    <br>
+                    <strong>{{ $cfg->config('director_cargo') }}</strong>
+                </td>
+            </tr>
+        </table>
+        <br><br>
+
+        <div style="border-top: 2px solid #2d5ea8; margin-bottom: 4px;">
+        </div>
+
+        <table class="footer-table">
+
+            <tr>
+
+                <td class="footer-text" style="border: none; text-align: center; font-size: 8px; line-height: 1.1;">
+                    {{ $cfg->config('footer_direccion') }} Edificio facultad de Ingenieria Minera bloque 1. segundo piso; {{ $cfg->config('footer_telefono') }}
+
+                    <br>
+
+                    {{ $cfg->config('footer_telefono') }}; {{ $cfg->config('footer_email') }}
+
+                    <br>
+
+                    <strong>
+                        Página
+                        <span class="pagenum"></span>
+                        de
+                        <span class="pagenum"></span>
+                    </strong>
+                    <br><br>
+
+                </td>
+
+            </tr>
+
+        </table>
+
+    </footer>
+    <br><br>
+</body>
+</html>

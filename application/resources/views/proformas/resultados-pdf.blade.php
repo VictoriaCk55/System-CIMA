@@ -10,7 +10,7 @@
     }
 
     body{
-        font-family: DejaVu Sans, sans-serif;
+        font-family: "Times New Roman", Times, serif;
         font-size: 11px;
         color:#000;
     }
@@ -81,7 +81,15 @@
 
         <td rowspan="3" width="120">
 
-            <img src="{{ public_path('images/logo-cima.jpg') }}" class="logo">
+            @php
+                $cfg = \App\Models\Documento::whereSlug('resultados-ensayo')->first() ?? new \App\Models\Documento;
+                $logo = $cfg->config('logo_path');
+            @endphp
+            @if($logo && file_exists(storage_path('app/public/' . $logo)))
+                <img src="{{ storage_path('app/public/' . $logo) }}" class="logo">
+            @else
+                <img src="{{ public_path('images/logo-cima.jpg') }}" class="logo">
+            @endif
 
         </td>
 
@@ -92,7 +100,7 @@
         </td>
 
         <td class="left" width="180">
-            MTD1-FR06
+            {{ $cfg->codigo_documento }}
         </td>
 
     </tr>
@@ -100,7 +108,7 @@
     <tr>
 
         <td class="left">
-            VERSION: 05
+            VERSION: {{ $cfg->version }}
         </td>
 
     </tr>
@@ -108,7 +116,7 @@
     <tr>
 
         <td class="left">
-            FECHA: 2024-08-15
+            FECHA: {{ $cfg->fecha_documento }}
         </td>
 
     </tr>
@@ -146,7 +154,7 @@
         @foreach($proforma->parametros as $p)
 
             <td>
-                {{ ($limites[$p->id] ?? '') ?: '---' }}
+                {{ ($limites[$p->id] ?? $p->limite_cuantificacion) ?: '---' }}
             </td>
 
         @endforeach
@@ -164,7 +172,7 @@
         @foreach($proforma->parametros as $p)
 
             <td>
-                {{ ($unidades[$p->id] ?? '') ?: '---' }}
+                {{ ($unidades[$p->id] ?? $p->unidad) ?: '---' }}
             </td>
 
         @endforeach
@@ -182,7 +190,7 @@
         @foreach($proforma->parametros as $p)
 
             <td class="small">
-                {{ $p->metodo ?? '---' }}
+                {{ $p->codigo_poe ?? '---' }}
             </td>
 
         @endforeach

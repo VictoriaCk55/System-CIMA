@@ -341,7 +341,7 @@
                             <label for="hora_recepcion" class="form-label">Hora</label>
                             <input type="time" class="form-control @error('hora_recepcion') is-invalid @enderror" 
                                    id="hora_recepcion" name="hora_recepcion" 
-                                   value="{{ old('hora_recepcion') }}">
+                                   value="{{ old('hora_recepcion', date('H:i')) }}">
                             @error('hora_recepcion')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
@@ -363,7 +363,7 @@
                             <label for="codigo_cliente" class="form-label">Código de Cliente</label>
                             <input type="text" class="form-control @error('codigo_cliente') is-invalid @enderror" 
                                    id="codigo_cliente" name="codigo_cliente" 
-                                   value="{{ old('codigo_cliente') }}"
+                                   value="{{ $cliente->codigo_cliente ?? '---' }}"
                                    placeholder="Ej: CL-001">
                             @error('codigo_cliente')
                                 <div class="text-danger small mt-1">{{ $message }}</div>

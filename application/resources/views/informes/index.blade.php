@@ -21,7 +21,7 @@
             
             <div class="d-flex gap-2">
                 @auth
-                    @if(Auth::user()->email === 'admin@cima.edu.bo')
+                    @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
                         <a href="{{ route('informes.create') }}" 
                            class="btn" 
                            style="background-color: #C2F527; border-radius: 30px; padding: 10px 25px; color: #000000; border: none; transition: all 0.3s ease;"
@@ -367,7 +367,7 @@
                                             </a>
                                             
                                             @auth
-                                                @if(Auth::user()->email === 'admin@cima.edu.bo')
+                                                @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
                                                     <a href="{{ route('informes.edit', $informe) }}" 
                                                        class="btn btn-outline-warning btn-sm"
                                                        data-bs-toggle="tooltip"
@@ -409,7 +409,7 @@
                 <!-- Botón de Papelera y texto de registros centrado -->
                 <div class="d-flex align-items-center justify-content-center position-relative mt-3">
                     @auth
-                        @if(Auth::user()->email === 'admin@cima.edu.bo')
+                        @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
                             <a href="{{ route('informes.trash') }}" 
                                class="btn btn-icon-circle position-absolute start-0"
                                style="width: 35px; height: 35px; border-radius: 50%; background-color: #6c757d; color: white; display: inline-flex; align-items: center; justify-content: center; transition: all 0.3s ease; text-decoration: none;"
@@ -442,7 +442,7 @@
                     </p>
                     
                     @auth
-                        @if(Auth::user()->email === 'admin@cima.edu.bo')
+                        @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
                             <a href="{{ route('informes.create') }}" 
                                class="btn" 
                                style="background-color: #C2F527; border-radius: 30px; padding: 10px 25px; color: #000000; border: none; transition: all 0.3s ease;"

@@ -18,58 +18,60 @@
         <form action="{{ route('users.update', $user->id) }}" method="POST">
             @csrf
             @method('PUT')
-            
+
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="name" class="form-label">Nombre completo *</label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                    <input type="text" class="form-control @error('name') is-invalid @enderror"
                            id="name" name="name" value="{{ old('name', $user->name) }}" required>
                     @error('name')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
                 <div class="col-md-6 mb-3">
                     <label for="email" class="form-label">Correo electrónico *</label>
-                    <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                    <input type="email" class="form-control @error('email') is-invalid @enderror"
                            id="email" name="email" value="{{ old('email', $user->email) }}" required>
                     @error('email')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
                 <div class="col-md-6 mb-3">
                     <label for="role" class="form-label">Rol *</label>
                     <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required>
-                        <option value="tecnico" {{ old('role', $user->role) == 'tecnico' ? 'selected' : '' }}>Técnico (solo lectura)</option>
-                        <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Administrador (acceso total)</option>
-                        <option value="analista" {{ old('role', $user->role) == 'analista' ? 'selected' : '' }}>Analista (resultados de ensayo)</option>
+                        @foreach($roles as $role)
+                        <option value="{{ $role->name }}" {{ old('role', $user->role) == $role->name ? 'selected' : '' }}>
+                            {{ ucfirst($role->name) }}
+                        </option>
+                        @endforeach
                     </select>
                     @error('role')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
             </div>
-            
+
             <hr>
             <h5 class="mt-3">Cambiar Contraseña (opcional)</h5>
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="password" class="form-label">Nueva Contraseña</label>
-                    <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                    <input type="password" class="form-control @error('password') is-invalid @enderror"
                            id="password" name="password">
                     <small class="text-muted">Dejar en blanco para mantener la actual</small>
                     @error('password')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
                 <div class="col-md-6 mb-3">
                     <label for="password_confirmation" class="form-label">Confirmar Nueva Contraseña</label>
                     <input type="password" class="form-control" id="password_confirmation" name="password_confirmation">
                 </div>
             </div>
-            
+
             <div class="mt-4">
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save me-1"></i> Actualizar Usuario

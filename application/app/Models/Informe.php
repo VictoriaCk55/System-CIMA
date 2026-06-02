@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Informe extends Model
 {
@@ -110,7 +110,7 @@ class Informe extends Model
     {
         return Attribute::make(
             get: function () {
-                return match($this->estado) {
+                return match ($this->estado) {
                     'BORRADOR' => 'secondary',
                     'EN_PROCESO' => 'warning',
                     'REVISADO' => 'info',
@@ -127,7 +127,7 @@ class Informe extends Model
     {
         return Attribute::make(
             get: function () {
-                return match($this->prioridad) {
+                return match ($this->prioridad) {
                     'BAJA' => 'success',
                     'MEDIA' => 'info',
                     'ALTA' => 'warning',
@@ -164,18 +164,19 @@ class Informe extends Model
     {
         // Obtener el último informe (incluyendo eliminados)
         $ultimo = self::withTrashed()->orderBy('id', 'desc')->first();
-        
-        if (!$ultimo) {
+
+        if (! $ultimo) {
             return 'INF-001';
         }
-        
+
         // Extraer el número del código (asumiendo formato INF-XXX)
         $partes = explode('-', $ultimo->codigo);
-        if (count($partes) != 2 || !is_numeric($partes[1])) {
+        if (count($partes) != 2 || ! is_numeric($partes[1])) {
             return 'INF-001';
         }
-        
+
         $numero = intval($partes[1]) + 1;
-        return 'INF-' . str_pad($numero, 3, '0', STR_PAD_LEFT);
+
+        return 'INF-'.str_pad($numero, 3, '0', STR_PAD_LEFT);
     }
 }

@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Cliente;
 use App\Models\Parametro;
 use App\Models\Proforma;
+use App\Traits\RegistraMovimientoFinanciero;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Barryvdh\DomPDF\Facade\Pdf;
-use App\Traits\RegistraMovimientoFinanciero;
 
 class ProformaController extends Controller
 {
@@ -19,7 +19,7 @@ class ProformaController extends Controller
     private $muestreadoPorOpciones = [
         'CLIENTE',
         'TÉCNICOS CIMA',
-        'CONTRATISTA'
+        'CONTRATISTA',
     ];
 
     /**
@@ -27,7 +27,7 @@ class ProformaController extends Controller
      */
     private function esAdmin()
     {
-        return Auth::check() && Auth::user()->email === 'admin@cima.edu.bo';
+        return Auth::check() && Auth::user()->hasAnyRole(['admin', 'tecnico']);
     }
 
     /**
@@ -36,47 +36,47 @@ class ProformaController extends Controller
     public function index(Request $request)
     {
         $query = Proforma::with('cliente');
-        
+
         // ===== BÚSQUEDA POR TÉRMINO (CASE-INSENSITIVE) =====
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('codigo', 'ILIKE', "%{$search}%")
-                  ->orWhere('tipo', 'ILIKE', "%{$search}%")
-                  ->orWhere('tipo_muestra', 'ILIKE', "%{$search}%")
-                  ->orWhereHas('cliente', function($clientQuery) use ($search) {
-                      $clientQuery->where('razon_social', 'ILIKE', "%{$search}%")
-                                 ->orWhere('persona_contacto', 'ILIKE', "%{$search}%");
-                  });
+                    ->orWhere('tipo', 'ILIKE', "%{$search}%")
+                    ->orWhere('tipo_muestra', 'ILIKE', "%{$search}%")
+                    ->orWhereHas('cliente', function ($clientQuery) use ($search) {
+                        $clientQuery->where('razon_social', 'ILIKE', "%{$search}%")
+                            ->orWhere('persona_contacto', 'ILIKE', "%{$search}%");
+                    });
             });
         }
-        
+
         // Filtros por mes y año
         if ($request->filled('mes') && $request->filled('anio')) {
             $query->whereMonth('fecha_emision', $request->mes)
-                  ->whereYear('fecha_emision', $request->anio);
+                ->whereYear('fecha_emision', $request->anio);
         } elseif ($request->filled('mes')) {
             $query->whereMonth('fecha_emision', $request->mes)
-                  ->whereYear('fecha_emision', date('Y'));
+                ->whereYear('fecha_emision', date('Y'));
         } elseif ($request->filled('anio')) {
             $query->whereYear('fecha_emision', $request->anio);
         }
-        
+
         // Filtro por estado
         if ($request->filled('estado')) {
             $query->where('estado', $request->estado);
         }
-        
+
         // Obtener años disponibles para el filtro
         $añosDisponibles = Proforma::selectRaw('DISTINCT EXTRACT(YEAR FROM fecha_emision) as año')
             ->orderBy('año', 'desc')
             ->pluck('año')
             ->toArray();
-        
+
         $proformas = $query->orderBy('created_at', 'desc')
             ->paginate(15)
             ->withQueryString();
-        
+
         return view('proformas.index', compact('proformas', 'añosDisponibles'));
     }
 
@@ -85,7 +85,7 @@ class ProformaController extends Controller
      */
     public function trash()
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('proformas.index')
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede ver proformas eliminadas.');
         }
@@ -94,7 +94,7 @@ class ProformaController extends Controller
             ->with('cliente')
             ->latest('deleted_at')
             ->paginate(15);
-        
+
         return view('proformas.trash', compact('proformas'));
     }
 
@@ -103,7 +103,7 @@ class ProformaController extends Controller
      */
     public function restore($id)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('proformas.index')
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede restaurar proformas.');
         }
@@ -116,10 +116,10 @@ class ProformaController extends Controller
                 ->with('success', '✅ Proforma restaurada exitosamente.');
 
         } catch (\Exception $e) {
-            Log::error('Error al restaurar proforma: ' . $e->getMessage());
-            
+            Log::error('Error al restaurar proforma: '.$e->getMessage());
+
             return redirect()->route('proformas.trash')
-                ->with('error', '❌ Error al restaurar la proforma: ' . $e->getMessage());
+                ->with('error', '❌ Error al restaurar la proforma: '.$e->getMessage());
         }
     }
 
@@ -128,20 +128,20 @@ class ProformaController extends Controller
      */
     public function forceDelete($id)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('proformas.index')
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede eliminar permanentemente.');
         }
 
         try {
             $proforma = Proforma::onlyTrashed()->findOrFail($id);
-            
+
             // Verificar si tiene informe asociado
             if ($proforma->informe) {
                 return redirect()->route('proformas.trash')
                     ->with('error', '❌ No se puede eliminar permanentemente una proforma que tiene un informe asociado.');
             }
-            
+
             // Eliminar relaciones primero
             $proforma->parametros()->detach();
             $proforma->forceDelete();
@@ -150,10 +150,10 @@ class ProformaController extends Controller
                 ->with('success', '✅ Proforma eliminada permanentemente.');
 
         } catch (\Exception $e) {
-            Log::error('Error al eliminar permanentemente: ' . $e->getMessage());
-            
+            Log::error('Error al eliminar permanentemente: '.$e->getMessage());
+
             return redirect()->route('proformas.trash')
-                ->with('error', '❌ Error al eliminar permanentemente: ' . $e->getMessage());
+                ->with('error', '❌ Error al eliminar permanentemente: '.$e->getMessage());
         }
     }
 
@@ -162,14 +162,14 @@ class ProformaController extends Controller
      */
     public function create()
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('proformas.index')
                 ->with('error', '⛔ Solo el administrador puede crear proformas.');
         }
 
         $clientes = Cliente::orderBy('razon_social')->get();
         $parametros = Parametro::orderBy('nombre')->get();
-        
+
         return view('proformas.create', [
             'clientes' => $clientes,
             'parametros' => $parametros,
@@ -182,7 +182,7 @@ class ProformaController extends Controller
      */
     public function store(Request $request)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('proformas.index')
                 ->with('error', '⛔ Solo el administrador puede crear proformas.');
         }
@@ -214,23 +214,23 @@ class ProformaController extends Controller
         // ===== VALIDACIÓN ESTRICTA DE PARÁMETROS DUPLICADOS =====
         $parametroIds = collect($request->parametros)->pluck('id')->toArray();
         $parametrosUnicos = array_unique($parametroIds);
-        
+
         if (count($parametroIds) !== count($parametrosUnicos)) {
             $duplicados = array_diff_assoc($parametroIds, $parametrosUnicos);
             $nombresDuplicados = [];
-            
+
             foreach ($duplicados as $id) {
                 $parametro = Parametro::find($id);
                 if ($parametro) {
                     $nombresDuplicados[] = $parametro->nombre;
                 }
             }
-            
+
             $mensaje = '❌ No se permiten parámetros duplicados. ';
-            if (!empty($nombresDuplicados)) {
-                $mensaje .= 'Parámetros repetidos: ' . implode(', ', array_unique($nombresDuplicados));
+            if (! empty($nombresDuplicados)) {
+                $mensaje .= 'Parámetros repetidos: '.implode(', ', array_unique($nombresDuplicados));
             }
-            
+
             return redirect()->back()
                 ->withInput()
                 ->with('error', $mensaje);
@@ -278,23 +278,23 @@ class ProformaController extends Controller
                     $parametro = Parametro::find($parametroData['id']);
                     $proforma->parametros()->attach($parametroData['id'], [
                         'cantidad_muestras' => $parametroData['cantidad'],
-                        'precio_unitario' => $parametro->precio_unitario
+                        'precio_unitario' => $parametro->precio_unitario,
                     ]);
                 }
             }
 
             // Calcular totales
             $proforma->load('parametros');
-            
+
             $subtotal = 0;
             foreach ($proforma->parametros as $parametro) {
                 $subtotal += $parametro->pivot->cantidad_muestras * $parametro->pivot->precio_unitario;
             }
-            
+
             $descuento = ($proforma->tipo === 'INVESTIGACION') ? $subtotal * 0.20 : 0;
             $total = $subtotal - $descuento;
             $saldo = $total - $proforma->adelanto;
-            
+
             $proforma->subtotal = $subtotal;
             $proforma->descuento = $descuento;
             $proforma->total = $total;
@@ -319,9 +319,10 @@ class ProformaController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al crear proforma: ' . $e->getMessage());
+            Log::error('Error al crear proforma: '.$e->getMessage());
+
             return back()->withInput()
-                ->with('error', '❌ Error al crear proforma: ' . $e->getMessage());
+                ->with('error', '❌ Error al crear proforma: '.$e->getMessage());
         }
     }
 
@@ -331,6 +332,7 @@ class ProformaController extends Controller
     public function show(Proforma $proforma)
     {
         $proforma->load(['cliente', 'parametros', 'informe', 'usuarioModificacion']);
+
         return view('proformas.show', compact('proforma'));
     }
 
@@ -339,7 +341,7 @@ class ProformaController extends Controller
      */
     public function edit(Proforma $proforma)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('proformas.show', $proforma)
                 ->with('error', '⛔ Solo el administrador puede editar proformas.');
         }
@@ -351,7 +353,7 @@ class ProformaController extends Controller
 
         $clientes = Cliente::orderBy('razon_social')->get();
         $parametros = Parametro::orderBy('nombre')->get();
-        
+
         return view('proformas.edit', [
             'proforma' => $proforma,
             'clientes' => $clientes,
@@ -365,7 +367,7 @@ class ProformaController extends Controller
      */
     public function update(Request $request, Proforma $proforma)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('proformas.show', $proforma)
                 ->with('error', '⛔ Solo el administrador puede actualizar proformas.');
         }
@@ -403,23 +405,23 @@ class ProformaController extends Controller
         // ===== VALIDACIÓN ESTRICTA DE PARÁMETROS DUPLICADOS =====
         $parametroIds = collect($request->parametros)->pluck('id')->toArray();
         $parametrosUnicos = array_unique($parametroIds);
-        
+
         if (count($parametroIds) !== count($parametrosUnicos)) {
             $duplicados = array_diff_assoc($parametroIds, $parametrosUnicos);
             $nombresDuplicados = [];
-            
+
             foreach ($duplicados as $id) {
                 $parametro = Parametro::find($id);
                 if ($parametro) {
                     $nombresDuplicados[] = $parametro->nombre;
                 }
             }
-            
+
             $mensaje = '❌ No se permiten parámetros duplicados. ';
-            if (!empty($nombresDuplicados)) {
-                $mensaje .= 'Parámetros repetidos: ' . implode(', ', array_unique($nombresDuplicados));
+            if (! empty($nombresDuplicados)) {
+                $mensaje .= 'Parámetros repetidos: '.implode(', ', array_unique($nombresDuplicados));
             }
-            
+
             return redirect()->back()
                 ->withInput()
                 ->with('error', $mensaje);
@@ -431,12 +433,12 @@ class ProformaController extends Controller
             // OBTENER PARÁMETROS ACTUALES ANTES DE MODIFICAR
             $parametrosActuales = $proforma->parametros()->pluck('parametros.id')->toArray();
             $parametrosNuevos = collect($request->parametros)->pluck('id')->toArray();
-            
+
             // DETECTAR CAMBIOS EN PARÁMETROS
             $parametrosAgregados = array_diff($parametrosNuevos, $parametrosActuales);
             $parametrosEliminados = array_diff($parametrosActuales, $parametrosNuevos);
-            $parametrosModificados = !empty($parametrosAgregados) || !empty($parametrosEliminados);
-            
+            $parametrosModificados = ! empty($parametrosAgregados) || ! empty($parametrosEliminados);
+
             // Actualizar datos básicos
             $proforma->update([
                 'cliente_id' => $request->cliente_id,
@@ -457,14 +459,14 @@ class ProformaController extends Controller
                 'adelanto' => $request->adelanto ?? 0,
                 'observaciones' => $request->observaciones,
             ]);
-            
+
             // SI HUBO MODIFICACIÓN DE PARÁMETROS
             if ($parametrosModificados) {
                 // Verificar si se proporcionó justificación
                 if (empty($request->justificacion_modificacion)) {
                     throw new \Exception('Debe proporcionar una justificación para modificar los parámetros.');
                 }
-                
+
                 // Actualizar campos de modificación
                 $proforma->parametros_modificados = true;
                 $proforma->justificacion_modificacion = $request->justificacion_modificacion;
@@ -479,24 +481,24 @@ class ProformaController extends Controller
                     $parametro = Parametro::find($parametroData['id']);
                     $parametrosSync[$parametroData['id']] = [
                         'cantidad_muestras' => $parametroData['cantidad'],
-                        'precio_unitario' => $parametro->precio_unitario
+                        'precio_unitario' => $parametro->precio_unitario,
                     ];
                 }
             }
-            
+
             $proforma->parametros()->sync($parametrosSync);
             $proforma->load('parametros');
-            
+
             // Calcular totales
             $subtotal = 0;
             foreach ($proforma->parametros as $parametro) {
                 $subtotal += $parametro->pivot->cantidad_muestras * $parametro->pivot->precio_unitario;
             }
-            
+
             $descuento = ($proforma->tipo === 'INVESTIGACION') ? $subtotal * 0.20 : 0;
             $total = $subtotal - $descuento;
             $saldo = $total - $proforma->adelanto;
-            
+
             $proforma->subtotal = $subtotal;
             $proforma->descuento = $descuento;
             $proforma->total = $total;
@@ -515,9 +517,10 @@ class ProformaController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al actualizar proforma: ' . $e->getMessage());
+            Log::error('Error al actualizar proforma: '.$e->getMessage());
+
             return back()->withInput()
-                ->with('error', '❌ Error al actualizar proforma: ' . $e->getMessage());
+                ->with('error', '❌ Error al actualizar proforma: '.$e->getMessage());
         }
     }
 
@@ -526,7 +529,7 @@ class ProformaController extends Controller
      */
     public function destroy(Proforma $proforma)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('proformas.index')
                 ->with('error', '⛔ Solo el administrador puede eliminar proformas.');
         }
@@ -543,20 +546,21 @@ class ProformaController extends Controller
 
         try {
             DB::beginTransaction();
-            
+
             $proforma->parametros()->detach();
             $proforma->delete(); // Soft delete
-            
+
             DB::commit();
-            
+
             return redirect()->route('proformas.index')
                 ->with('success', '✅ Proforma movida a la papelera exitosamente.');
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al eliminar proforma: ' . $e->getMessage());
+            Log::error('Error al eliminar proforma: '.$e->getMessage());
+
             return redirect()->route('proformas.index')
-                ->with('error', '❌ Error al eliminar proforma: ' . $e->getMessage());
+                ->with('error', '❌ Error al eliminar proforma: '.$e->getMessage());
         }
     }
 
@@ -565,7 +569,7 @@ class ProformaController extends Controller
      */
     public function cambiarEstado(Request $request, Proforma $proforma)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return back()->with('error', '⛔ Solo el administrador puede cambiar el estado de proformas.');
         }
 
@@ -576,7 +580,7 @@ class ProformaController extends Controller
         try {
             $estadoAnterior = $proforma->estado;
             $nuevoEstado = $request->estado;
-            
+
             $transicionesPermitidas = [
                 'BORRADOR' => ['ENVIADA', 'RECHAZADA'],
                 'ENVIADA' => ['APROBADA', 'RECHAZADA'],
@@ -584,22 +588,23 @@ class ProformaController extends Controller
                 'RECHAZADA' => ['BORRADOR'],
                 'FINALIZADA' => [],
             ];
-            
-            if (!in_array($nuevoEstado, $transicionesPermitidas[$estadoAnterior] ?? [])) {
-                return back()->with('error', "❌ Transición de estado no permitida.");
+
+            if (! in_array($nuevoEstado, $transicionesPermitidas[$estadoAnterior] ?? [])) {
+                return back()->with('error', '❌ Transición de estado no permitida.');
             }
-            
+
             $proforma->update(['estado' => $nuevoEstado]);
-            
+
             return redirect()->route('proformas.show', $proforma)
                 ->with('success', "✅ Estado cambiado a {$nuevoEstado}");
-            
+
         } catch (\Exception $e) {
-            Log::error('Error al cambiar estado: ' . $e->getMessage());
+            Log::error('Error al cambiar estado: '.$e->getMessage());
+
             return back()->with('error', '❌ Error al cambiar estado');
         }
     }
-    
+
     /**
      * Genera PDF de la proforma
      */
@@ -607,10 +612,10 @@ class ProformaController extends Controller
     {
         try {
             $proforma->load(['cliente', 'parametros', 'usuarioModificacion']);
-            
+
             $entero = intval($proforma->total);
             $decimal = round(($proforma->total - $entero) * 100);
-            
+
             $mapaNumeros = [
                 0 => 'CERO', 1 => 'UN', 2 => 'DOS', 3 => 'TRES', 4 => 'CUATRO',
                 5 => 'CINCO', 6 => 'SEIS', 7 => 'SIETE', 8 => 'OCHO', 9 => 'NUEVE',
@@ -618,127 +623,133 @@ class ProformaController extends Controller
                 50 => 'CINCUENTA', 60 => 'SESENTA', 70 => 'SETENTA', 80 => 'OCHENTA',
                 90 => 'NOVENTA', 100 => 'CIEN', 200 => 'DOSCIENTOS', 300 => 'TRESCIENTOS',
                 400 => 'CUATROCIENTOS', 500 => 'QUINIENTOS', 600 => 'SEISCIENTOS',
-                700 => 'SETECIENTOS', 800 => 'OCHOCIENTOS', 900 => 'NOVECIENTOS'
+                700 => 'SETECIENTOS', 800 => 'OCHOCIENTOS', 900 => 'NOVECIENTOS',
             ];
-            
+
             $letras = $mapaNumeros[$entero] ?? number_format($entero, 0);
-            $totalEnLetras = 'SON: ' . strtoupper($letras) . ' ' . str_pad($decimal, 2, '0', STR_PAD_LEFT) . '/100 BOLIVIANOS';
-            
+            $totalEnLetras = 'SON: '.strtoupper($letras).' '.str_pad($decimal, 2, '0', STR_PAD_LEFT).'/100 BOLIVIANOS';
+
             $data = [
                 'proforma' => $proforma,
                 'totalEnLetras' => $totalEnLetras,
             ];
-            
+
             $pdf = Pdf::loadView('proformas.pdf', $data);
-            //CONFIGURAR ORIENTACION DEL DOCUMENTO
+            // CONFIGURAR ORIENTACION DEL DOCUMENTO
             $pdf->setPaper('letter', 'portrait');
-            return $pdf->download("proforma-{$proforma->codigo}.pdf");
-            
+
+            return $pdf->stream("proforma-{$proforma->codigo}.pdf");
+
         } catch (\Exception $e) {
-            Log::error('Error al generar PDF: ' . $e->getMessage());
+            Log::error('Error al generar PDF: '.$e->getMessage());
+
             return back()->with('error', '❌ Error al generar PDF');
         }
     }
-/**
+
+    /**
      * GENERAR PDF2- CADENA DE CUSTODIA
      */
     public function pdfCadenaCustodia(Proforma $proforma)
-{
-    try {
-        // NO cargar 'muestras' porque no existe la relación
-        $proforma->load(['cliente', 'parametros', 'usuarioModificacion']);
-        
-        // Calcular total en letras
-        $entero = intval($proforma->total);
-        $decimal = round(($proforma->total - $entero) * 100);
-        
-        $mapaNumeros = [
-            0 => 'CERO', 1 => 'UN', 2 => 'DOS', 3 => 'TRES', 4 => 'CUATRO',
-            5 => 'CINCO', 6 => 'SEIS', 7 => 'SIETE', 8 => 'OCHO', 9 => 'NUEVE',
-            10 => 'DIEZ', 11 => 'ONCE', 12 => 'DOCE', 13 => 'TRECE', 14 => 'CATORCE',
-            15 => 'QUINCE', 16 => 'DIECISÉIS', 17 => 'DIECISIETE', 18 => 'DIECIOCHO',
-            19 => 'DIECINUEVE', 20 => 'VEINTE', 30 => 'TREINTA', 40 => 'CUARENTA',
-            50 => 'CINCUENTA', 60 => 'SESENTA', 70 => 'SETENTA', 80 => 'OCHENTA',
-            90 => 'NOVENTA', 100 => 'CIEN', 200 => 'DOSCIENTOS', 300 => 'TRESCIENTOS',
-            400 => 'CUATROCIENTOS', 500 => 'QUINIENTOS', 600 => 'SEISCIENTOS',
-            700 => 'SETECIENTOS', 800 => 'OCHOCIENTOS', 900 => 'NOVECIENTOS'
-        ];
-        
-        $numeroEnLetras = function($numero) use (&$numeroEnLetras, $mapaNumeros) {
-            if ($numero <= 20) {
-                return $mapaNumeros[$numero];
-            } elseif ($numero < 100) {
-                $decena = floor($numero / 10) * 10;
-                $unidad = $numero % 10;
-                if ($unidad == 0) {
-                    return $mapaNumeros[$decena];
-                } else {
-                    return $mapaNumeros[$decena] . ' Y ' . $mapaNumeros[$unidad];
-                }
-            } elseif ($numero < 1000) {
-                $centena = floor($numero / 100) * 100;
-                $resto = $numero % 100;
-                if ($resto == 0) {
-                    return $mapaNumeros[$centena];
-                } else {
-                    return $mapaNumeros[$centena] . ' ' . $numeroEnLetras($resto);
-                }
-            }
-            return number_format($numero, 0);
-        };
-        
-        $letras = $numeroEnLetras($entero);
-        $totalEnLetras = 'SON: ' . strtoupper($letras) . ' ' . str_pad($decimal, 2, '0', STR_PAD_LEFT) . '/100 BOLIVIANOS';
-        
-        // Agrupar parámetros por método analítico
-        $parametrosAgrupados = $this->agruparParametrosCadena($proforma->parametros ?? collect());
-        
-        // Crear datos de muestra a partir de los campos de la proforma
-        $muestraData = (object) [
-            'tipo_muestra' => $proforma->tipo_muestra ?? 'No especificado',
-            'identificacion' => $proforma->codigo ?? 'M-001',
-            'codigo' => $proforma->codigo,
-            'codigo_lab' => 'LAB-' . str_pad($proforma->id ?? '1', 4, '0', STR_PAD_LEFT),
-            'campo_id' => $proforma->procedencia ?? 'Campo',
-            'fecha_muestreo' => $proforma->fecha_recepcion,
-            'fecha_recepcion' => $proforma->fecha_emision,
-            'hora_muestreo' => null,
-            'punto_muestreo' => $proforma->coordenadas ?? 'No especificado',
-            'muestreado_por' => $proforma->muestreado_por ?? 'No especificado',
-            'observaciones' => $proforma->observaciones,
-            'procedencia' => $proforma->procedencia,
-            'coordenadas' => $proforma->coordenadas,
-            'persona_contacto' => $proforma->persona_contacto,
-            'telefono_contacto' => $proforma->telefono_contacto,
-        ];
-        
-        $data = [
-            'proforma' => $proforma,
-            'totalEnLetras' => $totalEnLetras,
-            'fechaActual' => now()->format('d/m/Y H:i'),
-            'numeroContrato' => $proforma->codigo ?? 'S/N',
-            'fechaContrato' => $proforma->fecha_emision?->format('Y-m-d') ?? now()->format('Y-m-d'),
-            'fechaRecepcion' => $proforma->fecha_recepcion?->format('Y-m-d') ?? 'No registrada',
-            'parametrosAgrupados' => $parametrosAgrupados,
-            'muestra' => $muestraData,
-            'muestreadoPorOpciones' => $this->muestreadoPorOpciones,
-        ];
-        
-        // Importante: Usar la vista de CADENA DE CUSTODIA
-        $pdf = Pdf::loadView('proformas.cadena_custodia', $data);
-        $pdf->setPaper('letter', 'landscape'); // HORIZONTAL
-        // MOSTRAR EN EL NAVEGADOR EN LUGAR DE DESCARGAR
-        return $pdf->stream("cadena-custodia-{$proforma->codigo}.pdf");
-        
-    } catch (\Exception $e) {
-        Log::error('Error al generar Cadena de Custodia PDF: ' . $e->getMessage());
-        return back()->with('error', '❌ Error al generar Cadena de Custodia: ' . $e->getMessage());
-    }
-}
+    {
+        try {
+            // NO cargar 'muestras' porque no existe la relación
+            $proforma->load(['cliente', 'parametros', 'usuarioModificacion']);
 
-/**
- * Agrupa los parámetros según las categorías de la tabla para Cadena de Custodia
- */
+            // Calcular total en letras
+            $entero = intval($proforma->total);
+            $decimal = round(($proforma->total - $entero) * 100);
+
+            $mapaNumeros = [
+                0 => 'CERO', 1 => 'UN', 2 => 'DOS', 3 => 'TRES', 4 => 'CUATRO',
+                5 => 'CINCO', 6 => 'SEIS', 7 => 'SIETE', 8 => 'OCHO', 9 => 'NUEVE',
+                10 => 'DIEZ', 11 => 'ONCE', 12 => 'DOCE', 13 => 'TRECE', 14 => 'CATORCE',
+                15 => 'QUINCE', 16 => 'DIECISÉIS', 17 => 'DIECISIETE', 18 => 'DIECIOCHO',
+                19 => 'DIECINUEVE', 20 => 'VEINTE', 30 => 'TREINTA', 40 => 'CUARENTA',
+                50 => 'CINCUENTA', 60 => 'SESENTA', 70 => 'SETENTA', 80 => 'OCHENTA',
+                90 => 'NOVENTA', 100 => 'CIEN', 200 => 'DOSCIENTOS', 300 => 'TRESCIENTOS',
+                400 => 'CUATROCIENTOS', 500 => 'QUINIENTOS', 600 => 'SEISCIENTOS',
+                700 => 'SETECIENTOS', 800 => 'OCHOCIENTOS', 900 => 'NOVECIENTOS',
+            ];
+
+            $numeroEnLetras = function ($numero) use (&$numeroEnLetras, $mapaNumeros) {
+                if ($numero <= 20) {
+                    return $mapaNumeros[$numero];
+                } elseif ($numero < 100) {
+                    $decena = floor($numero / 10) * 10;
+                    $unidad = $numero % 10;
+                    if ($unidad == 0) {
+                        return $mapaNumeros[$decena];
+                    } else {
+                        return $mapaNumeros[$decena].' Y '.$mapaNumeros[$unidad];
+                    }
+                } elseif ($numero < 1000) {
+                    $centena = floor($numero / 100) * 100;
+                    $resto = $numero % 100;
+                    if ($resto == 0) {
+                        return $mapaNumeros[$centena];
+                    } else {
+                        return $mapaNumeros[$centena].' '.$numeroEnLetras($resto);
+                    }
+                }
+
+                return number_format($numero, 0);
+            };
+
+            $letras = $numeroEnLetras($entero);
+            $totalEnLetras = 'SON: '.strtoupper($letras).' '.str_pad($decimal, 2, '0', STR_PAD_LEFT).'/100 BOLIVIANOS';
+
+            // Agrupar parámetros por método analítico
+            $parametrosAgrupados = $this->agruparParametrosCadena($proforma->parametros ?? collect());
+
+            // Crear datos de muestra a partir de los campos de la proforma
+            $muestraData = (object) [
+                'tipo_muestra' => $proforma->tipo_muestra ?? 'No especificado',
+                'identificacion' => $proforma->codigo ?? 'M-001',
+                'codigo' => $proforma->codigo,
+                'codigo_lab' => 'LAB-'.str_pad($proforma->id ?? '1', 4, '0', STR_PAD_LEFT),
+                'campo_id' => $proforma->procedencia ?? 'Campo',
+                'fecha_muestreo' => $proforma->fecha_recepcion,
+                'fecha_recepcion' => $proforma->fecha_emision,
+                'hora_muestreo' => null,
+                'punto_muestreo' => $proforma->coordenadas ?? 'No especificado',
+                'muestreado_por' => $proforma->muestreado_por ?? 'No especificado',
+                'observaciones' => $proforma->observaciones,
+                'procedencia' => $proforma->procedencia,
+                'coordenadas' => $proforma->coordenadas,
+                'persona_contacto' => $proforma->persona_contacto,
+                'telefono_contacto' => $proforma->telefono_contacto,
+            ];
+
+            $data = [
+                'proforma' => $proforma,
+                'totalEnLetras' => $totalEnLetras,
+                'fechaActual' => now()->format('d/m/Y H:i'),
+                'numeroContrato' => $proforma->codigo ?? 'S/N',
+                'fechaContrato' => $proforma->fecha_emision?->format('Y-m-d') ?? now()->format('Y-m-d'),
+                'fechaRecepcion' => $proforma->fecha_recepcion?->format('Y-m-d') ?? 'No registrada',
+                'parametrosAgrupados' => $parametrosAgrupados,
+                'muestra' => $muestraData,
+                'muestreadoPorOpciones' => $this->muestreadoPorOpciones,
+            ];
+
+            // Importante: Usar la vista de CADENA DE CUSTODIA
+            $pdf = Pdf::loadView('proformas.cadena_custodia', $data);
+            $pdf->setPaper('letter', 'landscape'); // HORIZONTAL
+
+            // MOSTRAR EN EL NAVEGADOR EN LUGAR DE DESCARGAR
+            return $pdf->stream("cadena-custodia-{$proforma->codigo}.pdf");
+
+        } catch (\Exception $e) {
+            Log::error('Error al generar Cadena de Custodia PDF: '.$e->getMessage());
+
+            return back()->with('error', '❌ Error al generar Cadena de Custodia: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Agrupa los parámetros según las categorías de la tabla para Cadena de Custodia
+     */
     private function agruparParametrosCadena($parametros)
     {
         $categorias = [
@@ -752,7 +763,7 @@ class ProformaController extends Controller
             'microbiologia' => [],
             'otros' => [],
         ];
-        
+
         $metodos = [
             'Volumetria' => 'volumetria',
             'Ionometria' => 'ionometria',
@@ -763,7 +774,7 @@ class ProformaController extends Controller
             'Cromatografia' => 'cromatografia',
             'Microbiologia' => 'microbiologia',
         ];
-        
+
         foreach ($parametros as $parametro) {
             $metodo = $parametro->metodo ?? $parametro->metodo_analitico ?? 'Otros';
             $categoriaClave = $metodos[$metodo] ?? 'otros';
@@ -774,28 +785,29 @@ class ProformaController extends Controller
                 'precio' => $parametro->precio_unitario ?? 0,
             ];
         }
-        
+
         return $categorias;
     }
+
     /**
      * Actualizar solo el adelanto de la proforma
      * Permite editar el adelanto en estados ENVIADA y APROBADA
      */
     public function actualizarAdelanto(Request $request, Proforma $proforma)
     {
-        if (!$this->esAdmin()) {
+        if (! $this->esAdmin()) {
             return redirect()->route('proformas.show', $proforma)
                 ->with('error', '⛔ Acceso denegado. Solo el administrador puede actualizar proformas.');
         }
 
         // Permitir solo en estados ENVIADA y APROBADA
-        if (!in_array($proforma->estado, ['ENVIADA', 'APROBADA'])) {
+        if (! in_array($proforma->estado, ['ENVIADA', 'APROBADA'])) {
             return redirect()->route('proformas.show', $proforma)
                 ->with('error', "❌ Solo se puede actualizar el adelanto en proformas ENVIADA o APROBADA. Estado actual: {$proforma->estado}");
         }
 
         $request->validate([
-            'adelanto' => 'required|numeric|min:0|max:' . $proforma->total,
+            'adelanto' => 'required|numeric|min:0|max:'.$proforma->total,
         ]);
 
         try {
@@ -803,16 +815,16 @@ class ProformaController extends Controller
 
             $adelantoAnterior = $proforma->adelanto;
             $nuevoAdelanto = $request->adelanto;
-            
+
             // Calcular el monto pagado (si aumentó el adelanto)
             $montoPagado = $nuevoAdelanto - $adelantoAnterior;
-            
+
             // Actualizar adelanto
             $proforma->adelanto = $nuevoAdelanto;
-            
+
             // Recalcular saldo
             $proforma->saldo = $proforma->total - $proforma->adelanto;
-            
+
             $proforma->save();
 
             // ===== REGISTRAR MOVIMIENTO FINANCIERO SI HUBO PAGO =====
@@ -842,13 +854,14 @@ class ProformaController extends Controller
             DB::commit();
 
             return redirect()->route('proformas.show', $proforma)
-                ->with('success', '✅ Adelanto actualizado exitosamente. Nuevo saldo: Bs. ' . number_format($proforma->saldo, 2));
+                ->with('success', '✅ Adelanto actualizado exitosamente. Nuevo saldo: Bs. '.number_format($proforma->saldo, 2));
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al actualizar adelanto: ' . $e->getMessage());
+            Log::error('Error al actualizar adelanto: '.$e->getMessage());
+
             return redirect()->route('proformas.show', $proforma)
-                ->with('error', '❌ Error al actualizar adelanto: ' . $e->getMessage());
+                ->with('error', '❌ Error al actualizar adelanto: '.$e->getMessage());
         }
     }
 }
