@@ -379,15 +379,15 @@
         <tr>
 
             <td rowspan="2" colspan="2" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 48px;">
-                COORDENADAS DE PUNTO DE MUESTREO:
+                COORDENADAS DE PUNTO DE MUESTREO: {{ $muestreo->zona_utm ?? 'ZONA 19K' }}
             </td>
 
             <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 24px;">
-                E
+                {{ $muestreo->punto_cardinal_1 ?? 'E' }}
             </td>
 
             <td style="border: 1px solid #000;background: #9bd9e6;">
-                ---
+                {{ $muestreo->valor_cardinal_1 ?? '---' }}
             </td>
 
         </tr>
@@ -395,11 +395,11 @@
         <!-- N -->
         <tr>
             <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 24px;">
-                N
+                {{ $muestreo->punto_cardinal_2 ?? 'N' }}
             </td>
 
             <td style="border: 1px solid #000; background: #9bd9e6;">
-                ---
+                {{ $muestreo->valor_cardinal_2 ?? '---' }}
             </td>
         </tr>
 

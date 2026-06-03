@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CadenaResultado;
+use App\Models\LimitePermisible;
 use App\Models\Proforma;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -81,6 +82,11 @@ class ResultadosController extends Controller
 
             $proforma->fecha_inicio_ensayo = $request->fecha_inicio_ensayo ?? $proforma->fecha_inicio_ensayo;
             $proforma->fecha_conclusion_ensayo = $request->fecha_conclusion_ensayo ?? $proforma->fecha_conclusion_ensayo;
+            $proforma->zona_utm = $request->zona_utm ?? $proforma->zona_utm;
+            $proforma->punto_cardinal_1 = $request->punto_cardinal_1 ?? $proforma->punto_cardinal_1;
+            $proforma->valor_cardinal_1 = $request->valor_cardinal_1 ?? $proforma->valor_cardinal_1;
+            $proforma->punto_cardinal_2 = $request->punto_cardinal_2 ?? $proforma->punto_cardinal_2;
+            $proforma->valor_cardinal_2 = $request->valor_cardinal_2 ?? $proforma->valor_cardinal_2;
             $proforma->save();
 
             // Crear mapa de parámetros
@@ -195,6 +201,11 @@ class ResultadosController extends Controller
                 'vbs' => $vbs,
                 'fecha_inicio_ensayo' => $proforma?->fecha_inicio_ensayo?->format('Y-m-d') ?? '',
                 'fecha_conclusion_ensayo' => $proforma?->fecha_conclusion_ensayo?->format('Y-m-d') ?? '',
+                'zona_utm' => $proforma->zona_utm ?? '',
+                'punto_cardinal_1' => $proforma->punto_cardinal_1 ?? '',
+                'valor_cardinal_1' => $proforma->valor_cardinal_1 ?? '',
+                'punto_cardinal_2' => $proforma->punto_cardinal_2 ?? '',
+                'valor_cardinal_2' => $proforma->valor_cardinal_2 ?? '',
             ]);
 
         } catch (\Exception $e) {
@@ -337,13 +348,63 @@ class ResultadosController extends Controller
                 'responsables',
                 'fechas',
                 'vbs'
-            )
+            ) + ['muestreo' => $proforma]
         );
 
         $pdf->setPaper('letter', 'portrait');
 
         return $pdf->stream(
             'imprimir-'.$proforma->codigo.'.pdf'
+        );
+    }
+
+    public function imprimirResultadosPermisibles($id, $tipo = 'NB-512')
+    {
+        $proforma = Proforma::with('parametros', 'cliente')
+            ->findOrFail($id);
+
+        $resultadosGuardados = CadenaResultado::where('proforma_id', $id)
+            ->orderBy('orden')
+            ->get();
+
+        $resultados = [];
+        $responsables = [];
+        $fechas = [];
+        $vbs = [];
+
+        foreach ($resultadosGuardados as $rg) {
+            $muestra = $rg->orden ?? 1;
+            $resultados[$muestra][$rg->parametro_id] = $rg->resultado;
+            $responsables[$rg->parametro_id] = $rg->analizado_por;
+            $fechas[$rg->parametro_id] = $rg->fecha_analisis
+                ? date('Y-m-d', strtotime($rg->fecha_analisis))
+                : null;
+            $vbs[$rg->parametro_id] = $rg->vb ?? '';
+        }
+
+        $limitesPermisibles = LimitePermisible::where('tipo', $tipo)->get();
+        $limitesMap = [];
+        foreach ($limitesPermisibles as $lp) {
+            $limitesMap[$lp->parametro_nombre] = $lp;
+        }
+
+        $pdf = Pdf::loadView(
+            'proformas.informe-resultados-permisibles-pdf',
+            compact(
+                'proforma',
+                'resultados',
+                'responsables',
+                'fechas',
+                'vbs',
+                'limitesMap',
+                'tipo'
+            ) + ['muestreo' => $proforma]
+        );
+
+        $pdf->setPaper('letter', 'portrait');
+
+        return $pdf->stream(
+            'informe-permisibles-'.$proforma->codigo.'.pdf'
         );
     }
 }

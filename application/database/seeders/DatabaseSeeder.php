@@ -27,6 +27,9 @@ class DatabaseSeeder extends Seeder
         // Documentos PDF (independiente)
         $this->call(DocumentoSeeder::class);
 
+        // Límites Permisibles (independiente)
+        $this->call(LimitePermisibleSeeder::class);
+
         // Clientes (independiente)
         $this->call(ClienteSeeder::class);
 

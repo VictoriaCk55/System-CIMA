@@ -52,12 +52,14 @@ class ParametroSeeder extends Seeder
             ],
             [
                 'nombre' => 'Conductividad',
-                'metodo' => 'POE-1-02 Potenciometría',
+                // 'metodo' => 'POE-1-02 Potenciometría',
                 'metodo' => 'APHA-AWWA-WPCF.2510 B Método de laboratorio',
                 'codigo_poe' => 'POE 1-02',
                 'limite_cuantificacion' => '14,9 a 1413',
                 'unidad' => ' µS/cm',
                 'precio_unitario' => 150.00, // precio real 20 bs
+                'matriz' => 'AGUA',
+                'tecnica' => 'POTENCIOMETRIA',
                 'tipo' => 'AGUA',
             ],
             // ABSORCION ATOMICA - Llama normal
@@ -68,6 +70,8 @@ class ParametroSeeder extends Seeder
                 'limite_cuantificacion' => '0,09',
                 'unidad' => 'mg/l',
                 'precio_unitario' => 40.00, // precio real 20 bs
+                'matriz' => 'AGUA',
+                'tecnica' => 'ABSORCION ATOMICA - Llama normal',
                 'tipo' => 'AGUA',
             ],
             [
@@ -77,6 +81,8 @@ class ParametroSeeder extends Seeder
                 'limite_cuantificacion' => '0,01',
                 'unidad' => 'mg/l',
                 'precio_unitario' => 40.00, // precio real 20 bs
+                'matriz' => 'AGUA',
+                'tecnica' => 'ABSORCION ATOMICA - Llama normal',
                 'tipo' => 'AGUA',
             ],
             [
@@ -86,6 +92,8 @@ class ParametroSeeder extends Seeder
                 'limite_cuantificacion' => '0,025',
                 'unidad' => 'mg/l',
                 'precio_unitario' => 40.00,
+                'matriz' => 'AGUA',
+                'tecnica' => 'ABSORCION ATOMICA - Llama normal',
                 'tipo' => 'AGUA',
             ],
             [
@@ -95,6 +103,8 @@ class ParametroSeeder extends Seeder
                 'limite_cuantificacion' => '0,10',
                 'unidad' => 'mg/l',
                 'precio_unitario' => 50.00,
+                'matriz' => 'AGUA',
+                'tecnica' => 'ABSORCION ATOMICA - Llama normal',
                 'tipo' => 'AGUA',
             ],
             [
@@ -202,11 +212,11 @@ class ParametroSeeder extends Seeder
             [
                 'nombre' => 'Cloro Residual',
                 'metodo' => 'JISK',
-                // 'codigo_poe' => 'POE-1-58',
-                // 'limite_cuantificacion' => '0,01',
-                // 'unidad' => 'mg/l',
+                'codigo_poe' => 'POE-1-58',
+                'limite_cuantificacion' => '0,01',
+                'unidad' => 'mg/l',
                 'precio_unitario' => 45,
-                // 'matriz' => 'AGUA',
+                'matriz' => 'AGUA',
                 'tecnica' => 'FOTOMETRIA',
                 'tipo' => 'AGUA',
             ],
@@ -225,33 +235,33 @@ class ParametroSeeder extends Seeder
             [
                 'nombre' => 'Sulfatos - SO4',   // MEJORAR NOMBRE
                 'metodo' => 'JISK',
-                // 'codigo_poe' => 'POE-1-60',
-                // 'limite_cuantificacion' => '0,5',
-                // 'unidad' => 'mg/l',
+                'codigo_poe' => 'POE-1-60',
+                'limite_cuantificacion' => '0,5',
+                'unidad' => 'mg/l',
                 'precio_unitario' => 50,
-                // 'matriz' => 'AGUA',
+                'matriz' => 'AGUA',
                 'tecnica' => 'UV-VISIBLE',
                 'tipo' => 'AGUA',
             ],
             [
                 'nombre' => 'Fosfatos - PO4 ',   // MEJORAR NOMBRE
                 'metodo' => 'JISK',
-                // 'codigo_poe' => 'POE-1-61',
-                // 'limite_cuantificacion' => '0,025',
-                // 'unidad' => 'mg/l',
+                'codigo_poe' => 'POE-1-61',
+                'limite_cuantificacion' => '0,025',
+                'unidad' => 'mg/l',
                 'precio_unitario' => 60,
-                // 'matriz' => 'AGUA',
+                'matriz' => 'AGUA',
                 'tecnica' => 'UV-VISIBLE',
                 'tipo' => 'AGUA',
             ],
             [
                 'nombre' => 'Nitritos - NO2',   // MEJORAR NOMBRE
                 'metodo' => 'JISK',
-                // 'codigo_poe' => 'POE-1-62',
-                // 'limite_cuantificacion' => '0,01',
-                // 'unidad' => 'mg/l',
+                'codigo_poe' => 'POE-1-62',
+                'limite_cuantificacion' => '0,01',
+                'unidad' => 'mg/l',
                 'precio_unitario' => 60,
-                // 'matriz' => 'AGUA',
+                'matriz' => 'AGUA',
                 'tecnica' => 'UV-VISIBLE',
                 'tipo' => 'AGUA',
             ],
@@ -269,12 +279,12 @@ class ParametroSeeder extends Seeder
             [
                 'nombre' => 'Boro - B',   // MEJORAR NOMBRE
                 'metodo' => 'APHA 4500B',
-                // 'codigo_poe' => 'POE-1-65',
-                // 'limite_cuantificacion' => '0,05',
-                // 'unidad' => 'mg/l',
+                'codigo_poe' => 'POE-1-65',
+                'limite_cuantificacion' => '0,05',
+                'unidad' => 'mg/l',
                 'precio_unitario' => 60,
                 // 'matriz' => 'AGUA',
-                // 'tecnica' => 'ABSORCIÓN ATÓMICA',
+                'tecnica' => 'ABSORCIÓN ATÓMICA',
                 'tipo' => 'AGUA',
             ],
             [

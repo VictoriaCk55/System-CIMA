@@ -516,15 +516,13 @@
                                     <i class="fas fa-shield-alt me-2"></i> Permisos
                                 </a>
                             </li>
-                           
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item {{ request()->is('configuraciones*') ? 'active' : '' }}" href="{{ route('configuraciones.index') }}">
+                                    <i class="fas fa-sliders-h me-2"></i> Configuración
+                                </a>
+                            </li>
                         </ul>
-                    </li>
-                    @endrole
-                    @role('admin')
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->is('configuraciones*') ? 'active' : '' }}" href="{{ route('configuraciones.index') }}">
-                            <i class="fas fa-sliders-h me-1"></i> Configuracion
-                        </a>
                     </li>
                     @endrole
                     @endauth

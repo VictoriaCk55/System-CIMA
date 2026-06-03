@@ -1,4 +1,4 @@
-{{-- INFORME DE RESULTADOS CON LIMITES PERMISIBLES PDF --}}
+{{-- INFORME DE RESULTADOS PDF CON DATOS PERMISIBLES --}}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -198,7 +198,7 @@
                     </div>
 
                     <div style="font-size: 18px; font-weight: bold; margin-top: 2px;">
-                        {{ $cfg->config('institucion_nombre') }}
+                        {{ strtoupper($cfg->config('institucion_sigla')) }}
                     </div>
 
                     <div style="display: inline-block; padding: 2px 6px; margin-top: 2px; font-size: 8px;">
@@ -343,7 +343,7 @@
             </td>
 
             <!-- VALOR -->
-            <td style="border: 1px solid #000; background: #9bd9e6;">
+            <td colspan="2" style="border: 1px solid #000; background: #9bd9e6;">
                 {{ $proforma->generarCodigoLaboratorio(1) ?? '---' }}
             </td>
 
@@ -356,7 +356,7 @@
                 CÓDIGO CLIENTE:
             </td>
 
-            <td style="border: 1px solid #000; background: #9bd9e6;">
+            <td colspan="2" style="border: 1px solid #000; background: #9bd9e6;">
                 {{ $proforma->codigo_cliente ?? '---' }}
             </td>
 
@@ -369,7 +369,7 @@
                 FECHA DE MUESTREO:
             </td>
 
-            <td style="border: 1px solid #000; background: #9bd9e6;">
+            <td colspan="2" style="border: 1px solid #000; background: #9bd9e6;">
                 {{ $proforma->fecha_emision->format('d/m/Y') }}
             </td>
 
@@ -379,15 +379,15 @@
         <tr>
 
             <td rowspan="2" colspan="2" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 48px;">
-                COORDENADAS DE PUNTO DE MUESTREO:
+                COORDENADAS DE PUNTO DE MUESTREO: {{ $muestreo->zona_utm ?? 'ZONA 19K' }}
             </td>
 
             <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 24px;">
-                E
+                {{ $muestreo->punto_cardinal_1 ?? 'E' }}
             </td>
 
-            <td style="border: 1px solid #000;background: #9bd9e6;">
-                ---
+            <td colspan="2" style="border: 1px solid #000;background: #9bd9e6;">
+                {{ $muestreo->valor_cardinal_1 ?? '---' }}
             </td>
 
         </tr>
@@ -395,11 +395,11 @@
         <!-- N -->
         <tr>
             <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 24px;">
-                N
+                {{ $muestreo->punto_cardinal_2 ?? 'N' }}
             </td>
 
-            <td style="border: 1px solid #000; background: #9bd9e6;">
-                ---
+            <td colspan="2" style="border: 1px solid #000; background: #9bd9e6;">
+                {{ $muestreo->valor_cardinal_2 ?? '---' }}
             </td>
         </tr>
 
@@ -423,6 +423,10 @@
 
             <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold;">
                 RESULTADOS DE ENSAYO
+            </td>
+
+            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold;">
+                LIMITES PERMISIBLES
             </td>
         </tr>
 
@@ -448,6 +452,20 @@
 
             <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
                 {{ $resultados[$primeraMuestra][$p->id] ?? '---' }}
+            </td>
+
+            <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
+                @php $lp = $limitesMap[$p->nombre] ?? null; @endphp
+                @if($lp)
+                    @if($tipo === 'ANEXO_A-2')
+                        D: {{ $lp->limite_diario ?? '—' }}<br>
+                        M: {{ $lp->limite_mes ?? '—' }}
+                    @else
+                        {{ $lp->limite_permisible }}
+                    @endif
+                @else
+                    ---
+                @endif
             </td>
 
         </tr>
@@ -515,7 +533,7 @@
             <tr>
 
                 <td class="footer-text" style="border: none; text-align: center; font-size: 8px; line-height: 1.1;">
-                    {{ $cfg->config('footer_direccion') }} Edificio facultad de Ingenieria Minera bloque 1. segundo piso; {{ $cfg->config('footer_telefono') }}
+                    {{ $cfg->config('footer_direccion') }} Edificio facultad de Ingenieria Minera bloque 1. segundo piso; Telefono/Fax:62-29711
 
                     <br>
 

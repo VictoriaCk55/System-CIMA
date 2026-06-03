@@ -549,13 +549,13 @@
                         <p>{{ $proforma->tipo_muestra }}</p>
                     </div>
                 </div>
-                <div class="info-item">
+                <!-- <div class="info-item">
                     <div class="info-icon"><i class="fas fa-calendar"></i></div>
                     <div class="info-text">
                         <h4>FECHA</h4>
                         <p>{{ now()->format('d/m/Y') }}</p>
                     </div>
-                </div>
+                </div> -->
                 <div class="info-item">
                     <div class="info-icon"><i class="fas fa-chart-line"></i></div>
                     <div class="info-text">
@@ -595,8 +595,74 @@
                         value="{{ $fecha_conclusion_ensayo }}">
                     </div>
                 </div>
-                
-                
+
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <div class="info-text">
+                        <h4>TIPO LÍMITE PERMISIBLE</h4>
+                        <select id="tipoPermisible" class="modern-input" style="width: auto; min-width: 160px;">
+                            <option value="NB-512">NB-512</option>
+                            <option value="ANEXO_A-2">ANEXO A-2</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fas fa-globe-americas"></i>
+                    </div>
+                    <div class="info-text">
+                        <h4>ZONA UTM</h4>
+                        <select id="zonaUtm" name="zona_utm" class="modern-input" style="width: auto; min-width: 130px;">
+                            <option value="ZONA_19K">ZONA 19K</option>
+                            <option value="ZONA_20K">ZONA 20K</option>
+                            <option value="ZONA_21K">ZONA 21K</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                    <div class="info-text">
+                        <h4>PUNTO CARDINAL 1</h4>
+                        <select id="puntoCardinal1" name="punto_cardinal_1" class="modern-input" style="width: auto; min-width: 80px;">
+                            <option value="">--</option>
+                            <option value="E">Este (E)</option>
+                            <option value="N">Norte (N)</option>
+                            <option value="O">Oeste (O)</option>
+                            <option value="S">Sur (S)</option>
+                        </select>
+                    </div>
+                    <div class="info-text">
+                        <h4>VALOR 1</h4>
+                        <input type="text" id="valorCardinal1" name="valor_cardinal_1"
+                            class="modern-input" placeholder="Coord. 1" style="width: 100px;">
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fas fa-arrow-left"></i>
+                    </div>
+                    <div class="info-text">
+                        <h4>PUNTO CARDINAL 2</h4>
+                        <select id="puntoCardinal2" name="punto_cardinal_2" class="modern-input" style="width: auto; min-width: 80px;">
+                            <option value="">--</option>
+                            <option value="E">Este (E)</option>
+                            <option value="N">Norte (N)</option>
+                            <option value="O">Oeste (O)</option>
+                            <option value="S">Sur (S)</option>
+                        </select>
+                    </div>
+                    <div class="info-text">
+                        <h4>VALOR 2</h4>
+                        <input type="text" id="valorCardinal2" name="valor_cardinal_2"
+                            class="modern-input" placeholder="Coord. 2" style="width: 100px;">
+                    </div>
+                </div>
             </div>
             
             @php
@@ -635,7 +701,7 @@
                         <tr>
                             <td>Método ó técnica de ensayo</td>
                             @foreach($parametros as $p)
-                                <td>{{ $p->metodo ?? '---' }}</td>
+                                <td>{{ $p->codigo_poe ?? '---' }}</td>
                             @endforeach
                         </tr>
                         <tr>
@@ -719,6 +785,9 @@
                 class="btn-modern btn-purple">
                     <i class="fas fa-print"></i> Informe de Resultados
                 </a>
+                <a href="#" id="btnInformePermisible" class="btn-modern btn-primary">
+                    <i class="fas fa-file-pdf"></i> Informe c/Datos Permisibles
+                </a>
                 <a href="{{ route('proformas.show', $proforma->id) }}" class="btn-modern btn-gray">
                     <i class="fas fa-times"></i> Salir
                 </a>
@@ -756,7 +825,7 @@
             document.getElementById('btnEditar');
 
         const inputsEditables = document.querySelectorAll(
-            '.resultado, .responsable, .fecha, .vb, .fecha-inicio-ensayo, .fecha-conclusion-ensayo'
+            '.resultado, .responsable, .fecha, .vb, .fecha-inicio-ensayo, .fecha-conclusion-ensayo, #zonaUtm, #puntoCardinal1, #valorCardinal1, #puntoCardinal2, #valorCardinal2'
         );
 
         function csrfToken() {
@@ -825,7 +894,12 @@
                 fechas: {},
                 vbs: {},
                 fecha_inicio_ensayo: '',
-                fecha_conclusion_ensayo: ''
+                fecha_conclusion_ensayo: '',
+                zona_utm: '',
+                punto_cardinal_1: '',
+                valor_cardinal_1: '',
+                punto_cardinal_2: '',
+                valor_cardinal_2: ''
             };
 
             // RESULTADOS
@@ -878,6 +952,13 @@
             datos.fecha_conclusion_ensayo =
                 document.getElementById('fecha_conclusion_ensayo').value;
 
+            // COORDENADAS
+            datos.zona_utm = document.getElementById('zonaUtm').value;
+            datos.punto_cardinal_1 = document.getElementById('puntoCardinal1').value;
+            datos.valor_cardinal_1 = document.getElementById('valorCardinal1').value;
+            datos.punto_cardinal_2 = document.getElementById('puntoCardinal2').value;
+            datos.valor_cardinal_2 = document.getElementById('valorCardinal2').value;
+
             return datos;
         }
 
@@ -890,6 +971,11 @@
             formData.append('vbs', JSON.stringify(datos.vbs));
             formData.append('fecha_inicio_ensayo', datos.fecha_inicio_ensayo);
             formData.append('fecha_conclusion_ensayo', datos.fecha_conclusion_ensayo);
+            formData.append('zona_utm', datos.zona_utm);
+            formData.append('punto_cardinal_1', datos.punto_cardinal_1);
+            formData.append('valor_cardinal_1', datos.valor_cardinal_1);
+            formData.append('punto_cardinal_2', datos.punto_cardinal_2);
+            formData.append('valor_cardinal_2', datos.valor_cardinal_2);
 
             fetch('{{ route("proformas.resultados.guardar", $proforma->id) }}', {
                 method: 'POST',
@@ -996,6 +1082,13 @@
                     document.getElementById('fecha_conclusion_ensayo').value = data.fecha_conclusion_ensayo;
                 }
 
+                // COORDENADAS
+                if (data.zona_utm) document.getElementById('zonaUtm').value = data.zona_utm;
+                if (data.punto_cardinal_1) document.getElementById('puntoCardinal1').value = data.punto_cardinal_1;
+                if (data.valor_cardinal_1) document.getElementById('valorCardinal1').value = data.valor_cardinal_1;
+                if (data.punto_cardinal_2) document.getElementById('puntoCardinal2').value = data.punto_cardinal_2;
+                if (data.valor_cardinal_2) document.getElementById('valorCardinal2').value = data.valor_cardinal_2;
+
                 estadoActual = 'guardado';
                 actualizarEstadoUI();
                 mostrarToast('✅ Datos cargados correctamente');
@@ -1094,6 +1187,14 @@
 
             }, 2500);
         }
+
+        // BOTON INFORME CON DATOS PERMISIBLES
+        document.getElementById('btnInformePermisible')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            const tipo = document.getElementById('tipoPermisible').value;
+            const url = '{{ route("proformas.informe-permisibles-pdf", ["id" => $proforma->id, "tipo" => "TIPO_PLACEHOLDER"]) }}'.replace('TIPO_PLACEHOLDER', tipo);
+            window.open(url, '_blank');
+        });
 
         // AUTO CARGAR
         window.addEventListener('DOMContentLoaded', () => {

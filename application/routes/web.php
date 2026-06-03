@@ -161,6 +161,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/proformas/{id}/resultados/cargar', [ResultadosController::class, 'cargarResultados'])->name('proformas.resultados.cargar')->middleware('permission:cargar resultados');
     Route::get('/proformas/{id}/resultados/pdf', [ResultadosController::class, 'generarPdfResultados'])->name('proformas.resultados.pdf')->middleware('permission:generar pdf resultados');
     Route::get('/proformas/{id}/imprimir-resultados', [ResultadosController::class, 'imprimirResultados'])->name('proformas.informe-resultados-pdf')->middleware('permission:generar informe resultados');
+    Route::get('/proformas/{id}/imprimir-permisibles/{tipo}', [ResultadosController::class, 'imprimirResultadosPermisibles'])->name('proformas.informe-permisibles-pdf')->middleware('permission:generar informe resultados');
 
     // INFORMES - Lectura
     Route::get('/informes', [InformeController::class, 'index'])->name('informes.index')->middleware('role:admin|tecnico|analista');
