@@ -367,8 +367,15 @@
                                                         Generar PDF
                                                     </a>
                                                 </li>
-                                                
-                                                <!-- Cadena de Custodia -->
+
+                                                @if($proforma->tipo === 'AMBIENTAL')
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ route('reportes.ambiental.index', $proforma) }}" title="Reporte Ambiental">
+                                                        <i class="fas fa-file-signature me-2" style="color: #6f42c1;"></i>Reporte Ambiental
+                                                    </a>
+                                                </li>
+                                                @else
+                                                <!-- Cadena de Custodia (solo AGUA / INVESTIGACIÓN) -->
                                                 @can('generar cadena custodia')
                                                 <li>
                                                     <a class="dropdown-item" 
@@ -381,7 +388,7 @@
                                                 </li>
                                                 @endcan
                                                 
-                                                <!-- Formulario de resultados -->
+                                                <!-- Formulario de resultados (solo AGUA / INVESTIGACIÓN) -->
                                                 @can('ver resultados')
                                                 <li>
                                                     <a class="dropdown-item" 
@@ -392,6 +399,7 @@
                                                     </a>
                                                 </li>
                                                 @endcan
+                                                @endif
                                             </ul>
                                         </div>
                                     </td>

@@ -226,12 +226,10 @@
             <td class="titulo center" style="font-size: 18px;">
                 INFORME DE ENSAYO
             </td>
-            @php
-                $partes = (explode('-', $proforma->codigo));
-                $numero = end($partes);
-            @endphp
-            <td width="100" class="center " style="color: #ef1111;">
-                <strong>Nº:</strong> {{ $numero }}
+        </tr>
+        <tr>
+            <td style="text-align: right; color: #ef1111; font-size: 16px;">
+                <strong>Nº:</strong> {{ $proforma->numero_recepcion ?? $proforma->codigo }}
             </td>
         </tr>
     </table>

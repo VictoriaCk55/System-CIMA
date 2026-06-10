@@ -332,6 +332,41 @@
                 </div>
             </div>
 
+            @if($proforma->logisticasMuestreo->count() > 0)
+            <div class="card mb-4">
+                <div class="card-header" style="background-color: #ffc107; border-bottom: none;">
+                    <h5 class="mb-0" style="color: #000000;">
+                        <i class="fas fa-truck me-2" style="color: #000000;"></i>
+                        Logística de Muestreo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th class="text-center">Cantidad</th>
+                                    <th class="text-end">Costo Unit.</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($proforma->logisticasMuestreo as $log)
+                                <tr>
+                                    <td>{{ $log->categoria }} - {{ $log->descripcion }}</td>
+                                    <td class="text-center">{{ $log->pivot->cantidad }}</td>
+                                    <td class="text-end">Bs. {{ number_format($log->costo, 2) }}</td>
+                                    <td class="text-end">Bs. {{ number_format($log->pivot->subtotal, 2) }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             @if($proforma->observaciones)
             <div class="card mb-4">
                 <div class="card-header" style="background-color: #ffc107; border-bottom: none;">

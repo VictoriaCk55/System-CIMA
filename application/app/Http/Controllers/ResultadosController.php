@@ -87,6 +87,7 @@ class ResultadosController extends Controller
             $proforma->valor_cardinal_1 = $request->valor_cardinal_1 ?? $proforma->valor_cardinal_1;
             $proforma->punto_cardinal_2 = $request->punto_cardinal_2 ?? $proforma->punto_cardinal_2;
             $proforma->valor_cardinal_2 = $request->valor_cardinal_2 ?? $proforma->valor_cardinal_2;
+            $proforma->numero_recepcion = $request->numero_recepcion ?? $proforma->numero_recepcion;
             $proforma->save();
 
             // Crear mapa de parámetros
@@ -206,6 +207,7 @@ class ResultadosController extends Controller
                 'valor_cardinal_1' => $proforma->valor_cardinal_1 ?? '',
                 'punto_cardinal_2' => $proforma->punto_cardinal_2 ?? '',
                 'valor_cardinal_2' => $proforma->valor_cardinal_2 ?? '',
+                'numero_recepcion' => $proforma->numero_recepcion ?? '',
             ]);
 
         } catch (\Exception $e) {

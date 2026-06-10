@@ -233,6 +233,16 @@
             font-weight: 700;
             color: #1a1a2e;
         }
+
+        .info-item-stacked {
+            align-items: flex-start;
+        }
+
+        .info-item-stacked .stacked-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
         
         .estado-badge {
             display: inline-block;
@@ -536,6 +546,15 @@
                     </div>
                 </div>
                 <div class="info-item">
+                    <div class="info-icon"><i class="fas fa-sort-numeric-down"></i></div>
+                    <div class="info-text">
+                        <h4>N° RECEPCIÓN</h4>
+                        <input type="text" id="numeroRecepcion" name="numero_recepcion"
+                            class="modern-input" value="{{ $proforma->numero_recepcion ?? '' }}"
+                            placeholder="N°" style="width: 120px;">
+                    </div>
+                </div>
+                <div class="info-item">
                     <div class="info-icon"><i class="fas fa-building"></i></div>
                     <div class="info-text">
                         <h4>CLIENTE</h4>
@@ -622,45 +641,49 @@
                     </div>
                 </div>
 
-                <div class="info-item">
+                <div class="info-item info-item-stacked">
                     <div class="info-icon">
                         <i class="fas fa-arrow-right"></i>
                     </div>
-                    <div class="info-text">
-                        <h4>PUNTO CARDINAL 1</h4>
-                        <select id="puntoCardinal1" name="punto_cardinal_1" class="modern-input" style="width: auto; min-width: 80px;">
-                            <option value="">--</option>
-                            <option value="E">Este (E)</option>
-                            <option value="N">Norte (N)</option>
-                            <option value="O">Oeste (O)</option>
-                            <option value="S">Sur (S)</option>
-                        </select>
-                    </div>
-                    <div class="info-text">
-                        <h4>VALOR 1</h4>
-                        <input type="text" id="valorCardinal1" name="valor_cardinal_1"
-                            class="modern-input" placeholder="Coord. 1" style="width: 100px;">
+                    <div class="stacked-fields">
+                        <div class="info-text">
+                            <h4>PUNTO CARDINAL 1</h4>
+                            <select id="puntoCardinal1" name="punto_cardinal_1" class="modern-input" style="width: auto; min-width: 80px;">
+                                <option value="">--</option>
+                                <option value="E">Este (E)</option>
+                                <option value="N">Norte (N)</option>
+                                <option value="O">Oeste (O)</option>
+                                <option value="S">Sur (S)</option>
+                            </select>
+                        </div>
+                        <div class="info-text">
+                            <h4>VALOR 1</h4>
+                            <input type="text" id="valorCardinal1" name="valor_cardinal_1"
+                                class="modern-input" placeholder="Coord. 1" style="width: 100px;">
+                        </div>
                     </div>
                 </div>
 
-                <div class="info-item">
+                <div class="info-item info-item-stacked">
                     <div class="info-icon">
                         <i class="fas fa-arrow-left"></i>
                     </div>
-                    <div class="info-text">
-                        <h4>PUNTO CARDINAL 2</h4>
-                        <select id="puntoCardinal2" name="punto_cardinal_2" class="modern-input" style="width: auto; min-width: 80px;">
-                            <option value="">--</option>
-                            <option value="E">Este (E)</option>
-                            <option value="N">Norte (N)</option>
-                            <option value="O">Oeste (O)</option>
-                            <option value="S">Sur (S)</option>
-                        </select>
-                    </div>
-                    <div class="info-text">
-                        <h4>VALOR 2</h4>
-                        <input type="text" id="valorCardinal2" name="valor_cardinal_2"
-                            class="modern-input" placeholder="Coord. 2" style="width: 100px;">
+                    <div class="stacked-fields">
+                        <div class="info-text">
+                            <h4>PUNTO CARDINAL 2</h4>
+                            <select id="puntoCardinal2" name="punto_cardinal_2" class="modern-input" style="width: auto; min-width: 80px;">
+                                <option value="">--</option>
+                                <option value="E">Este (E)</option>
+                                <option value="N">Norte (N)</option>
+                                <option value="O">Oeste (O)</option>
+                                <option value="S">Sur (S)</option>
+                            </select>
+                        </div>
+                        <div class="info-text">
+                            <h4>VALOR 2</h4>
+                            <input type="text" id="valorCardinal2" name="valor_cardinal_2"
+                                class="modern-input" placeholder="Coord. 2" style="width: 100px;">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -786,7 +809,7 @@
                     <i class="fas fa-print"></i> Informe de Resultados
                 </a>
                 <a href="#" id="btnInformePermisible" class="btn-modern btn-primary">
-                    <i class="fas fa-file-pdf"></i> Informe c/Datos Permisibles
+                    <i class="fas fa-file-pdf"></i> TIPO LÍMITE PERMISIBLE
                 </a>
                 <a href="{{ route('proformas.show', $proforma->id) }}" class="btn-modern btn-gray">
                     <i class="fas fa-times"></i> Salir
@@ -825,7 +848,7 @@
             document.getElementById('btnEditar');
 
         const inputsEditables = document.querySelectorAll(
-            '.resultado, .responsable, .fecha, .vb, .fecha-inicio-ensayo, .fecha-conclusion-ensayo, #zonaUtm, #puntoCardinal1, #valorCardinal1, #puntoCardinal2, #valorCardinal2'
+            '.resultado, .responsable, .fecha, .vb, .fecha-inicio-ensayo, .fecha-conclusion-ensayo, #zonaUtm, #puntoCardinal1, #valorCardinal1, #puntoCardinal2, #valorCardinal2, #numeroRecepcion, #tipoPermisible'
         );
 
         function csrfToken() {
@@ -899,7 +922,8 @@
                 punto_cardinal_1: '',
                 valor_cardinal_1: '',
                 punto_cardinal_2: '',
-                valor_cardinal_2: ''
+                valor_cardinal_2: '',
+                numero_recepcion: ''
             };
 
             // RESULTADOS
@@ -958,6 +982,7 @@
             datos.valor_cardinal_1 = document.getElementById('valorCardinal1').value;
             datos.punto_cardinal_2 = document.getElementById('puntoCardinal2').value;
             datos.valor_cardinal_2 = document.getElementById('valorCardinal2').value;
+            datos.numero_recepcion = document.getElementById('numeroRecepcion').value;
 
             return datos;
         }
@@ -976,6 +1001,7 @@
             formData.append('valor_cardinal_1', datos.valor_cardinal_1);
             formData.append('punto_cardinal_2', datos.punto_cardinal_2);
             formData.append('valor_cardinal_2', datos.valor_cardinal_2);
+            formData.append('numero_recepcion', datos.numero_recepcion);
 
             fetch('{{ route("proformas.resultados.guardar", $proforma->id) }}', {
                 method: 'POST',
@@ -1088,6 +1114,7 @@
                 if (data.valor_cardinal_1) document.getElementById('valorCardinal1').value = data.valor_cardinal_1;
                 if (data.punto_cardinal_2) document.getElementById('puntoCardinal2').value = data.punto_cardinal_2;
                 if (data.valor_cardinal_2) document.getElementById('valorCardinal2').value = data.valor_cardinal_2;
+                if (data.numero_recepcion) document.getElementById('numeroRecepcion').value = data.numero_recepcion;
 
                 estadoActual = 'guardado';
                 actualizarEstadoUI();

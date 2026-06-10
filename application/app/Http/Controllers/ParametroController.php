@@ -246,6 +246,7 @@ class ParametroController extends Controller
     {
         try {
             $term = $request->get('q', '');
+            $categoria = $request->get('categoria', '');
             $incluirEliminados = $request->get('incluir_eliminados', false);
 
             Log::info('Buscando parámetros con término: '.$term);
@@ -256,19 +257,23 @@ class ParametroController extends Controller
                 $query->withTrashed();
             }
 
+            if ($categoria) {
+                $query->where('categoria', $categoria);
+            }
+
             if (empty($term)) {
                 $parametros = $query->latest()->limit(10)->get();
             } else {
-                $parametros = $query->where('nombre', 'ILIKE', '%'.$term.'%')
-                    ->orWhere('metodo', 'ILIKE', '%'.$term.'%')
-                    ->orWhere('codigo_poe', 'ILIKE', '%'.$term.'%')
-                    // ->orWhere('limite_cuantificacion', 'ILIKE', '%'.$term.'%')
-                    ->orWhere('unidad', 'ILIKE', '%'.$term.'%')
-                    ->orWhere('matriz', 'ILIKE', '%'.$term.'%')
-                    ->orWhere('tecnica', 'ILIKE', '%'.$term.'%')
-                    ->orWhere('tipo', 'ILIKE', '%'.$term.'%')
-                    ->limit(20)
-                    ->get();
+                $query->where(function ($q) use ($term) {
+                    $q->where('nombre', 'ILIKE', '%'.$term.'%')
+                        ->orWhere('metodo', 'ILIKE', '%'.$term.'%')
+                        ->orWhere('codigo_poe', 'ILIKE', '%'.$term.'%')
+                        ->orWhere('unidad', 'ILIKE', '%'.$term.'%')
+                        ->orWhere('matriz', 'ILIKE', '%'.$term.'%')
+                        ->orWhere('tecnica', 'ILIKE', '%'.$term.'%')
+                        ->orWhere('tipo', 'ILIKE', '%'.$term.'%');
+                });
+                $parametros = $query->limit(20)->get();
             }
 
             $results = [];

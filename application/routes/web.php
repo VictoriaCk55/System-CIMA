@@ -185,3 +185,17 @@ Route::fallback(function () {
 
 // ========== CADENA DE CUSTODIA ==========
 Route::get('proformas/{proforma}/cadena-custodia', [ProformaController::class, 'pdfCadenaCustodia'])->name('proformas.cadena-custodia')->middleware('permission:generar cadena custodia');
+
+// ========== REPORTE AMBIENTAL ==========
+Route::prefix('proformas/{proforma}/reporte-ambiental')->name('reportes.ambiental.')->middleware('role:admin|tecnico|analista')->group(function () {
+    Route::get('/', [App\Http\Controllers\ReporteAmbientalController::class, 'index'])->name('index');
+    Route::get('/aire', [App\Http\Controllers\ReporteAmbientalController::class, 'aire'])->name('aire');
+    Route::get('/ruido', [App\Http\Controllers\ReporteAmbientalController::class, 'ruido'])->name('ruido');
+    Route::get('/gases', [App\Http\Controllers\ReporteAmbientalController::class, 'gases'])->name('gases');
+    Route::post('/', [App\Http\Controllers\ReporteAmbientalController::class, 'store'])->name('store');
+});
+Route::get('/reportes-ambientales/{reporte}/pdf', [App\Http\Controllers\ReporteAmbientalController::class, 'pdf'])->name('reportes.ambiental.pdf')->middleware('role:admin|tecnico|analista');
+Route::get('/reportes-ambientales/{reporte}/pdf/aire', [App\Http\Controllers\ReporteAmbientalController::class, 'pdfAire'])->name('reportes.ambiental.pdf.aire')->middleware('role:admin|tecnico|analista');
+Route::get('/reportes-ambientales/{reporte}/pdf/ruido', [App\Http\Controllers\ReporteAmbientalController::class, 'pdfRuido'])->name('reportes.ambiental.pdf.ruido')->middleware('role:admin|tecnico|analista');
+Route::get('/reportes-ambientales/{reporte}/pdf/gases', [App\Http\Controllers\ReporteAmbientalController::class, 'pdfGases'])->name('reportes.ambiental.pdf.gases')->middleware('role:admin|tecnico|analista');
+Route::get('/reportes-ambientales/{reporte}/descargar', [App\Http\Controllers\ReporteAmbientalController::class, 'downloadPdf'])->name('reportes.ambiental.download')->middleware('role:admin|tecnico|analista');

@@ -254,7 +254,7 @@ class Proforma extends Model
     public function parametros()
     {
         return $this->belongsToMany(Parametro::class, 'proforma_parametro')
-            ->withPivot('cantidad_muestras', 'precio_unitario')
+            ->withPivot('cantidad_muestras', 'precio_unitario', 'metodo')
             ->withTimestamps();
     }
 
@@ -273,19 +273,33 @@ class Proforma extends Model
         return $this->belongsTo(User::class, 'modificado_por');
     }
 
+    public function logisticasMuestreo()
+    {
+        return $this->belongsToMany(LogisticaMuestreo::class, 'proforma_logisticas')
+            ->withPivot('cantidad', 'subtotal')
+            ->withTimestamps();
+    }
+
     // ========== MÉTODOS ==========
     public function calcularTotales()
     {
         $subtotal = 0;
+        $totalLogistica = 0;
 
         foreach ($this->parametros as $parametro) {
             $subtotal += $parametro->pivot->precio_unitario * $parametro->pivot->cantidad_muestras;
         }
 
+        if ($this->relationLoaded('logisticasMuestreo') || $this->exists) {
+            foreach ($this->logisticasMuestreo as $log) {
+                $totalLogistica += $log->pivot->subtotal;
+            }
+        }
+
         $this->aplica_descuento_institucional = ($this->tipo == 'INVESTIGACION');
         $descuento = $this->aplica_descuento_institucional ? $subtotal * 0.20 : 0;
 
-        $total = $subtotal - $descuento;
+        $total = $subtotal + $totalLogistica - $descuento;
         $saldo = $total - $this->adelanto;
 
         $this->subtotal = $subtotal;

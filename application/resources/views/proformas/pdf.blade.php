@@ -540,15 +540,49 @@
             <tbody>
                 @if($proforma->parametros->count() > 0)
                     @foreach($proforma->parametros as $index => $parametro)
+                    @php
+                        $nombreParam = $parametro->nombre;
+                        $metodoParam = $parametro->metodo;
+                        if ($parametro->categoria === 'RUIDO') {
+                            $nombreParam = 'RUIDO';
+                            $metodoParam = 'SONÓMETRO';
+                        } elseif ($parametro->categoria === 'GASES') {
+                            $nombreParam = 'Gases';
+                            $metodoParam = $parametro->pivot->metodo ?? $parametro->metodo;
+                        }
+                    @endphp
                     <tr>
                         <td class="align-center">{{ $index + 1 }}</td>
-                        <td>{{ $parametro->nombre }}</td>
-                        <td>{{ $parametro->metodo }}</td>
+                        <td>{{ $nombreParam }}</td>
+                        <td>{{ $metodoParam }}</td>
                         <td class="align-center">{{ $parametro->pivot->cantidad_muestras }}</td>
                         <td class="align-right">Bs. {{ number_format($parametro->pivot->precio_unitario, 2) }}</td>
                         <td class="align-right">Bs. {{ number_format($parametro->pivot->precio_unitario * $parametro->pivot->cantidad_muestras, 2) }}</td>
                     </tr>
                     @endforeach
+
+                    @if($proforma->tipo === 'AMBIENTAL' && $proforma->logisticasMuestreo->count() > 0)
+                    @php
+                        $puntosItems = $proforma->logisticasMuestreo->where('categoria', 'PUNTOS');
+                        $totalPuntos = $puntosItems->sum(fn($l) => $l->pivot->cantidad);
+                        $totalLogistica = $proforma->logisticasMuestreo->sum(fn($l) => $l->pivot->subtotal);
+                        $precioUnitarioLog = $totalPuntos > 0 ? $totalLogistica / $totalPuntos : 0;
+                        $tiposPuntos = $puntosItems->pluck('descripcion')->map(function($d) {
+                            return trim(str_replace(['PUNTOS DE MUESTREO ', 'PUNTO DE MUESTREO '], '', $d));
+                        })->implode(', ');
+                    @endphp
+                    <tr style="height: 45px; min-height: 45px;">
+                        <td class="align-center">{{ $proforma->parametros->count() + 1 }}</td>
+                        <td>Logística de muestreo de: {{ $tiposPuntos ?: 'PUNTOS' }}</td>
+                        <td style="text-align: center; vertical-align: middle;">
+                            <strong style="font-size: 8px;">NÚMERO DE PUNTOS TOTALES</strong><br>
+                            <span style="font-size: 14px; font-weight: bold;">{{ $totalPuntos }}</span>
+                        </td>
+                        <td class="align-center"><strong>{{ $totalPuntos }}</strong></td>
+                        <td class="align-right">Bs. {{ number_format($precioUnitarioLog, 2) }}</td>
+                        <td class="align-right">Bs. {{ number_format($totalLogistica, 2) }}</td>
+                    </tr>
+                    @endif
                 @else
                     <tr>
                         <td colspan="6" class="align-center">No hay parámetros asignados</td>
@@ -582,6 +616,7 @@
         <div class="total-in-words">
             <strong>{{ $totalEnLetras }}</strong>
         </div>
+
     </div>
 
     <!-- RESUMEN FINANCIERO -->

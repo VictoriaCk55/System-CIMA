@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
+use App\Models\LogisticaMuestreo;
 use App\Models\Parametro;
 use App\Models\Proforma;
 use App\Traits\RegistraMovimientoFinanciero;
@@ -169,11 +170,15 @@ class ProformaController extends Controller
 
         $clientes = Cliente::orderBy('razon_social')->get();
         $parametros = Parametro::orderBy('nombre')->get();
+        $logisticasMuestreo = LogisticaMuestreo::where('estado', true)->orderBy('categoria')->orderBy('costo')->get();
+        $parametrosAmbientales = Parametro::where('tipo', 'AMBIENTAL')->orderBy('categoria')->orderBy('nombre')->get();
 
         return view('proformas.create', [
             'clientes' => $clientes,
             'parametros' => $parametros,
             'muestreadoPorOpciones' => $this->muestreadoPorOpciones,
+            'logisticasMuestreo' => $logisticasMuestreo,
+            'parametrosAmbientales' => $parametrosAmbientales,
         ]);
     }
 
@@ -209,6 +214,9 @@ class ProformaController extends Controller
             'parametros' => 'required|array|min:1',
             'parametros.*.id' => 'required|exists:parametros,id',
             'parametros.*.cantidad' => 'required|integer|min:1',
+            'logisticas' => 'nullable|array',
+            'logisticas.*.id' => 'required_with:logisticas|exists:logisticas_muestreo,id',
+            'logisticas.*.cantidad' => 'required_with:logisticas|integer|min:1',
         ]);
 
         // ===== VALIDACIÓN ESTRICTA DE PARÁMETROS DUPLICADOS =====
@@ -276,10 +284,30 @@ class ProformaController extends Controller
             foreach ($request->parametros as $parametroData) {
                 if (isset($parametroData['id']) && isset($parametroData['cantidad'])) {
                     $parametro = Parametro::find($parametroData['id']);
-                    $proforma->parametros()->attach($parametroData['id'], [
+                    $pivotData = [
                         'cantidad_muestras' => $parametroData['cantidad'],
                         'precio_unitario' => $parametro->precio_unitario,
-                    ]);
+                    ];
+                    if (isset($parametroData['metodo'])) {
+                        $pivotData['metodo'] = $parametroData['metodo'];
+                    }
+                    $proforma->parametros()->attach($parametroData['id'], $pivotData);
+                }
+            }
+
+            // Guardar logística de muestreo
+            $totalLogistica = 0;
+            if ($request->has('logisticas') && $request->tipo === 'AMBIENTAL') {
+                foreach ($request->logisticas as $logData) {
+                    if (isset($logData['id']) && isset($logData['cantidad'])) {
+                        $logistica = LogisticaMuestreo::find($logData['id']);
+                        $subtotalLog = $logistica->costo * $logData['cantidad'];
+                        $proforma->logisticasMuestreo()->attach($logData['id'], [
+                            'cantidad' => $logData['cantidad'],
+                            'subtotal' => $subtotalLog,
+                        ]);
+                        $totalLogistica += $subtotalLog;
+                    }
                 }
             }
 
@@ -292,7 +320,7 @@ class ProformaController extends Controller
             }
 
             $descuento = ($proforma->tipo === 'INVESTIGACION') ? $subtotal * 0.20 : 0;
-            $total = $subtotal - $descuento;
+            $total = $subtotal + $totalLogistica - $descuento;
             $saldo = $total - $proforma->adelanto;
 
             $proforma->subtotal = $subtotal;
@@ -331,7 +359,7 @@ class ProformaController extends Controller
      */
     public function show(Proforma $proforma)
     {
-        $proforma->load(['cliente', 'parametros', 'informe', 'usuarioModificacion']);
+        $proforma->load(['cliente', 'parametros', 'informe', 'usuarioModificacion', 'logisticasMuestreo']);
 
         return view('proformas.show', compact('proforma'));
     }
@@ -351,14 +379,20 @@ class ProformaController extends Controller
                 ->with('error', "❌ No se puede editar una proforma en estado {$proforma->estado}");
         }
 
+        $proforma->load('logisticasMuestreo');
+
         $clientes = Cliente::orderBy('razon_social')->get();
         $parametros = Parametro::orderBy('nombre')->get();
+        $logisticasMuestreo = LogisticaMuestreo::where('estado', true)->orderBy('categoria')->orderBy('costo')->get();
+        $parametrosAmbientales = Parametro::where('tipo', 'AMBIENTAL')->orderBy('categoria')->orderBy('nombre')->get();
 
         return view('proformas.edit', [
             'proforma' => $proforma,
             'clientes' => $clientes,
             'parametros' => $parametros,
             'muestreadoPorOpciones' => $this->muestreadoPorOpciones,
+            'logisticasMuestreo' => $logisticasMuestreo,
+            'parametrosAmbientales' => $parametrosAmbientales,
         ]);
     }
 
@@ -399,6 +433,9 @@ class ProformaController extends Controller
             'parametros' => 'required|array|min:1',
             'parametros.*.id' => 'required|exists:parametros,id',
             'parametros.*.cantidad' => 'required|integer|min:1',
+            'logisticas' => 'nullable|array',
+            'logisticas.*.id' => 'required_with:logisticas|exists:logisticas_muestreo,id',
+            'logisticas.*.cantidad' => 'required_with:logisticas|integer|min:1',
             'justificacion_modificacion' => 'nullable|string',
         ]);
 
@@ -479,15 +516,39 @@ class ProformaController extends Controller
             foreach ($request->parametros as $parametroData) {
                 if (isset($parametroData['id']) && isset($parametroData['cantidad'])) {
                     $parametro = Parametro::find($parametroData['id']);
-                    $parametrosSync[$parametroData['id']] = [
+                    $pivotData = [
                         'cantidad_muestras' => $parametroData['cantidad'],
                         'precio_unitario' => $parametro->precio_unitario,
                     ];
+                    if (isset($parametroData['metodo'])) {
+                        $pivotData['metodo'] = $parametroData['metodo'];
+                    }
+                    $parametrosSync[$parametroData['id']] = $pivotData;
                 }
             }
 
             $proforma->parametros()->sync($parametrosSync);
             $proforma->load('parametros');
+
+            // Actualizar logística de muestreo
+            $totalLogistica = 0;
+            if ($request->has('logisticas') && $request->tipo === 'AMBIENTAL') {
+                $logisticasSync = [];
+                foreach ($request->logisticas as $logData) {
+                    if (isset($logData['id']) && isset($logData['cantidad'])) {
+                        $logistica = LogisticaMuestreo::find($logData['id']);
+                        $subtotalLog = $logistica->costo * $logData['cantidad'];
+                        $logisticasSync[$logData['id']] = [
+                            'cantidad' => $logData['cantidad'],
+                            'subtotal' => $subtotalLog,
+                        ];
+                        $totalLogistica += $subtotalLog;
+                    }
+                }
+                $proforma->logisticasMuestreo()->sync($logisticasSync);
+            } else {
+                $proforma->logisticasMuestreo()->detach();
+            }
 
             // Calcular totales
             $subtotal = 0;
@@ -496,7 +557,7 @@ class ProformaController extends Controller
             }
 
             $descuento = ($proforma->tipo === 'INVESTIGACION') ? $subtotal * 0.20 : 0;
-            $total = $subtotal - $descuento;
+            $total = $subtotal + $totalLogistica - $descuento;
             $saldo = $total - $proforma->adelanto;
 
             $proforma->subtotal = $subtotal;
@@ -611,7 +672,7 @@ class ProformaController extends Controller
     public function pdf(Proforma $proforma)
     {
         try {
-            $proforma->load(['cliente', 'parametros', 'usuarioModificacion']);
+            $proforma->load(['cliente', 'parametros', 'usuarioModificacion', 'logisticasMuestreo']);
 
             $entero = intval($proforma->total);
             $decimal = round(($proforma->total - $entero) * 100);

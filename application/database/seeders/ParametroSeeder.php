@@ -10,30 +10,131 @@ class ParametroSeeder extends Seeder
     public function run(): void
     {
         $parametros = [
-            // Parámetros AMBIENTALES
+            // ===== PARÁMETROS AMBIENTALES =====
+            // -- AIRE: Partículas --
             [
-                'nombre' => 'PST',
+                'nombre' => 'PTS',
+                'nombre_completo' => 'Partículas Totales Suspendidas',
                 'metodo' => 'TAS (Tactical Air Sampler) USA',
-                'precio_unitario' => 200.00,
+                'descripcion' => 'Partículas Totales Suspendidas - método TAS USA',
+                'precio_unitario' => 250.00,
                 'tipo' => 'AMBIENTAL',
+                'categoria' => 'AIRE',
+                'unidad_default' => 'µg/m³',
             ],
             [
-                'nombre' => 'PM-10',
+                'nombre' => 'PM10',
+                'nombre_completo' => 'Partículas menores a 10 micras',
                 'metodo' => 'TAS (Tactical Air Sampler) USA',
-                'precio_unitario' => 200.00,
+                'descripcion' => 'Partículas menores a 10 micras - método TAS USA',
+                'precio_unitario' => 250.00,
                 'tipo' => 'AMBIENTAL',
+                'categoria' => 'AIRE',
+                'unidad_default' => 'µg/m³',
             ],
             [
-                'nombre' => 'Ruido',
+                'nombre' => 'PM4',
+                'nombre_completo' => 'Partículas menores a 4 micras',
+                'metodo' => 'TAS (Tactical Air Sampler) USA',
+                'descripcion' => 'Partículas menores a 4 micras - método TAS USA',
+                'precio_unitario' => 250.00,
+                'tipo' => 'AMBIENTAL',
+                'categoria' => 'AIRE',
+                'unidad_default' => 'µg/m³',
+            ],
+            [
+                'nombre' => 'PM2.5',
+                'nombre_completo' => 'Partículas menores a 2.5 micras',
+                'metodo' => 'TAS (Tactical Air Sampler) USA',
+                'descripcion' => 'Partículas menores a 2.5 micras - método TAS USA',
+                'precio_unitario' => 250.00,
+                'tipo' => 'AMBIENTAL',
+                'categoria' => 'AIRE',
+                'unidad_default' => 'µg/m³',
+            ],
+            [
+                'nombre' => 'PM1',
+                'nombre_completo' => 'Partículas menores a 1 micra',
+                'metodo' => 'TAS (Tactical Air Sampler) USA',
+                'descripcion' => 'Partículas menores a 1 micra - método TAS USA',
+                'precio_unitario' => 250.00,
+                'tipo' => 'AMBIENTAL',
+                'categoria' => 'AIRE',
+                'unidad_default' => 'µg/m³',
+            ],
+            // -- RUIDO --
+            [
+                'nombre' => 'RUIDO',
+                'nombre_completo' => 'Medición de Ruido Ambiental',
                 'metodo' => 'SONÓMETRO',
-                'precio_unitario' => 60.00,
+                'descripcion' => 'Medición de Ruido Ambiental - método SONÓMETRO',
+                'tipo_medicion' => 'Ambiental',
+                'precio_unitario' => 90.00,
                 'tipo' => 'AMBIENTAL',
+                'categoria' => 'RUIDO',
+                'unidad_default' => 'dB(A)',
             ],
             [
-                'nombre' => 'Logística de muestreo',
-                'metodo' => 'Número de puntos totales',
-                'precio_unitario' => 1220.00,
+                'nombre' => 'RUIDO',
+                'nombre_completo' => 'Medición de Ruido Industrial',
+                'metodo' => 'SONÓMETRO',
+                'descripcion' => 'Medición de Ruido Industrial - método SONÓMETRO',
+                'tipo_medicion' => 'Industrial',
+                'precio_unitario' => 90.00,
                 'tipo' => 'AMBIENTAL',
+                'categoria' => 'RUIDO',
+                'unidad_default' => 'dB(A)',
+            ],
+            // -- GASES --
+            [
+                'nombre' => 'NO',
+                'nombre_completo' => 'Monóxido de Nitrógeno',
+                'metodo' => 'Sensor Electroquímico/Analizador de Gases',
+                'descripcion' => 'Monóxido de Nitrógeno - método Sensor Electroquímico',
+                'precio_unitario' => 90.00,
+                'tipo' => 'AMBIENTAL',
+                'categoria' => 'GASES',
+                'unidad_default' => 'ppm',
+            ],
+            [
+                'nombre' => 'CO',
+                'nombre_completo' => 'Monóxido de Carbono',
+                'metodo' => 'Sensor Electroquímico/Analizador de Gases',
+                'descripcion' => 'Monóxido de Carbono - método Sensor Electroquímico',
+                'precio_unitario' => 90.00,
+                'tipo' => 'AMBIENTAL',
+                'categoria' => 'GASES',
+                'unidad_default' => 'ppm',
+            ],
+            [
+                'nombre' => 'O2',
+                'nombre_completo' => 'Oxígeno',
+                'metodo' => 'Sensor Electroquímico/Analizador de Gases',
+                'descripcion' => 'Oxígeno - método Sensor Electroquímico',
+                'precio_unitario' => 90.00,
+                'tipo' => 'AMBIENTAL',
+                'categoria' => 'GASES',
+                'unidad_default' => '%',
+            ],
+            [
+                'nombre' => 'H2S',
+                'nombre_completo' => 'Sulfuro de Hidrógeno',
+                'metodo' => 'Sensor Electroquímico/Analizador de Gases',
+                'descripcion' => 'Sulfuro de Hidrógeno - método Sensor Electroquímico',
+                'precio_unitario' => 90.00,
+                'tipo' => 'AMBIENTAL',
+                'categoria' => 'GASES',
+                'unidad_default' => 'ppm',
+            ],
+            [
+                'nombre' => '%LEL',
+                'nombre_completo' => 'Límite Inferior de Explosividad',
+                'metodo' => 'Sensor Catalítico/Infrarrojo',
+                'descripcion' => 'Límite Inferior de Explosividad - método Sensor Catalítico',
+                'precio_unitario' => 90.00,
+                'tipo' => 'AMBIENTAL',
+                'categoria' => 'GASES',
+                'unidad_default' => '%',
             ],
 
             // Parámetros de AGUA
@@ -496,10 +597,11 @@ class ParametroSeeder extends Seeder
         ];
 
         foreach ($parametros as $parametro) {
-            Parametro::updateOrCreate(
-                ['nombre' => $parametro['nombre']],
-                $parametro
-            );
+            $unique = ['nombre' => $parametro['nombre']];
+            if (! empty($parametro['tipo_medicion'])) {
+                $unique['tipo_medicion'] = $parametro['tipo_medicion'];
+            }
+            Parametro::updateOrCreate($unique, $parametro);
         }
 
         $this->command->info('✅ Parámetros verificados/creados correctamente');

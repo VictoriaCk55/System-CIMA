@@ -502,6 +502,44 @@
                         <i class="fas fa-flask me-2" style="color: #ffc107;"></i>
                         Parámetros a Analizar
                     </h6>
+
+                    <!-- Selector de categoría para AMBIENTAL -->
+                    <div id="ambient-categoria-wrapper" style="display: none;" class="mb-3">
+                        <label class="form-label">Categoría del parámetro</label>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-primary categoria-btn flex-fill" data-categoria="AIRE">
+                                <i class="fas fa-wind me-1"></i> Muestreo de Partículas (Aire)
+                            </button>
+                            <button type="button" class="btn btn-outline-primary categoria-btn flex-fill" data-categoria="RUIDO">
+                                <i class="fas fa-volume-up me-1"></i> Medición de Ruido
+                            </button>
+                            <button type="button" class="btn btn-outline-primary categoria-btn flex-fill" data-categoria="GASES">
+                                <i class="fas fa-industry me-1"></i> Medición de Gases
+                            </button>
+                        </div>
+                        <div id="ambient-params-picker" style="display: none;" class="mt-2">
+                            <!-- Selector único para AIRE / RUIDO -->
+                            <div id="ambient-single-select" class="row">
+                                <div class="col-md-10">
+                                    <select id="ambient-param-select" class="form-select">
+                                        <option value="">-- Seleccionar --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" id="add-ambient-param" class="btn btn-success w-100">
+                                        <i class="fas fa-plus"></i> Agregar
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Checkboxes para GASES -->
+                            <div id="ambient-gases-checkbox" style="display: none;">
+                                <div id="ambient-gases-list" class="d-flex flex-wrap gap-3 mb-2"></div>
+                                <button type="button" id="add-ambient-gases" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Agregar seleccionados
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div id="parametros-container">
                         <!-- Parámetro inicial -->
@@ -549,16 +587,72 @@
                                     </small>
                                 </div>
                             </div>
+
+                            <!-- Método editable para GASES -->
+                            <div class="row mt-2 metodo-gas-container" id="metodo-gas-0" style="display: none;">
+                                <div class="col-md-6">
+                                    <label class="form-label small">Método (equipo utilizado) *</label>
+                                    <input type="text" class="form-control metodo-gas-input"
+                                           name="parametros[0][metodo]" placeholder="Ej: CO, O₂, H₂S...">
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <button type="button" id="add-parametro" class="btn" 
+                    <button type="button" id="add-parametro" class="btn mt-2" 
                             style="background-color: #ffc107; color: #000000; border: none; border-radius: 30px; padding: 8px 20px; font-weight: 500;">
                         <i class="fas fa-plus me-1"></i> Agregar parámetro
                     </button>
                 </div>
 
-                <!-- SECCIÓN 6: OBSERVACIONES -->
+                <!-- SECCIÓN 6: LOGÍSTICA DE MUESTREO (solo AMBIENTAL) -->
+                <div class="mb-4" id="logistica-muestreo" style="display: none;">
+                    <h6 class="border-bottom pb-2 mb-3">
+                        <i class="fas fa-truck me-2" style="color: #ffc107;"></i>
+                        Logística de Muestreo
+                    </h6>
+                    <div id="logisticas-container">
+                        <div class="logistica-row mb-3 border p-3 rounded" id="logistica-row-0">
+                            <div class="row align-items-center">
+                                <div class="col-md-5 mb-2 mb-md-0">
+                                    <label class="form-label small">Concepto Logístico *</label>
+                                    <select name="logisticas[0][id]" class="form-select logistica-select" required>
+                                        <option value="">Seleccionar concepto...</option>
+                                        @foreach($logisticasMuestreo as $log)
+                                            <option value="{{ $log->id }}" data-costo="{{ $log->costo }}" data-categoria="{{ $log->categoria }}">
+                                                {{ $log->categoria }} - {{ $log->descripcion }} (Bs. {{ number_format($log->costo, 2) }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-2 mb-2 mb-md-0">
+                                    <label class="form-label small">Cantidad</label>
+                                    <input type="number" class="form-control logistica-cantidad"
+                                           name="logisticas[0][cantidad]" value="1" min="1" required>
+                                </div>
+                                <div class="col-md-2 mb-2 mb-md-0">
+                                    <label class="form-label small">Costo Unitario</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Bs.</span>
+                                        <input type="text" class="form-control logistica-costo" value="0.00" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-1 text-center">
+                                    <label class="form-label small">&nbsp;</label>
+                                    <button type="button" class="btn btn-danger btn-sm remove-logistica" disabled>
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" id="add-logistica" class="btn"
+                            style="background-color: #ffc107; color: #000000; border: none; border-radius: 30px; padding: 8px 20px; font-weight: 500;">
+                        <i class="fas fa-plus me-1"></i> Agregar concepto logístico
+                    </button>
+                </div>
+
+                <!-- SECCIÓN 7: OBSERVACIONES -->
                 <div class="mb-4">
                     <h6 class="border-bottom pb-2 mb-3">
                         <i class="fas fa-sticky-note me-2" style="color: #ffc107;"></i>
@@ -576,7 +670,7 @@
                     </div>
                 </div>
 
-                <!-- SECCIÓN 7: RESUMEN FINANCIERO -->
+                <!-- SECCIÓN 8: RESUMEN FINANCIERO -->
                 <div class="card mt-4 border-warning">
                     <div class="card-header" style="background-color: #ffc107; border-bottom: none;">
                         <h6 class="mb-0" style="color: #000000;">
@@ -585,11 +679,11 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-3 text-center">
+                            <div class="col-md-2 text-center">
                                 <p class="mb-1"><strong>Subtotal</strong></p>
                                 <h4 class="text-primary">Bs. <span id="subtotal-estimado">0.00</span></h4>
                             </div>
-                            <div class="col-md-3 text-center">
+                            <div class="col-md-2 text-center">
                                 <p class="mb-1"><strong>Descuento</strong></p>
                                 <h4 class="text-danger">Bs. <span id="descuento-estimado">0.00</span></h4>
                                 <small class="text-muted" id="descuento-nota">(No aplica)</small>
@@ -606,7 +700,7 @@
                     </div>
                 </div>
 
-                <!-- SECCIÓN 8: BOTONES -->
+                <!-- SECCIÓN 9: BOTONES -->
                 <div class="d-flex justify-content-between mt-4 pt-3 border-top">
                     <a href="{{ route('proformas.index') }}" class="btn btn-secondary" style="border-radius: 30px; padding: 10px 25px;">
                         <i class="fas fa-times me-2"></i> Cancelar
@@ -817,7 +911,7 @@ $(document).ready(function() {
             metodoText.text(data.metodo || '');
             metodoContainer.show();
             
-            calcularTotales();
+            calcularTotalesEstimados();
         });
     }
     
@@ -833,10 +927,8 @@ $(document).ready(function() {
         const firstRow = $('.parametro-row:first');
         const newRow = firstRow.clone();
         
-        // Actualizar IDs
         newRow.attr('id', 'parametro-row-' + index);
         
-        // Limpiar select
         const newSelect = newRow.find('.parametro-select');
         newSelect.attr('id', 'parametro-select-' + index)
                 .attr('name', 'parametros[' + index + '][id]')
@@ -844,7 +936,6 @@ $(document).ready(function() {
                 .removeAttr('data-select2-id')
                 .next('.select2-container').remove();
         
-        // Limpiar otros campos
         newRow.find('.muestra-input')
               .attr('name', 'parametros[' + index + '][cantidad]')
               .val(1);
@@ -859,7 +950,6 @@ $(document).ready(function() {
         
         newRow.find('.metodo-text').text('');
         
-        // Botón eliminar
         const removeBtn = newRow.find('.remove-parametro');
         removeBtn.prop('disabled', false)
                 .off('click')
@@ -867,12 +957,11 @@ $(document).ready(function() {
         
         container.append(newRow);
         
-        // Inicializar Select2 para el nuevo select
         setTimeout(function() {
             initParametroSelect('#parametro-select-' + index);
         }, 100);
         
-        calcularTotales();
+        calcularTotalesEstimados();
     });
     
     // ===== ELIMINAR PARÁMETRO =====
@@ -903,9 +992,11 @@ $(document).ready(function() {
             
             row.remove();
             console.log('Parámetros restantes:', parametrosSeleccionados);
-            calcularTotales();
+            calcularTotalesEstimados();
         }
     };
+
+    // ===== AMBIENTAL: DATOS DE PARÁMETROS POR CATEGORÍA =====
     
     // ===== VALIDACIÓN FINAL ANTES DE ENVIAR =====
     $('#proformaForm').on('submit', function(e) {
@@ -929,12 +1020,6 @@ $(document).ready(function() {
                 }
             }
         });
-        
-        // Verificar también con el array de seleccionados
-        if (parametrosSeleccionados.length !== parametrosEnFormulario.length) {
-            duplicados = true;
-            mensajeError = '❌ Error: Inconsistencia en los parámetros seleccionados.';
-        }
         
         if (duplicados) {
             e.preventDefault();
@@ -960,7 +1045,7 @@ $(document).ready(function() {
     });
     
     // ===== CALCULAR TOTALES =====
-    function calcularTotales() {
+    window.calcularTotalesEstimados = function() {
         let subtotal = 0;
         
         $('.parametro-row').each(function() {
@@ -983,11 +1068,81 @@ $(document).ready(function() {
     }
     
     // ===== EVENTOS =====
-    $('#tipo, #adelanto').on('change keyup', calcularTotales);
-    $(document).on('input', '.muestra-input', calcularTotales);
+    // ===== TOGGLE LOGÍSTICA DE MUESTREO =====
+    function toggleLogisticaMuestreo() {
+        const tipo = $('#tipo').val();
+        if (tipo === 'AMBIENTAL') {
+            $('#logistica-muestreo').show();
+        } else {
+            $('#logistica-muestreo').hide();
+        }
+    }
+    $('#tipo').on('change', toggleLogisticaMuestreo);
+    toggleLogisticaMuestreo();
+
+    // ===== LOGÍSTICA DE MUESTREO - FILAS DINÁMICAS =====
+    function calcularSubtotalesLogistica() {
+        // Recalcula internamente cuando cambia cantidad (sin UI de subtotal)
+    }
+
+    function actualizarLogisticaSelect(row) {
+        const select = row.find('.logistica-select');
+        const selected = select.find('option:selected');
+        if (selected.val()) {
+            const costo = selected.data('costo');
+            row.find('.logistica-costo').val(parseFloat(costo).toFixed(2));
+        } else {
+            row.find('.logistica-costo').val('0.00');
+        }
+        calcularSubtotalesLogistica();
+    }
+
+    $(document).on('change', '.logistica-select', function() {
+        actualizarLogisticaSelect($(this).closest('.logistica-row'));
+    });
+
+    $(document).on('input', '.logistica-cantidad', function() {
+        calcularSubtotalesLogistica();
+    });
+
+    $('#add-logistica').click(function() {
+        const container = $('#logisticas-container');
+        const index = container.find('.logistica-row').length;
+        const firstRow = $('.logistica-row:first');
+        const newRow = firstRow.clone();
+
+        newRow.attr('id', 'logistica-row-' + index);
+
+        const newSelect = newRow.find('.logistica-select');
+        newSelect.attr('name', 'logisticas[' + index + '][id]').val('');
+
+        newRow.find('.logistica-cantidad')
+              .attr('name', 'logisticas[' + index + '][cantidad]').val(1);
+
+        newRow.find('.logistica-costo').val('0.00');
+
+        const removeBtn = newRow.find('.remove-logistica');
+        removeBtn.prop('disabled', false)
+                .off('click')
+                .click(function() {
+                    if ($('.logistica-row').length <= 1) {
+                        alert('Debe haber al menos un concepto logístico');
+                        return;
+                    }
+                    if (confirm('¿Eliminar este concepto logístico?')) {
+                        $(this).closest('.logistica-row').remove();
+                        calcularSubtotalesLogistica();
+                    }
+                });
+
+        container.append(newRow);
+    });
+
+    $('#tipo, #adelanto').on('change keyup', calcularTotalesEstimados);
+    $(document).on('input', '.muestra-input', calcularTotalesEstimados);
     
     // Calcular totales inicial
-    calcularTotales();
+    calcularTotalesEstimados();
     
     // ===== MODAL CLIENTE =====
     window.abrirModalCliente = function() {
@@ -1029,6 +1184,175 @@ $(document).ready(function() {
             alert('❌ Error al crear cliente: ' + (xhr.responseJSON?.message || 'Error desconocido'));
         });
     };
+
+    // ===== AMBIENTAL: DATOS DE PARÁMETROS POR CATEGORÍA =====
+    const parametrosAmbientales = @json($parametrosAmbientales);
+
+    let ambientCategoria = '';
+
+    function toggleAmbientParamUI() {
+        const tipo = $('#tipo').val();
+        const firstRow = $('#parametro-row-0');
+        if (tipo === 'AMBIENTAL') {
+            $('#ambient-categoria-wrapper').show();
+            $('.parametro-row:not(#parametro-row-0)').remove();
+            const firstSelect = $('#parametro-select-0');
+            if (firstSelect.data('select2')) firstSelect.select2('destroy');
+            firstRow.hide();
+            firstRow.find('select, input').prop('disabled', true);
+            $('#add-parametro').hide();
+            resetAmbientPicker();
+        } else {
+            $('#ambient-categoria-wrapper').hide();
+            $('#ambient-params-picker').hide();
+            firstRow.show();
+            firstRow.find('select, input').prop('disabled', false);
+            if (!firstRow.find('.parametro-select').data('select2')) {
+                initParametroSelect('#parametro-select-0');
+            }
+            $('#add-parametro').show();
+        }
+    }
+
+    function resetAmbientPicker() {
+        ambientCategoria = '';
+        $('#ambient-params-picker').hide();
+        $('#ambient-single-select').show();
+        $('#ambient-gases-checkbox').hide();
+        $('#ambient-gases-list').empty();
+        $('#ambient-param-select').empty().append('<option value="">-- Seleccionar --</option>');
+        $('.categoria-btn').removeClass('active btn-primary').addClass('btn-outline-primary');
+    }
+
+    // Category button click
+    $(document).on('click', '.categoria-btn', function() {
+        $('.categoria-btn').removeClass('active btn-primary').addClass('btn-outline-primary');
+        $(this).addClass('active btn-primary').removeClass('btn-outline-primary');
+
+        ambientCategoria = $(this).data('categoria');
+        const filtrados = parametrosAmbientales.filter(function(p) {
+            return p.categoria === ambientCategoria;
+        });
+
+        if (ambientCategoria === 'GASES') {
+            // Mostrar checkboxes
+            $('#ambient-single-select').hide();
+            $('#ambient-gases-checkbox').show();
+            const list = $('#ambient-gases-list');
+            list.empty();
+            filtrados.forEach(function(p) {
+                list.append('<label class="form-check form-check-inline"><input type="checkbox" class="form-check-input gas-checkbox" value="' + p.id + '" data-nombre="' + p.nombre + '" data-precio="' + p.precio_unitario + '"> <span class="form-check-label">' + p.nombre + ' (Bs. ' + parseFloat(p.precio_unitario).toFixed(2) + ')</span></label>');
+            });
+        } else {
+            // Mostrar select único
+            $('#ambient-single-select').show();
+            $('#ambient-gases-checkbox').hide();
+            $('#ambient-gases-list').empty();
+            const select = $('#ambient-param-select');
+            select.empty().append('<option value="">-- Seleccionar --</option>');
+            filtrados.forEach(function(p) {
+                select.append('<option value="' + p.id + '" data-precio="' + p.precio_unitario + '" data-metodo="' + (p.metodo || '') + '">' + p.nombre + ' (Bs. ' + parseFloat(p.precio_unitario).toFixed(2) + ')</option>');
+            });
+        }
+
+        $('#ambient-params-picker').show();
+    });
+
+    // Add single param (AIRE / RUIDO)
+    $('#add-ambient-param').click(function() {
+        const select = $('#ambient-param-select');
+        const selected = select.find('option:selected');
+        if (!selected.val()) {
+            alert('Seleccione un parámetro');
+            return;
+        }
+
+        const id = parseInt(selected.val());
+        const nombre = selected.text();
+        const precio = parseFloat(selected.data('precio'));
+        const metodo = selected.data('metodo') || '';
+
+        agregarFilaAmbient(id, nombre, precio, metodo, false);
+
+        select.val('');
+    });
+
+    // Helper: agrega una fila de parámetro ambiental
+    function agregarFilaAmbient(id, nombre, precio, metodo, esGas) {
+        const container = $('#parametros-container');
+        const index = container.find('.parametro-row:visible').length;
+        const template = $('#parametro-row-0');
+        const newRow = template.clone();
+
+        newRow.attr('id', 'parametro-row-' + index).show();
+
+        const newSelect = newRow.find('.parametro-select');
+        newSelect.attr('id', 'parametro-select-' + index)
+                .attr('name', 'parametros[' + index + '][id]')
+                .prop('disabled', false).removeAttr('disabled');
+        if (newSelect.data('select2')) {
+            newSelect.select2('destroy');
+        }
+        newSelect.next('.select2-container').remove();
+        newSelect.empty().append('<option value="' + id + '" selected>' + nombre + '</option>');
+        newSelect.hide().after('<input type="hidden" name="parametros[' + index + '][id]" value="' + id + '"><span class="form-control-plaintext">' + nombre + '</span>');
+
+        const metodoContainer = newRow.find('.metodo-container');
+        const metodoText = newRow.find('.metodo-text');
+        metodoText.text(metodo);
+        metodoContainer.show();
+
+        const metodoGasContainer = newRow.find('.metodo-gas-container');
+        const metodoGasInput = newRow.find('.metodo-gas-input');
+        if (esGas) {
+            metodoGasContainer.attr('id', 'metodo-gas-' + index).show();
+            metodoGasInput.attr('name', 'parametros[' + index + '][metodo]').val(metodo).prop('disabled', false).removeAttr('disabled');
+        } else {
+            metodoGasContainer.attr('id', 'metodo-gas-' + index).hide();
+            metodoGasInput.attr('name', 'parametros[' + index + '][metodo]').val('').prop('disabled', false).removeAttr('disabled');
+        }
+
+        newRow.find('.muestra-input')
+              .attr('name', 'parametros[' + index + '][cantidad]')
+              .val(1)
+              .prop('disabled', false).removeAttr('disabled');
+        newRow.find('.precio-unitario')
+              .attr('id', 'precio-' + index)
+              .val(precio.toFixed(2));
+
+        const removeBtn = newRow.find('.remove-parametro');
+        removeBtn.prop('disabled', false)
+                .off('click')
+                .click(function() { eliminarParametro(this, index); });
+
+        container.append(newRow);
+        calcularTotalesEstimados();
+    }
+
+    // Add multiple gases — single GASES row with combined names
+    $('#add-ambient-gases').click(function() {
+        const checked = $('#ambient-gases-list .gas-checkbox:checked');
+        if (checked.length === 0) {
+            alert('Seleccione al menos un gas');
+            return;
+        }
+
+        const first = $(checked[0]);
+        const id = parseInt(first.val());
+        const precio = parseFloat(first.data('precio'));
+        const gases = [];
+        checked.each(function() { gases.push($(this).data('nombre')); });
+        const metodo = gases.join(', ');
+
+        agregarFilaAmbient(id, 'Gases', precio, metodo, true);
+        checked.prop('checked', false);
+    });
+
+    $('#tipo').on('change', function() {
+        toggleLogisticaMuestreo();
+        toggleAmbientParamUI();
+    });
+    toggleAmbientParamUI();
 });
 </script>
 @endpush
