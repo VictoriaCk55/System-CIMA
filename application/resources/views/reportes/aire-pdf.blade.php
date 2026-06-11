@@ -80,13 +80,13 @@
         <tr><td class="label">NOMBRE CLIENTE:</td><td class="value" colspan="3">{{ strtoupper($c->razon_social) }}</td></tr>
         <tr><td class="label">CÓDIGO REPORTE:</td><td class="value" colspan="3">{{ $reporte->codigoAire() }}</td></tr>
         <tr><td class="label">FECHA EMISIÓN DE REPORTE:</td><td class="value" colspan="3">{{ $reporte->fecha_emision ? strtoupper($reporte->fecha_emision->locale('es')->isoFormat('DD [DE] MMMM [DE] YYYY')) : '' }}</td></tr>
-        <tr><td class="label">FECHA INICIO DE MUESTREO:</td><td class="value">{{ $reporte->fecha_medicion ? $reporte->fecha_medicion->format('d/m/Y') : '' }}</td><td class="label" style="width:20%;">FECHA FINAL DE MUESTREO:</td>
-        <td class="value" style="width:22%;">{{ $reporte->fecha_medicion ? $reporte->fecha_medicion->format('d/m/Y') : '' }}</td></tr>
-        <tr><td class="label">TIPO DE MUESTREO:</td><td class="value" colspan="3">{{ strtoupper($reporte->periodo_medicion ?? '') }}</td></tr>
+        <tr><td class="label">FECHA INICIO DE MUESTREO:</td><td class="value">{{ $reporte->fecha_inicio_muestreo ? $reporte->fecha_inicio_muestreo->format('d/m/Y') : '' }}</td><td class="label" style="width:20%;">FECHA FINAL DE MUESTREO:</td>
+        <td class="value" style="width:22%;">{{ $reporte->fecha_fin_muestreo ? $reporte->fecha_fin_muestreo->format('d/m/Y') : '' }}</td></tr>
+        <tr><td class="label">TIPO DE MUESTREO:</td><td class="value" colspan="3">{{ strtoupper($reporte->tipo_muestreo ?? '') }}</td></tr>
         <tr><td class="label">MUESTREO EFECTUADO POR:</td><td class="value" colspan="3">{{ strtoupper($reporte->medicion_efectuada_por ?? '') }}</td></tr>
         <tr><td class="label">EQUIPO USADO PARA MUESTREO:</td><td class="value" colspan="3">{{ strtoupper($reporte->equipo_usado ?? '') }}</td></tr>
-        <tr><td class="label">CONDICIONES DE MUESTREO:</td><td class="value" colspan="3"></td></tr>
-        <tr><td class="label">CONDICIONES REPORTE DE RESULTADOS:</td><td class="value" colspan="3"></td></tr>
+        <tr><td class="label">CONDICIONES DE MUESTREO:</td><td class="value" colspan="3">{{ strtoupper($reporte->condiciones_muestreo ?? '') }}</td></tr>
+        <tr><td class="label">CONDICIONES REPORTE DE RESULTADOS:</td><td class="value" colspan="3">{{ strtoupper($reporte->condiciones_reporte ?? '') }}</td></tr>
     </table>
 
     <!-- TABLA DE RESULTADOS -->

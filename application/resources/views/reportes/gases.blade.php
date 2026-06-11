@@ -235,7 +235,13 @@
                             <tr>
                                 <th style="width: 12%;">Código</th>
                                 <th style="width: 33%;">Descripción del Punto</th>
-                                <th style="width: 40%;">UBICACIÓN</th>
+                                <th class="text-center" style="width: 40%;">UBICACIÓN
+                                    <select class="form-select form-select-sm d-block mx-auto mt-1" id="zona-header" style="width: 140px;" onchange="actualizarZonas(this.value)">
+                                        <option value="19K">ZONA 19K</option>
+                                        <option value="20K">ZONA 20K</option>
+                                        <option value="21K">ZONA 21K</option>
+                                    </select>
+                                </th>
                                 <th style="width: 40px;"></th>
                             </tr>
                         </thead>
@@ -251,20 +257,16 @@
                                 <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[{{ $i }}][descripcion]" value="{{ $p['descripcion'] ?? '' }}"></td>
                                 <td>
                                     <div class="d-flex flex-column gap-1" style="min-width: 280px;">
-                                        <select class="form-select form-select-sm" name="puntos_medicion[{{ $i }}][zona]">
-                                            <option value="19K" {{ ($p['zona'] ?? '19K') == '19K' ? 'selected' : '' }}>ZONA 19K</option>
-                                            <option value="20K" {{ ($p['zona'] ?? '') == '20K' ? 'selected' : '' }}>ZONA 20K</option>
-                                            <option value="21K" {{ ($p['zona'] ?? '') == '21K' ? 'selected' : '' }}>ZONA 21K</option>
-                                        </select>
+                                        <input type="hidden" name="puntos_medicion[{{ $i }}][zona]" value="{{ $p['zona'] ?? '19K' }}">
                                         <div class="d-flex gap-1 align-items-center">
-                                            <select class="form-select form-select-sm" name="puntos_medicion[{{ $i }}][direccion1]" style="width: 70px;">
+                                            <select class="form-select form-select-sm" name="puntos_medicion[{{ $i }}][direccion1]" style="width: 100px;">
                                                 <option value="N" {{ ($p['direccion1'] ?? 'N') == 'N' ? 'selected' : '' }}>N</option>
                                                 <option value="S" {{ ($p['direccion1'] ?? '') == 'S' ? 'selected' : '' }}>S</option>
                                                 <option value="E" {{ ($p['direccion1'] ?? '') == 'E' ? 'selected' : '' }}>E</option>
                                                 <option value="O" {{ ($p['direccion1'] ?? '') == 'O' ? 'selected' : '' }}>O</option>
                                             </select>
                                             <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[{{ $i }}][valor1]" value="{{ $p['valor1'] ?? $p['norte'] ?? '' }}" placeholder="Valor">
-                                            <select class="form-select form-select-sm" name="puntos_medicion[{{ $i }}][direccion2]" style="width: 70px;">
+                                            <select class="form-select form-select-sm" name="puntos_medicion[{{ $i }}][direccion2]" style="width: 100px;">
                                                 <option value="E" {{ ($p['direccion2'] ?? 'E') == 'E' ? 'selected' : '' }}>E</option>
                                                 <option value="N" {{ ($p['direccion2'] ?? '') == 'N' ? 'selected' : '' }}>N</option>
                                                 <option value="S" {{ ($p['direccion2'] ?? '') == 'S' ? 'selected' : '' }}>S</option>
@@ -283,20 +285,16 @@
                                 <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[{{ $pi }}][descripcion]" placeholder="Ej: Área buzón de lavado"></td>
                                 <td>
                                     <div class="d-flex flex-column gap-1" style="min-width: 280px;">
-                                        <select class="form-select form-select-sm" name="puntos_medicion[{{ $pi }}][zona]">
-                                            <option value="19K" selected>ZONA 19K</option>
-                                            <option value="20K">ZONA 20K</option>
-                                            <option value="21K">ZONA 21K</option>
-                                        </select>
+                                        <input type="hidden" name="puntos_medicion[{{ $pi }}][zona]" value="19K">
                                         <div class="d-flex gap-1 align-items-center">
-                                            <select class="form-select form-select-sm" name="puntos_medicion[{{ $pi }}][direccion1]" style="width: 70px;">
+                                            <select class="form-select form-select-sm" name="puntos_medicion[{{ $pi }}][direccion1]" style="width: 100px;">
                                                 <option value="N" selected>N</option>
                                                 <option value="S">S</option>
                                                 <option value="E">E</option>
                                                 <option value="O">O</option>
                                             </select>
                                             <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[{{ $pi }}][valor1]" placeholder="Valor">
-                                            <select class="form-select form-select-sm" name="puntos_medicion[{{ $pi }}][direccion2]" style="width: 70px;">
+                                            <select class="form-select form-select-sm" name="puntos_medicion[{{ $pi }}][direccion2]" style="width: 100px;">
                                                 <option value="E" selected>E</option>
                                                 <option value="N">N</option>
                                                 <option value="S">S</option>
@@ -315,20 +313,16 @@
                                 <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[0][descripcion]" placeholder="Ej: Área buzón de lavado"></td>
                                 <td>
                                     <div class="d-flex flex-column gap-1" style="min-width: 280px;">
-                                        <select class="form-select form-select-sm" name="puntos_medicion[0][zona]">
-                                            <option value="19K" selected>ZONA 19K</option>
-                                            <option value="20K">ZONA 20K</option>
-                                            <option value="21K">ZONA 21K</option>
-                                        </select>
+                                        <input type="hidden" name="puntos_medicion[0][zona]" value="19K">
                                         <div class="d-flex gap-1 align-items-center">
-                                            <select class="form-select form-select-sm" name="puntos_medicion[0][direccion1]" style="width: 70px;">
+                                            <select class="form-select form-select-sm" name="puntos_medicion[0][direccion1]" style="width: 100px;">
                                                 <option value="N" selected>N</option>
                                                 <option value="S">S</option>
                                                 <option value="E">E</option>
                                                 <option value="O">O</option>
                                             </select>
                                             <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[0][valor1]" placeholder="Valor">
-                                            <select class="form-select form-select-sm" name="puntos_medicion[0][direccion2]" style="width: 70px;">
+                                            <select class="form-select form-select-sm" name="puntos_medicion[0][direccion2]" style="width: 100px;">
                                                 <option value="E" selected>E</option>
                                                 <option value="N">N</option>
                                                 <option value="S">S</option>
@@ -388,26 +382,28 @@
         tr.innerHTML = cols;
         tbody.appendChild(tr); idx++;
     }
+    function actualizarZonas(valor) {
+        document.querySelectorAll('#puntos-body input[name$="[zona]"]').forEach(function(el) {
+            el.value = valor;
+        });
+    }
     function agregarFilaPunto() {
         const tbody = document.getElementById('puntos-body');
         const tr = document.createElement('tr'); tr.className = 'fila-punto';
+        const zona = document.getElementById('zona-header').value;
         const codigo = 'GS-' + String(idxPunto + 1).padStart(2, '0');
         tr.innerHTML = `
             <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[${idxPunto}][codigo]" value="${codigo}"></td>
             <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[${idxPunto}][descripcion]" placeholder="Ej: Área buzón de lavado"></td>
             <td>
                 <div class="d-flex flex-column gap-1" style="min-width: 280px;">
-                    <select class="form-select form-select-sm" name="puntos_medicion[${idxPunto}][zona]">
-                        <option value="19K">ZONA 19K</option>
-                        <option value="20K">ZONA 20K</option>
-                        <option value="21K">ZONA 21K</option>
-                    </select>
+                    <input type="hidden" name="puntos_medicion[${idxPunto}][zona]" value="${zona}">
                     <div class="d-flex gap-1 align-items-center">
-                        <select class="form-select form-select-sm" name="puntos_medicion[${idxPunto}][direccion1]" style="width: 70px;">
+                        <select class="form-select form-select-sm" name="puntos_medicion[${idxPunto}][direccion1]" style="width: 100px;">
                             <option value="N">N</option><option value="S">S</option><option value="E">E</option><option value="O">O</option>
                         </select>
                         <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[${idxPunto}][valor1]" placeholder="Valor">
-                        <select class="form-select form-select-sm" name="puntos_medicion[${idxPunto}][direccion2]" style="width: 70px;">
+                        <select class="form-select form-select-sm" name="puntos_medicion[${idxPunto}][direccion2]" style="width: 100px;">
                             <option value="E">E</option><option value="N">N</option><option value="S">S</option><option value="O">O</option>
                         </select>
                         <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[${idxPunto}][valor2]" placeholder="Valor">

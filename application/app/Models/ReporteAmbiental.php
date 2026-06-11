@@ -16,9 +16,14 @@ class ReporteAmbiental extends Model
         'codigo_reporte',
         'fecha_emision',
         'fecha_medicion',
+        'fecha_inicio_muestreo',
+        'fecha_fin_muestreo',
         'periodo_medicion',
+        'tipo_muestreo',
         'medicion_efectuada_por',
         'equipo_usado',
+        'condiciones_muestreo',
+        'condiciones_reporte',
         'comentarios',
         'responsable_uia',
         'cargo_responsable',
@@ -44,6 +49,8 @@ class ReporteAmbiental extends Model
             'puntos_medicion' => 'array',
             'fecha_emision' => 'date',
             'fecha_medicion' => 'date',
+            'fecha_inicio_muestreo' => 'date',
+            'fecha_fin_muestreo' => 'date',
         ];
     }
 
