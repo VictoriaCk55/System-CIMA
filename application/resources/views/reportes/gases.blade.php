@@ -75,10 +75,10 @@
                         @error('fecha_medicion')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">Periodo de Medición</label>
-                        <input type="text" class="form-control @error('periodo_medicion') is-invalid @enderror"
-                               name="periodo_medicion" value="{{ old('periodo_medicion', $reporte->periodo_medicion ?? '') }}" placeholder="Ej: Diurno, Nocturno, 24 horas">
-                        @error('periodo_medicion')<div class="text-danger small">{{ $message }}</div>@enderror
+                        <label class="form-label">Tipo de Medición</label>
+                        <input type="text" class="form-control @error('tipo_medicion') is-invalid @enderror"
+                               name="tipo_medicion" value="{{ old('tipo_medicion', $reporte->tipo_medicion ?? '') }}" placeholder="Ej: Puntual, Continuo">
+                        @error('tipo_medicion')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Medición Efectuada por</label>
@@ -95,12 +95,39 @@
                         @error('equipo_usado')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Condiciones de Muestreo</label>
+                        <textarea class="form-control @error('condiciones_muestreo') is-invalid @enderror"
+                                  name="condiciones_muestreo" rows="3" placeholder="Ej: Temperatura, presión, condiciones climáticas...">{{ old('condiciones_muestreo', $reporte->condiciones_muestreo ?? '') }}</textarea>
+                        @error('condiciones_muestreo')<div class="text-danger small">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Condiciones de Reporte de Resultados</label>
+                        <textarea class="form-control @error('condiciones_reporte') is-invalid @enderror"
+                                  name="condiciones_reporte" rows="3" placeholder="Ej: Base seca, condiciones normales...">{{ old('condiciones_reporte', $reporte->condiciones_reporte ?? '') }}</textarea>
+                        @error('condiciones_reporte')<div class="text-danger small">{{ $message }}</div>@enderror
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- RESULTADOS -->
         @php
             $parametrosGases = $proforma->parametros()->where('categoria', 'GASES')->get();
+            // Obtener nombres de gases seleccionados desde el metodo del pivot
+            $gasesMetodo = '';
+            foreach ($parametrosGases as $pg) {
+                if ($pg->pivot->metodo) {
+                    $gasesMetodo = $pg->pivot->metodo;
+                    break;
+                }
+            }
+            $gasesNombres = $gasesMetodo ? array_map('trim', explode(',', $gasesMetodo)) : [];
+            if (!empty($gasesNombres)) {
+                $todosGases = \App\Models\Parametro::where('categoria', 'GASES')->get();
+                $parametrosGases = $todosGases->filter(fn($g) => in_array($g->nombre, $gasesNombres));
+            }
 
             $rg = old('resultados_gases', $reporte->resultados_gases ?? []);
             if (is_string($rg)) $rg = json_decode($rg, true) ?? [];
@@ -135,7 +162,8 @@
             $hasRg = count($rg) > 0;
             $numMuestras = count($rg);
             if ($numMuestras === 0) {
-                $numMuestras = $parametrosGases->count();
+                $gasesParam = $proforma->parametros()->where('categoria', 'GASES')->first();
+                $numMuestras = $gasesParam ? ($gasesParam->pivot->cantidad_muestras ?? 1) : 1;
             }
         @endphp
 
@@ -157,10 +185,11 @@
                             @endphp
                             <tr>
                                 <th rowspan="2" style="width: 10%;">CÓDIGO</th>
-                                <th colspan="2" style="width: 20%;">PERIODO DE MEDICIÓN</th>
+                                <th rowspan="2" style="width: 20%;">PERIODO DE MEDICIÓN</th>
                                 @foreach($parametrosGases as $p)
                                 <th rowspan="2" style="text-align: center;">
                                     {{ $p->nombre_completo ?? $p->nombre }}<br>
+                                    <small style="font-weight: normal; font-size: 0.7rem;">{{ $p->metodo ?? '' }}</small><br>
                                     <select class="form-select form-select-sm mx-auto" name="resultados_unidades[{{ $p->nombre }}]" style="width: 90px; font-weight: normal; font-size: 0.75rem;">
                                         <option value="">Unidad</option>
                                         <option value="ppm" {{ ($unidadPorParam[$p->nombre] ?? '') == 'ppm' ? 'selected' : '' }}>ppm</option>
@@ -174,17 +203,12 @@
                                 @endforeach
                                 <th rowspan="2" style="width: 40px;"></th>
                             </tr>
-                            <tr>
-                                <th style="width: 10%;">Hora Inicial</th>
-                                <th style="width: 10%;">Hora Final</th>
-                            </tr>
                         </thead>
                         <tbody id="gases-body">
                             @forelse($rg as $i => $r)
                             <tr class="fila-gases">
                                 <td><input type="text" class="form-control form-control-sm" name="resultados_gases[{{ $i }}][codigo]" value="{{ $r['codigo'] ?? '' }}" readonly></td>
-                                <td><input type="time" class="form-control form-control-sm" name="resultados_gases[{{ $i }}][hora_inicial]" value="{{ $r['hora_inicial'] ?? '' }}"></td>
-                                <td><input type="time" class="form-control form-control-sm" name="resultados_gases[{{ $i }}][hora_final]" value="{{ $r['hora_final'] ?? '' }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="resultados_gases[{{ $i }}][periodo]" value="{{ $r['periodo'] ?? '' }}" placeholder="Ej: Diurno"></td>
                                 @foreach($parametrosGases as $p)
                                 <td><input type="number" step="0.01" class="form-control form-control-sm" name="resultados_gases[{{ $i }}][{{ $p->nombre }}][valor]" value="{{ $r[$p->nombre]['valor'] ?? '' }}" placeholder="{{ $p->nombre_completo ?? $p->nombre }}"></td>
                                 @endforeach
@@ -194,8 +218,7 @@
                             @for($mi = 0; $mi < $numMuestras; $mi++)
                             <tr class="fila-gases">
                                 <td><input type="text" class="form-control form-control-sm" name="resultados_gases[{{ $mi }}][codigo]" value="GS-{{ str_pad($mi + 1, 2, '0', STR_PAD_LEFT) }}" readonly></td>
-                                <td><input type="time" class="form-control form-control-sm" name="resultados_gases[{{ $mi }}][hora_inicial]"></td>
-                                <td><input type="time" class="form-control form-control-sm" name="resultados_gases[{{ $mi }}][hora_final]"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="resultados_gases[{{ $mi }}][periodo]" placeholder="Ej: Diurno"></td>
                                 @foreach($parametrosGases as $p)
                                 <td><input type="number" step="0.01" class="form-control form-control-sm" name="resultados_gases[{{ $mi }}][{{ $p->nombre }}][valor]" placeholder="{{ $p->nombre_completo ?? $p->nombre }}"></td>
                                 @endforeach
@@ -205,8 +228,7 @@
                             @if($numMuestras === 0)
                             <tr class="fila-gases">
                                 <td><input type="text" class="form-control form-control-sm" name="resultados_gases[0][codigo]" placeholder="Ej: GS-01" readonly></td>
-                                <td><input type="time" class="form-control form-control-sm" name="resultados_gases[0][hora_inicial]"></td>
-                                <td><input type="time" class="form-control form-control-sm" name="resultados_gases[0][hora_final]"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="resultados_gases[0][periodo]" placeholder="Ej: Diurno"></td>
                                 @foreach($parametrosGases as $p)
                                 <td><input type="number" step="0.01" class="form-control form-control-sm" name="resultados_gases[0][{{ $p->nombre }}][valor]" placeholder="{{ $p->nombre_completo ?? $p->nombre }}"></td>
                                 @endforeach
@@ -373,8 +395,7 @@
         const codigo = 'GS-' + String(idx + 1).padStart(2, '0');
         let cols = `
             <td><input type="text" class="form-control form-control-sm" name="resultados_gases[${idx}][codigo]" value="${codigo}" readonly></td>
-            <td><input type="time" class="form-control form-control-sm" name="resultados_gases[${idx}][hora_inicial]"></td>
-            <td><input type="time" class="form-control form-control-sm" name="resultados_gases[${idx}][hora_final]"></td>`;
+            <td><input type="text" class="form-control form-control-sm" name="resultados_gases[${idx}][periodo]" placeholder="Ej: Diurno"></td>`;
         paramsGases.forEach(p => {
             cols += `<td><input type="number" step="0.01" class="form-control form-control-sm" name="resultados_gases[${idx}][${p.nombre}][valor]" placeholder="${p.nombre_completo || p.nombre}"></td>`;
         });

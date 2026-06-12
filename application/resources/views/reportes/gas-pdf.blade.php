@@ -81,16 +81,29 @@
         <tr><td class="label">NOMBRE CLIENTE:</td><td class="value" colspan="3">{{ strtoupper($c->razon_social) }}</td></tr>
         <tr><td class="label">CÓDIGO REPORTE:</td><td class="value" colspan="3">{{ $reporte->codigoGases() }}</td></tr>
         <tr><td class="label">FECHA EMISIÓN DE REPORTE:</td><td class="value" colspan="3">{{ $reporte->fecha_emision ? strtoupper($reporte->fecha_emision->locale('es')->isoFormat('DD [DE] MMMM [DE] YYYY')) : '' }}</td></tr>
-        <tr><td class="label">FECHA INICIO DE MEDICIÓN:</td><td class="value" colspan="3">{{ $reporte->fecha_medicion ? $reporte->fecha_medicion->format('d/m/Y') : '' }}</td></tr>
-        <tr><td class="label">TIPO DE MEDICIÓN:</td><td class="value" colspan="3">{{ strtoupper($reporte->periodo_medicion ?? 'MEDICIÓN DE GASES') }}</td></tr>
+        <tr><td class="label">FECHA DE MEDICIÓN:</td><td class="value" colspan="3">{{ $reporte->fecha_medicion ? $reporte->fecha_medicion->format('d/m/Y') : '' }}</td></tr>
+        <tr><td class="label">TIPO DE MUESTREO:</td><td class="value" colspan="3">{{ strtoupper($reporte->tipo_muestreo ?? '') }}</td></tr>
+        <tr><td class="label">TIPO DE MEDICIÓN:</td><td class="value" colspan="3">{{ strtoupper($reporte->tipo_medicion ?? '') }}</td></tr>
         <tr><td class="label">MEDICIÓN EFECTUADA POR:</td><td class="value" colspan="3">{{ strtoupper($reporte->medicion_efectuada_por ?? '') }}</td></tr>
         <tr><td class="label">EQUIPO USADO PARA MEDICIÓN:</td><td class="value" colspan="3">{{ strtoupper($reporte->equipo_usado ?? '') }}</td></tr>
-        <tr><td class="label">CONDICIONES DE MUESTREO:</td><td class="value" colspan="3"></td></tr>
-        <tr><td class="label">CONDICIONES REPORTE DE RESULTADOS:</td><td class="value" colspan="3"></td></tr>
+        <tr><td class="label">CONDICIONES DE MUESTREO:</td><td class="value" colspan="3">{{ strtoupper($reporte->condiciones_muestreo ?? '') }}</td></tr>
+        <tr><td class="label">CONDICIONES REPORTE DE RESULTADOS:</td><td class="value" colspan="3">{{ strtoupper($reporte->condiciones_reporte ?? '') }}</td></tr>
     </table>
 
     @php
         $paramsGases = $p->parametros()->where('categoria', 'GASES')->get();
+        $gasesMetodo = '';
+        foreach ($paramsGases as $pg) {
+            if ($pg->pivot->metodo) {
+                $gasesMetodo = $pg->pivot->metodo;
+                break;
+            }
+        }
+        $gasesNombres = $gasesMetodo ? array_map('trim', explode(',', $gasesMetodo)) : [];
+        if (!empty($gasesNombres)) {
+            $todosGases = \App\Models\Parametro::where('categoria', 'GASES')->get();
+            $paramsGases = $todosGases->filter(fn($g) => in_array($g->nombre, $gasesNombres));
+        }
     @endphp
 
     <!-- TABLA DE RESULTADOS -->
@@ -100,14 +113,19 @@
         <thead>
             <tr>
                 <th style="width: 10%;">CÓDIGO</th>
-                <th style="width: 10%;">Hora Inicial</th>
-                <th style="width: 10%;">Hora Final</th>
+                <th style="width: 15%;">PERIODO</th>
                 @foreach($paramsGases as $p)
                 <th colspan="2">{{ $p->nombre_completo ?? $p->nombre }}</th>
                 @endforeach
             </tr>
             <tr>
                 <th></th>
+                <th></th>
+                @foreach($paramsGases as $p)
+                <th colspan="2" style="font-weight: normal; font-size: 8pt;">{{ $p->metodo ?? '' }}</th>
+                @endforeach
+            </tr>
+            <tr>
                 <th></th>
                 <th></th>
                 @foreach($paramsGases as $p)
@@ -120,8 +138,7 @@
             @foreach($rg as $r)
             <tr>
                 <td>{{ $r['codigo'] ?? '' }}</td>
-                <td>{{ $r['hora_inicial'] ?? '' }}</td>
-                <td>{{ $r['hora_final'] ?? '' }}</td>
+                <td>{{ $r['periodo'] ?? '' }}</td>
                 @foreach($paramsGases as $p)
                 <td class="num">{{ $r[$p->nombre]['valor'] ?? $r['concentracion'] ?? '' }}</td>
                 <td>{{ $r[$p->nombre]['unidad'] ?? $r['unidad'] ?? $p->unidad_default ?? '' }}</td>

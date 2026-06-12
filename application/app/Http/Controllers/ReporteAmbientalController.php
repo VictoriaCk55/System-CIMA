@@ -87,6 +87,7 @@ class ReporteAmbientalController extends Controller
             'fecha_fin_muestreo' => 'nullable|date',
             'periodo_medicion' => 'nullable|string|max:255',
             'tipo_muestreo' => 'nullable|string|max:100',
+            'tipo_medicion' => 'nullable|string|max:100',
             'medicion_efectuada_por' => 'nullable|string|max:255',
             'equipo_usado' => 'nullable|string|max:255',
             'condiciones_muestreo' => 'nullable|string',

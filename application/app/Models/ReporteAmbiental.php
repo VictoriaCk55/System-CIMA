@@ -20,6 +20,7 @@ class ReporteAmbiental extends Model
         'fecha_fin_muestreo',
         'periodo_medicion',
         'tipo_muestreo',
+        'tipo_medicion',
         'medicion_efectuada_por',
         'equipo_usado',
         'condiciones_muestreo',
