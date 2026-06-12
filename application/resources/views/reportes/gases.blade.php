@@ -187,9 +187,8 @@
                                 <th rowspan="2" style="width: 10%;">CÓDIGO</th>
                                 <th rowspan="2" style="width: 20%;">PERIODO DE MEDICIÓN</th>
                                 @foreach($parametrosGases as $p)
-                                <th rowspan="2" style="text-align: center;">
-                                    {{ $p->nombre_completo ?? $p->nombre }}<br>
-                                    <small style="font-weight: normal; font-size: 0.7rem;">{{ $p->metodo ?? '' }}</small><br>
+                                <th rowspan="2" style="text-align: center; vertical-align: middle;">
+                                    {{ $p->nombre_completo ?? $p->nombre }} - {{ $p->nombre }}<br>
                                     <select class="form-select form-select-sm mx-auto" name="resultados_unidades[{{ $p->nombre }}]" style="width: 90px; font-weight: normal; font-size: 0.75rem;">
                                         <option value="">Unidad</option>
                                         <option value="ppm" {{ ($unidadPorParam[$p->nombre] ?? '') == 'ppm' ? 'selected' : '' }}>ppm</option>

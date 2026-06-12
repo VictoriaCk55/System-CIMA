@@ -109,15 +109,18 @@ class ReporteAmbientalController extends Controller
         ];
 
         if ($categoria === 'AIRE' || ! $categoria) {
-            $reglas = array_merge($reglas, [
+            $parametrosAire = $proforma->parametros()->where('categoria', 'AIRE')->get();
+            $reglasAire = [
                 'resultados_aire' => 'nullable|array',
                 'resultados_aire.*.codigo' => 'nullable|string|max:255',
-                'resultados_aire.*.parametro' => 'nullable|string|max:255',
-                'resultados_aire.*.concentracion' => 'nullable|numeric',
-                'resultados_aire.*.unidad' => 'nullable|string|max:50',
-                'resultados_aire.*.metodo' => 'nullable|string|max:255',
+                'resultados_aire.*.periodo' => 'nullable|string|max:255',
+                'resultados_unidades' => 'nullable|array',
                 'observaciones_aire' => 'nullable|string',
-            ]);
+            ];
+            foreach ($parametrosAire as $p) {
+                $reglasAire["resultados_aire.*.{$p->nombre}.valor"] = 'nullable|numeric';
+            }
+            $reglas = array_merge($reglas, $reglasAire);
         }
 
         if ($categoria === 'RUIDO' || ! $categoria) {
@@ -129,6 +132,10 @@ class ReporteAmbientalController extends Controller
                 'resultados_ruido.*.lmax' => 'nullable|numeric',
                 'resultados_ruido.*.lmin' => 'nullable|numeric',
                 'resultados_ruido.*.leq' => 'nullable|numeric',
+                'resultados_unidad_ruido' => 'nullable|array',
+                'resultados_unidad_ruido.lmax' => 'nullable|string|max:10',
+                'resultados_unidad_ruido.lmin' => 'nullable|string|max:10',
+                'resultados_unidad_ruido.leq' => 'nullable|string|max:10',
                 'observaciones_ruido' => 'nullable|string',
             ]);
         }
@@ -158,6 +165,24 @@ class ReporteAmbientalController extends Controller
                 }
                 unset($row);
             }
+        }
+
+        if ($categoria === 'AIRE' && $request->has('resultados_unidades')) {
+            $unidades = $request->input('resultados_unidades');
+            if (! empty($data['resultados_aire'])) {
+                foreach ($data['resultados_aire'] as &$row) {
+                    foreach ($unidades as $paramNombre => $unidad) {
+                        if (isset($row[$paramNombre])) {
+                            $row[$paramNombre]['unidad'] = $unidad;
+                        }
+                    }
+                }
+                unset($row);
+            }
+        }
+
+        if ($categoria === 'RUIDO') {
+            $data['unidad_ruido'] = $request->input('resultados_unidad_ruido');
         }
 
         $data['proforma_id'] = $proforma->id;

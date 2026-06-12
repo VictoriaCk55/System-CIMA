@@ -121,9 +121,24 @@
                                 <th style="width: 15%;">Hora Inicial</th>
                                 <th style="width: 15%;">Hora Final</th>
                                 <th style="width: 15%;">Tipo de Ruido</th>
-                                <th style="width: 12%;">Lmáx</th>
-                                <th style="width: 12%;">Lmín</th>
-                                <th style="width: 12%;">Leq</th>
+                                <th style="width: 12%;">Lmáx<br>
+                                    <select class="form-select form-select-sm mx-auto" name="resultados_unidad_ruido[lmax]" style="width: 80px; font-weight: normal; font-size: 0.75rem;">
+                                        <option value="dB" {{ old('resultados_unidad_ruido.lmax', $reporte->unidad_ruido['lmax'] ?? 'dB') == 'dB' ? 'selected' : '' }}>dB</option>
+                                        <option value="dB(A)" {{ old('resultados_unidad_ruido.lmax', $reporte->unidad_ruido['lmax'] ?? '') == 'dB(A)' ? 'selected' : '' }}>dB(A)</option>
+                                    </select>
+                                </th>
+                                <th style="width: 12%;">Lmín<br>
+                                    <select class="form-select form-select-sm mx-auto" name="resultados_unidad_ruido[lmin]" style="width: 80px; font-weight: normal; font-size: 0.75rem;">
+                                        <option value="dB" {{ old('resultados_unidad_ruido.lmin', $reporte->unidad_ruido['lmin'] ?? 'dB') == 'dB' ? 'selected' : '' }}>dB</option>
+                                        <option value="dB(A)" {{ old('resultados_unidad_ruido.lmin', $reporte->unidad_ruido['lmin'] ?? '') == 'dB(A)' ? 'selected' : '' }}>dB(A)</option>
+                                    </select>
+                                </th>
+                                <th style="width: 12%;">Leq<br>
+                                    <select class="form-select form-select-sm mx-auto" name="resultados_unidad_ruido[leq]" style="width: 80px; font-weight: normal; font-size: 0.75rem;">
+                                        <option value="dB" {{ old('resultados_unidad_ruido.leq', $reporte->unidad_ruido['leq'] ?? 'dB') == 'dB' ? 'selected' : '' }}>dB</option>
+                                        <option value="dB(A)" {{ old('resultados_unidad_ruido.leq', $reporte->unidad_ruido['leq'] ?? '') == 'dB(A)' ? 'selected' : '' }}>dB(A)</option>
+                                    </select>
+                                </th>
                                 <th style="width: 40px;"></th>
                             </tr>
                         </thead>

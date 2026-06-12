@@ -47,8 +47,25 @@
     @php
         $p = $reporte->proforma;
         $c = $p->cliente;
+        $parametrosAire = $p->parametros()->where('categoria', 'AIRE')->get();
         $ra = $reporte->resultados_aire ?? [];
         if (is_string($ra)) { $ra = json_decode($ra, true) ?? []; }
+        // backward compat old format {codigo, parametro, concentracion, unidad}
+        foreach ($ra as &$row) {
+            if (isset($row['parametro'])) {
+                $row['periodo'] = $row['parametro'];
+            }
+            if (isset($row['concentracion']) && $parametrosAire->count() > 0) {
+                $params = $parametrosAire->values();
+                if (isset($params[0])) {
+                    $row[$params[0]->nombre] = ['valor' => $row['concentracion']];
+                }
+                if (isset($params[1]) && isset($row['unidad'])) {
+                    $row[$params[1]->nombre] = ['valor' => $row['unidad']];
+                }
+            }
+        }
+        unset($row);
         $pm = $reporte->puntos_medicion ?? [];
         if (is_string($pm)) { $pm = json_decode($pm, true) ?? []; }
     @endphp
@@ -91,23 +108,28 @@
 
     <!-- TABLA DE RESULTADOS -->
     @if(count($ra) > 0)
-    <div class="section-title">RESULTADOS DE MUESTREO DE PARTÍCULAS SUSPENDIDAS</div>
+    <div class="section-title">RESULTADOS DE MEDICIÓN DE AIRE</div>
     <table class="tabla">
         <thead>
             <tr>
                 <th style="width: 15%;">CÓDIGO</th>
-                <th style="width: 25%;">PERIODO DE MUESTREO</th>
-                <th style="width: 30%;">PARTÍCULAS SUSPENDIDAS<br>MENORES A 10 MICRAS - PM-10<br>(µg/m³)</th>
-                <th style="width: 30%;">PARTÍCULAS SUSPENDIDAS<br>TOTALES - PTS<br>(µg/m³)</th>
+                <th style="width: 20%;">PERIODO DE MUESTREO</th>
+                @foreach($parametrosAire as $p)
+                <th style="text-align: center;">
+                    {{ $p->nombre_completo ?? $p->nombre }}<br>
+                    <span style="font-weight: normal; font-size: 8pt;">{{ $p->metodo ?? '' }}</span>
+                </th>
+                @endforeach
             </tr>
         </thead>
         <tbody>
             @foreach($ra as $r)
             <tr>
                 <td>{{ $r['codigo'] ?? '' }}</td>
-                <td>{{ $reporte->periodo_medicion ?? '' }}</td>
-                <td class="num">{{ ($r['parametro'] ?? '') === 'PM-10' ? $r['concentracion'] : '' }}</td>
-                <td class="num">{{ ($r['parametro'] ?? '') === 'PTS' ? $r['concentracion'] : '' }}</td>
+                <td>{{ $r['periodo'] ?? '' }}</td>
+                @foreach($parametrosAire as $p)
+                <td class="num">{{ $r[$p->nombre]['valor'] ?? '' }}</td>
+                @endforeach
             </tr>
             @endforeach
         </tbody>

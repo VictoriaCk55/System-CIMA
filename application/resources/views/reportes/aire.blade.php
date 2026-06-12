@@ -119,58 +119,114 @@
         </div>
 
         <!-- RESULTADOS -->
+        @php
+            $parametrosAire = $proforma->parametros()->where('categoria', 'AIRE')->get();
+
+            $ra = old('resultados_aire', $reporte->resultados_aire ?? []);
+            if (is_string($ra)) $ra = json_decode($ra, true) ?? [];
+
+            // backward compat: old format {parametro, concentracion, unidad} → new {periodo, PARAM: {valor}}
+            $converted = false;
+            foreach ($ra as &$row) {
+                if (isset($row['parametro'])) {
+                    $row['periodo'] = $row['parametro'];
+                    $converted = true;
+                }
+                if (isset($row['concentracion']) && $parametrosAire->count() > 0) {
+                    $params = $parametrosAire->values();
+                    if (isset($params[0])) {
+                        $row[$params[0]->nombre] = ['valor' => $row['concentracion']];
+                    }
+                    if (isset($params[1]) && isset($row['unidad'])) {
+                        $row[$params[1]->nombre] = ['valor' => $row['unidad']];
+                    }
+                }
+                // ensure all params exist in row
+                foreach ($parametrosAire as $p) {
+                    if (!isset($row[$p->nombre])) {
+                        $row[$p->nombre] = ['valor' => ''];
+                    }
+                }
+            }
+            unset($row);
+            if ($converted) {
+                foreach ($ra as &$row) {
+                    unset($row['parametro'], $row['concentracion'], $row['unidad'], $row['metodo']);
+                }
+                unset($row);
+            }
+
+            $hasRa = count($ra) > 0;
+            $numMuestras = count($ra);
+            if ($numMuestras === 0) {
+                $aireParam = $proforma->parametros()->where('categoria', 'AIRE')->first();
+                $numMuestras = $aireParam ? ($aireParam->pivot->cantidad_muestras ?? 1) : 1;
+            }
+
+            $unidadPorParam = [];
+            foreach ($parametrosAire as $p) {
+                $unidadPorParam[$p->nombre] = old("resultados_unidades.{$p->nombre}",
+                    $hasRa
+                        ? ($ra[0][$p->nombre]['unidad'] ?? $p->unidad_default ?? '')
+                        : ($p->unidad_default ?? '')
+                );
+            }
+        @endphp
+
         <div class="card section-card aire">
-            <div class="card-header"><i class="fas fa-table me-2"></i> RESULTADO DE MUESTREO DE PARTÍCULAS SUSPENDIDAS</div>
+            <div class="card-header"><i class="fas fa-table me-2"></i> RESULTADOS DE MEDICIÓN DE AIRE</div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-bordered table-dinamica" id="tabla-aire">
                         <thead>
                             <tr>
-                                <th>CÓDIGO</th>
-                                <th>PERIODO DE MUESTREO</th>
-                                <th>PARTICULAS SUSPENDIDAS <br> MENORES A 10 MICRAS - PM-10<br>(µg/m³)</th>
-                                <th>PARTICULAS SUSPENDIDAS <br> TOTALES - PTS<br>(µg/m³)</th>
-                                <!-- <th>Método</th> -->
-                                <th style="width: 40px;"></th>
+                                <th rowspan="2" style="width: 10%;">CÓDIGO</th>
+                                <th rowspan="2" style="width: 20%;">PERIODO DE MUESTREO</th>
+                                @foreach($parametrosAire as $p)
+                                <th rowspan="2" style="text-align: center; vertical-align: middle;">
+                                    {{ $p->nombre_completo ?? $p->nombre }} - {{ $p->nombre }}<br>
+                                    <select class="form-select form-select-sm mx-auto" name="resultados_unidades[{{ $p->nombre }}]" style="width: 90px; font-weight: normal; font-size: 0.75rem;">
+                                        <option value="">Unidad</option>
+                                        <option value="ppm" {{ ($unidadPorParam[$p->nombre] ?? '') == 'ppm' ? 'selected' : '' }}>ppm</option>
+                                        <option value="%" {{ ($unidadPorParam[$p->nombre] ?? '') == '%' ? 'selected' : '' }}>%</option>
+                                        <option value="mg/m³" {{ ($unidadPorParam[$p->nombre] ?? '') == 'mg/m³' ? 'selected' : '' }}>mg/m³</option>
+                                        <option value="µg/m³" {{ ($unidadPorParam[$p->nombre] ?? '') == 'µg/m³' ? 'selected' : '' }}>µg/m³</option>
+                                        <option value="dB(A)" {{ ($unidadPorParam[$p->nombre] ?? '') == 'dB(A)' ? 'selected' : '' }}>dB(A)</option>
+                                        <option value="dB" {{ ($unidadPorParam[$p->nombre] ?? '') == 'dB' ? 'selected' : '' }}>dB</option>
+                                    </select>
+                                </th>
+                                @endforeach
+                                <th rowspan="2" style="width: 40px;"></th>
                             </tr>
                         </thead>
                         <tbody id="aire-body">
-                            @php
-                                $puntosAire = old('puntos_medicion', $reporte->puntos_medicion ?? []);
-                                if (is_string($puntosAire)) $puntosAire = json_decode($puntosAire, true) ?? [];
-                                $numMuestras = count($puntosAire);
-                                if ($numMuestras === 0) {
-                                    $numMuestras = $proforma->parametros()->where('categoria', 'AIRE')->count();
-                                }
-
-                                $ra = old('resultados_aire', $reporte->resultados_aire ?? []);
-                                if (is_string($ra)) $ra = json_decode($ra, true) ?? [];
-                                $hasRa = count($ra) > 0;
-                            @endphp
                             @forelse($ra as $i => $r)
                             <tr class="fila-aire">
                                 <td><input type="text" class="form-control form-control-sm" name="resultados_aire[{{ $i }}][codigo]" value="{{ $r['codigo'] ?? '' }}" readonly></td>
-                                <td><input type="text" class="form-control form-control-sm" name="resultados_aire[{{ $i }}][parametro]" value="{{ $r['parametro'] ?? '' }}"></td>
-                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="resultados_aire[{{ $i }}][concentracion]" value="{{ $r['concentracion'] ?? '' }}"></td>
-                                <td><input type="text" class="form-control form-control-sm" name="resultados_aire[{{ $i }}][unidad]" value="{{ $r['unidad'] ?? '' }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="resultados_aire[{{ $i }}][periodo]" value="{{ $r['periodo'] ?? '' }}" placeholder="Ej: Diurno"></td>
+                                @foreach($parametrosAire as $p)
+                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="resultados_aire[{{ $i }}][{{ $p->nombre }}][valor]" value="{{ $r[$p->nombre]['valor'] ?? '' }}" placeholder="{{ $p->nombre_completo ?? $p->nombre }}"></td>
+                                @endforeach
                                 <td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
                             </tr>
                             @empty
                             @for($mi = 0; $mi < $numMuestras; $mi++)
                             <tr class="fila-aire">
                                 <td><input type="text" class="form-control form-control-sm" name="resultados_aire[{{ $mi }}][codigo]" value="AI-{{ str_pad($mi + 1, 2, '0', STR_PAD_LEFT) }}" readonly></td>
-                                <td><input type="text" class="form-control form-control-sm" name="resultados_aire[{{ $mi }}][parametro]" placeholder="Periodo de muestreo"></td>
-                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="resultados_aire[{{ $mi }}][concentracion]"></td>
-                                <td><input type="text" class="form-control form-control-sm" name="resultados_aire[{{ $mi }}][unidad]"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="resultados_aire[{{ $mi }}][periodo]" placeholder="Ej: Diurno"></td>
+                                @foreach($parametrosAire as $p)
+                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="resultados_aire[{{ $mi }}][{{ $p->nombre }}][valor]" placeholder="{{ $p->nombre_completo ?? $p->nombre }}"></td>
+                                @endforeach
                                 <td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
                             </tr>
                             @endfor
                             @if($numMuestras === 0)
                             <tr class="fila-aire">
-                                <td><input type="text" class="form-control form-control-sm" name="resultados_aire[0][codigo]" placeholder="Ej: PA-01" readonly></td>
-                                <td><input type="text" class="form-control form-control-sm" name="resultados_aire[0][parametro]" placeholder="Ej: PTS"></td>
-                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="resultados_aire[0][concentracion]"></td>
-                                <td><input type="text" class="form-control form-control-sm" name="resultados_aire[0][unidad]" placeholder="Ej: µg/m³"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="resultados_aire[0][codigo]" placeholder="Ej: AI-01" readonly></td>
+                                <td><input type="text" class="form-control form-control-sm" name="resultados_aire[0][periodo]" placeholder="Ej: Diurno"></td>
+                                @foreach($parametrosAire as $p)
+                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="resultados_aire[0][{{ $p->nombre }}][valor]" placeholder="{{ $p->nombre_completo ?? $p->nombre }}"></td>
+                                @endforeach
                                 <td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
                             </tr>
                             @endif
@@ -179,7 +235,7 @@
                     </table>
                 </div>
                 <button type="button" class="btn-agregar-fila" onclick="agregarFila()">
-                    <i class="fas fa-plus me-1"></i> Agregar fila
+                    <i class="fas fa-plus me-1"></i> Agregar medición
                 </button>
             </div>
         </div>
@@ -325,18 +381,21 @@
 
 @push('scripts')
 <script>
+    const paramsAire = @json($parametrosAire->map(fn($p) => ['nombre' => $p->nombre, 'nombre_completo' => $p->nombre_completo]));
     let idx = {{ $hasRa ? count(old('resultados_aire', $ra)) : max($numMuestras, 1) }};
     let idxPunto = {{ $hasPuntos ? count(old('puntos_medicion', $puntos)) : max($numMuestras, 1) }};
     function agregarFila() {
         const tbody = document.getElementById('aire-body');
         const tr = document.createElement('tr'); tr.className = 'fila-aire';
         const codigo = 'AI-' + String(idx + 1).padStart(2, '0');
-        tr.innerHTML = `
+        let cols = `
             <td><input type="text" class="form-control form-control-sm" name="resultados_aire[${idx}][codigo]" value="${codigo}" readonly></td>
-            <td><input type="text" class="form-control form-control-sm" name="resultados_aire[${idx}][parametro]" placeholder="Ej: PTS"></td>
-            <td><input type="number" step="0.01" class="form-control form-control-sm" name="resultados_aire[${idx}][concentracion]"></td>
-            <td><input type="text" class="form-control form-control-sm" name="resultados_aire[${idx}][unidad]" placeholder="Ej: µg/m³"></td>
-            <td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>`;
+            <td><input type="text" class="form-control form-control-sm" name="resultados_aire[${idx}][periodo]" placeholder="Ej: Diurno"></td>`;
+        paramsAire.forEach(p => {
+            cols += `<td><input type="number" step="0.01" class="form-control form-control-sm" name="resultados_aire[${idx}][${p.nombre}][valor]" placeholder="${p.nombre_completo || p.nombre}"></td>`;
+        });
+        cols += `<td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>`;
+        tr.innerHTML = cols;
         tbody.appendChild(tr); idx++;
     }
     function actualizarZonas(valor) {
