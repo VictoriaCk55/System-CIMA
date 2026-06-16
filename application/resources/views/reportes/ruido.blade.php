@@ -98,7 +98,7 @@
                         <input type="text" class="form-control" value="{{ ($reporte->subtipo_ruido ?? 'AMBIENTAL') === 'INDUSTRIAL' ? 'RUIDO INDUSTRIAL' : 'RUIDO AMBIENTAL' }}" disabled>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">Subtipo de Ruido</label>
+                        <label class="form-label">Tipo de Medición</label>
                         <select class="form-select @error('subtipo_ruido') is-invalid @enderror" name="subtipo_ruido">
                             <option value="AMBIENTAL" {{ old('subtipo_ruido', $reporte->subtipo_ruido ?? 'AMBIENTAL') == 'AMBIENTAL' ? 'selected' : '' }}>Ruido Ambiental (RUAM)</option>
                             <option value="INDUSTRIAL" {{ old('subtipo_ruido', $reporte->subtipo_ruido ?? '') == 'INDUSTRIAL' ? 'selected' : '' }}>Ruido Industrial (RUIND)</option>
@@ -121,19 +121,19 @@
                                 <th style="width: 15%;">Hora Inicial</th>
                                 <th style="width: 15%;">Hora Final</th>
                                 <th style="width: 15%;">Tipo de Ruido</th>
-                                <th style="width: 12%;">Lmáx<br>
+                                <th style="width: 12%;">MAXIMO (Lmáx.)<br>
                                     <select class="form-select form-select-sm mx-auto" name="resultados_unidad_ruido[lmax]" style="width: 80px; font-weight: normal; font-size: 0.75rem;">
                                         <option value="dB" {{ old('resultados_unidad_ruido.lmax', $reporte->unidad_ruido['lmax'] ?? 'dB') == 'dB' ? 'selected' : '' }}>dB</option>
                                         <option value="dB(A)" {{ old('resultados_unidad_ruido.lmax', $reporte->unidad_ruido['lmax'] ?? '') == 'dB(A)' ? 'selected' : '' }}>dB(A)</option>
                                     </select>
                                 </th>
-                                <th style="width: 12%;">Lmín<br>
+                                <th style="width: 12%;">MÍNIMO (Lmín.)<br>
                                     <select class="form-select form-select-sm mx-auto" name="resultados_unidad_ruido[lmin]" style="width: 80px; font-weight: normal; font-size: 0.75rem;">
                                         <option value="dB" {{ old('resultados_unidad_ruido.lmin', $reporte->unidad_ruido['lmin'] ?? 'dB') == 'dB' ? 'selected' : '' }}>dB</option>
                                         <option value="dB(A)" {{ old('resultados_unidad_ruido.lmin', $reporte->unidad_ruido['lmin'] ?? '') == 'dB(A)' ? 'selected' : '' }}>dB(A)</option>
                                     </select>
                                 </th>
-                                <th style="width: 12%;">Leq<br>
+                                <th style="width: 12%;">EQUIVALENTES (Leq)<br>
                                     <select class="form-select form-select-sm mx-auto" name="resultados_unidad_ruido[leq]" style="width: 80px; font-weight: normal; font-size: 0.75rem;">
                                         <option value="dB" {{ old('resultados_unidad_ruido.leq', $reporte->unidad_ruido['leq'] ?? 'dB') == 'dB' ? 'selected' : '' }}>dB</option>
                                         <option value="dB(A)" {{ old('resultados_unidad_ruido.leq', $reporte->unidad_ruido['leq'] ?? '') == 'dB(A)' ? 'selected' : '' }}>dB(A)</option>
@@ -160,7 +160,7 @@
                                 <td><input type="text" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][codigo]" value="{{ $r['codigo'] ?? '' }}" readonly></td>
                                 <td><input type="time" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][hora_inicial]" value="{{ $r['hora_inicial'] ?? '' }}"></td>
                                 <td><input type="time" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][hora_final]" value="{{ $r['hora_final'] ?? '' }}"></td>
-                                <td><input type="text" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][tipo_ruido]" value="{{ $r['tipo_ruido'] ?? ($reporte->subtipo_ruido ?? 'AMBIENTAL') }}" placeholder="AMB/IND"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][tipo_ruido]" placeholder="AMB/IND"></td>
                                 <td><input type="number" step="0.1" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][lmax]" value="{{ $r['lmax'] ?? '' }}"></td>
                                 <td><input type="number" step="0.1" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][lmin]" value="{{ $r['lmin'] ?? '' }}"></td>
                                 <td><input type="number" step="0.1" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][leq]" value="{{ $r['leq'] ?? '' }}"></td>
@@ -172,7 +172,7 @@
                                 <td><input type="text" class="form-control form-control-sm" name="resultados_ruido[{{ $mi }}][codigo]" value="RU-{{ str_pad($mi + 1, 2, '0', STR_PAD_LEFT) }}" readonly></td>
                                 <td><input type="time" class="form-control form-control-sm" name="resultados_ruido[{{ $mi }}][hora_inicial]"></td>
                                 <td><input type="time" class="form-control form-control-sm" name="resultados_ruido[{{ $mi }}][hora_final]"></td>
-                                <td><input type="text" class="form-control form-control-sm" name="resultados_ruido[{{ $mi }}][tipo_ruido]" placeholder="AMB/IND" value="{{ $reporte->subtipo_ruido ?? 'AMBIENTAL' }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="resultados_ruido[{{ $mi }}][tipo_ruido]" placeholder="AMB/IND"></td>
                                 <td><input type="number" step="0.1" class="form-control form-control-sm" name="resultados_ruido[{{ $mi }}][lmax]"></td>
                                 <td><input type="number" step="0.1" class="form-control form-control-sm" name="resultados_ruido[{{ $mi }}][lmin]"></td>
                                 <td><input type="number" step="0.1" class="form-control form-control-sm" name="resultados_ruido[{{ $mi }}][leq]"></td>

@@ -305,15 +305,7 @@
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="hora_recepcion" class="form-label">Hora</label>
-                            <input type="time" class="form-control @error('hora_recepcion') is-invalid @enderror" 
-                                   id="hora_recepcion" name="hora_recepcion" 
-                                   value="{{ old('hora_recepcion', $proforma->hora_recepcion) }}">
-                            @error('hora_recepcion')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
-                        </div>
+
                         <div class="col-md-4 mb-3">
                             <label for="numero_recepcion" class="form-label">Nro. de Recepción</label>
                             <input type="text" class="form-control @error('numero_recepcion') is-invalid @enderror" 
