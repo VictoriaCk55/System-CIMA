@@ -322,35 +322,56 @@
 
     <!-- ===================================================== -->
     <!-- DATOS DE LA MUESTRA Y TABLA DE RESULTADOS -->
+    <!-- Bloques de 2 muestras cada uno -->
     <!-- ===================================================== -->
     @php
-        $primeraMuestra = !empty($resultados) ? min(array_keys($resultados)) : 1;
+        $maxMuestras = 0;
+        foreach($proforma->parametros as $p) {
+            $cant = $p->pivot->cantidad_muestras ?? 1;
+            if($cant > $maxMuestras) $maxMuestras = $cant;
+        }
+        if($maxMuestras == 0) $maxMuestras = 1;
+        $totalBloques = (int)ceil($maxMuestras / 2);
+    @endphp
+
+    @for($bloque = 0; $bloque < $totalBloques; $bloque++)
+    @php
+        $m1 = $bloque * 2 + 1;
+        $m2 = $bloque * 2 + 2;
+        $tieneM2 = $m2 <= $maxMuestras;
     @endphp
     <br>
-    <table style="width: 96%; margin: 0 auto; border-collapse: collapse; table-layout: fixed; border: 2px solid #000;">
+    <table style="width: 96%; margin: 0 auto; border-collapse: collapse; table-layout: fixed; border: 2px solid #000; font-size: 10px;">
         <!-- FILA SUPERIOR -->
         <tr>
             <!-- DATOS DE LA MUESTRA -->
             <td rowspan="5" style="width: 15%; border: 1px solid #000; text-align: center; vertical-align: middle; font-weight: bold; background: #f5f5f5;">
-                DATOS DE<br>LA MUESTRA
+                DATOS DE<br>LA MUESTRA<br>
+                <span style="font-size: 10px;">(M{{ $m1 }}@if($tieneM2)-M{{ $m2 }}@endif)</span>
             </td>
 
             <!-- TITULO -->
-            <td colspan="3" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 35px;">
+            <td colspan="3" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 26px;">
                 CÓDIGO DE LABORATORIO:
             </td>
 
             <!-- VALOR -->
             <td style="border: 1px solid #000; background: #9bd9e6;">
-                {{ $proforma->generarCodigoLaboratorio(1) ?? '---' }}
+                {{ $proforma->generarCodigoLaboratorio($m1) ?? '---' }}
             </td>
+
+            @if($tieneM2)
+            <td style="border: 1px solid #000; background: #9bd9e6;">
+                {{ $proforma->generarCodigoLaboratorio($m2) ?? '---' }}
+            </td>
+            @endif
 
         </tr>
 
         <!-- FILA -->
         <tr>
 
-            <td colspan="3" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 24px;">
+            <td colspan="3" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 18px;">
                 CÓDIGO CLIENTE:
             </td>
 
@@ -358,29 +379,41 @@
                 {{ $proforma->codigo_cliente ?? '---' }}
             </td>
 
+            @if($tieneM2)
+            <td style="border: 1px solid #000; background: #9bd9e6;">
+                {{ $proforma->codigo_cliente ?? '---' }}
+            </td>
+            @endif
+
         </tr>
 
         <!-- FILA -->
         <tr>
 
-            <td colspan="3" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 24px;">
+            <td colspan="3" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 18px;">
                 FECHA DE MUESTREO:
             </td>
 
             <td style="border: 1px solid #000; background: #9bd9e6;">
-                {{ $proforma->fecha_emision->format('d/m/Y') }}
+                {{ optional($proforma->fecha_emision)->format('d/m/Y') ?? '---' }}
             </td>
+
+            @if($tieneM2)
+            <td style="border: 1px solid #000; background: #9bd9e6;">
+                {{ optional($proforma->fecha_emision)->format('d/m/Y') ?? '---' }}
+            </td>
+            @endif
 
         </tr>
 
         <!-- COORDENADAS -->
         <tr>
 
-            <td rowspan="2" colspan="2" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 48px;">
+            <td rowspan="2" colspan="2" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 34px;">
                 COORDENADAS DE PUNTO DE MUESTREO: {{ $muestreo->zona_utm ?? 'ZONA 19K' }}
             </td>
 
-            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 24px;">
+            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 18px;">
                 {{ $muestreo->punto_cardinal_1 ?? 'E' }}
             </td>
 
@@ -388,22 +421,34 @@
                 {{ $muestreo->valor_cardinal_1 ?? '---' }}
             </td>
 
+            @if($tieneM2)
+            <td style="border: 1px solid #000;background: #9bd9e6;">
+                {{ $muestreo->valor_cardinal_1 ?? '---' }}
+            </td>
+            @endif
+
         </tr>
 
         <!-- N -->
         <tr>
-            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 24px;">
+            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 18px;">
                 {{ $muestreo->punto_cardinal_2 ?? 'N' }}
             </td>
 
             <td style="border: 1px solid #000; background: #9bd9e6;">
                 {{ $muestreo->valor_cardinal_2 ?? '---' }}
             </td>
+
+            @if($tieneM2)
+            <td style="border: 1px solid #000; background: #9bd9e6;">
+                {{ $muestreo->valor_cardinal_2 ?? '---' }}
+            </td>
+            @endif
         </tr>
 
         <!-- CABECERA -->
         <tr>
-            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 45px;">
+            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; height: 32px;">
                 PARAMETRO
             </td>
 
@@ -420,15 +465,21 @@
             </td>
 
             <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold;">
-                RESULTADOS DE ENSAYO
+                RESULTADOS M{{ $m1 }}
             </td>
+
+            @if($tieneM2)
+            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold;">
+                RESULTADOS M{{ $m2 }}
+            </td>
+            @endif
         </tr>
 
         <!-- FILAS DINAMICAS -->
         @foreach($proforma->parametros as $p)
 
         <tr>
-            <td style="border: 1px solid #000; height: 38px; text-align: center; vertical-align: middle;">
+            <td style="border: 1px solid #000; height: 28px; text-align: center; vertical-align: middle;">
                 {{ $p->nombre }}
             </td>
 
@@ -445,14 +496,21 @@
             </td>
 
             <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
-                {{ $resultados[$primeraMuestra][$p->id] ?? '---' }}
+                {{ $resultados[$m1][$p->id] ?? '---' }}
             </td>
+
+            @if($tieneM2)
+            <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
+                {{ $resultados[$m2][$p->id] ?? '---' }}
+            </td>
+            @endif
 
         </tr>
 
         @endforeach
 
     </table>
+    @endfor
     <!-- ===================================================== -->
     <!-- NOTAS Y RESPONSABILIDAD -->
     <!-- ===================================================== -->

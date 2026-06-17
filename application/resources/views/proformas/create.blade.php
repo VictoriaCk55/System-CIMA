@@ -355,7 +355,7 @@
                             <label for="codigo_cliente" class="form-label">Código de Cliente</label>
                             <input type="text" class="form-control @error('codigo_cliente') is-invalid @enderror" 
                                    id="codigo_cliente" name="codigo_cliente" 
-                                   value="{{ $cliente->codigo_cliente ?? '---' }}"
+                                   value="{{ old('codigo_cliente') }}"
                                    placeholder="Ej: CL-001">
                             @error('codigo_cliente')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
@@ -907,10 +907,6 @@ $(document).ready(function() {
         });
     }
     
-    // ===== INICIALIZAR PRIMER PARÁMETRO =====
-    setTimeout(function() {
-        initParametroSelect('#parametro-select-0');
-    }, 100);
     
     // ===== BOTÓN AGREGAR PARÁMETRO =====
     $('#add-parametro').click(function() {
@@ -1065,8 +1061,12 @@ $(document).ready(function() {
         const tipo = $('#tipo').val();
         if (tipo === 'AMBIENTAL') {
             $('#logistica-muestreo').show();
+            $('.logistica-select').prop('required', true).prop('disabled', false);
+            $('.logistica-cantidad').prop('required', true).prop('disabled', false);
         } else {
             $('#logistica-muestreo').hide();
+            $('.logistica-select').prop('required', false).prop('disabled', true);
+            $('.logistica-cantidad').prop('required', false).prop('disabled', true);
         }
     }
     $('#tipo').on('change', toggleLogisticaMuestreo);
