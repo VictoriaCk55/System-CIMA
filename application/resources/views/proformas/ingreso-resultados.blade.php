@@ -460,6 +460,82 @@
             }
         }
         
+        /* Lock icon on locked inputs */
+        .lock-icon {
+            display: none;
+            margin-left: 4px;
+            color: #6c757d;
+            font-size: 12px;
+        }
+        .locked .lock-icon {
+            display: inline-block;
+        }
+        .param-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: center;
+        }
+        .param-actions .btn-sm-action {
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            width: 100%;
+        }
+        .btn-sm-edit {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .btn-sm-edit:hover {
+            background: #ffc107;
+            color: #000;
+        }
+        .btn-sm-history {
+            background: #cce5ff;
+            color: #004085;
+        }
+        .btn-sm-history:hover {
+            background: #0d6efd;
+            color: #fff;
+        }
+        .modify-highlight {
+            background: #fffde7 !important;
+            transition: background 0.3s ease;
+        }
+        .modal-large {
+            width: 600px;
+            max-width: 95%;
+        }
+        .historial-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .historial-table th {
+            background: #1a1a2e;
+            color: white;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        .historial-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .historial-table tr:hover {
+            background: #f8f9ff;
+        }
+        .campo-selector {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+        }
         .toast-notification {
             position: fixed;
             bottom: 30px;
@@ -599,7 +675,7 @@
                         <input type="date" 
                         id="fecha_inicio_ensayo" 
                         class="modern-input fecha-inicio-ensayo" 
-                        value="{{ $fecha_inicio_ensayo }}"> </div>
+                        value="{{ $fecha_inicio_ensayo ?: date('Y-m-d') }}"> </div>
                 </div>
 
                 <div class="info-item">
@@ -611,7 +687,7 @@
                         <input type="date" 
                         id="fecha_conclusion_ensayo" 
                         class="modern-input fecha-conclusion-ensayo" 
-                        value="{{ $fecha_conclusion_ensayo }}">
+                        value="{{ $fecha_conclusion_ensayo ?: date('Y-m-d') }}">
                     </div>
                 </div>
 
@@ -783,23 +859,43 @@
                                 </td>
                             @endforeach
                         </tr>
+                        <tr class="acciones-row" style="display: none;">
+                            <td style="background: #f8f9fa; font-weight: 600;">Acciones</td>
+                            @foreach($parametros as $p)
+                                <td>
+                                    <div class="param-actions" data-id="{{ $p->id }}">
+                                        <button class="btn-sm-action btn-sm-edit btn-modificar-parametro"
+                                                data-id="{{ $p->id }}" data-nombre="{{ $p->nombre }}"
+                                                title="Modificar parámetro">
+                                            <i class="fas fa-edit"></i> Modificar Parámetro
+                                        </button>
+                                        <button class="btn-sm-action btn-sm-history btn-historial-parametro"
+                                                data-id="{{ $p->id }}" data-nombre="{{ $p->nombre }}"
+                                                title="Ver historial">
+                                            <i class="fas fa-history"></i> Historial
+                                        </button>
+                                    </div>
+                                </td>
+                            @endforeach
+                        </tr>
                     </tbody>
                 </table>
             </div>
             
             <div class="action-buttons">
                 <button id="btnGuardar" class="btn-modern btn-success" onclick="guardarTodo()">
-                    <i class="fas fa-save"></i> Guardar Resultados
+                    <i class="fas fa-save"></i> Guardar
                 </button>
-                <button id="btnEditar" class="btn-modern btn-warning" onclick="editarDatos()" style="display: none;">
+                <button id="btnEditarGenerales" class="btn-modern btn-warning" onclick="editarGenerales()" style="display: none;">
                     <i class="fas fa-edit"></i> Editar
+                </button>
+                <button id="btnHistorialGenerales" class="btn-modern btn-info" onclick="verHistorial(null)" style="display: none;">
+                    <i class="fas fa-history"></i> Historial General
                 </button>
                 <button class="btn-modern btn-clean" onclick="confirmarLimpiar()">
                     <i class="fas fa-eraser"></i> Limpiar
                 </button>
-                <!-- <button class="btn-modern btn-primary" onclick="cargarTodo()">
-                    <i class="fas fa-download"></i> Cargar Guardados
-                </button> -->
+                
                 <a href="{{ route('proformas.resultados.pdf', $proforma->id) }}" 
                 class="btn-modern btn-info" target="_blank"> 
                 <i class="fas fa-file-pdf"></i> Exportar PDF </a>
@@ -833,85 +929,220 @@
         </div>
     </div>
 
+
+
+    <!-- Modal: Modificar Parámetro -->
+    <div id="modalModificarParametro" class="modal">
+        <div class="modal-content modal-large" style="text-align: left;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                <div style="width: 50px; height: 50px; background: #fff3cd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    <i class="fas fa-flask" style="color: #856404;"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0;">Modificar Parámetro</h3>
+                    <p id="modalParametroNombre" style="margin: 4px 0 0; color: #666; font-size: 13px;"></p>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 6px;">Campo a modificar</label>
+                <select id="campoParametroSelect" class="campo-selector" onchange="actualizarValorActualParametro()">
+                    <option value="">-- Seleccione --</option>
+                    <option value="resultado">Resultado</option>
+                    <option value="responsable">Responsable</option>
+                    <option value="fecha">Fecha de Ensayo</option>
+                    <option value="vb">V°B°</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 6px;">Valor Actual</label>
+                <p id="valorActualParametro" style="background: #f0f0f0; padding: 10px; border-radius: 10px; font-size: 14px; margin: 0;">—</p>
+            </div>
+            <div class="mb-3" id="campoResultadoMuestra" style="display: none;">
+                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 6px;">Muestra</label>
+                <select id="muestraParametroSelect" class="campo-selector" onchange="actualizarValorResultadoMuestra()"></select>
+            </div>
+            <div class="mb-3">
+                <label for="valorNuevoParametro" style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 6px;">Nuevo Valor</label>
+                <input type="text" id="valorNuevoParametro" class="campo-selector" placeholder="Ingrese el nuevo valor">
+            </div>
+            <div class="mb-3">
+                <label for="motivoParametro" style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 6px;">Motivo de modificación <span style="color: red;">*</span></label>
+                <textarea id="motivoParametro" class="campo-selector" rows="3" placeholder="Describa el motivo de la modificación" style="resize: vertical;"></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button onclick="cerrarModal('modalModificarParametro')" class="btn-modern btn-gray">Cancelar</button>
+                <button onclick="guardarModificacionParametro()" class="btn-modern btn-success">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Historial de Modificaciones -->
+    <div id="modalHistorial" class="modal" style="display: none; align-items: center; justify-content: center;">
+        <div class="modal-content" style="text-align: left; max-height: 80vh; overflow-y: auto; width: 1000px; max-width: 95%; margin: 0;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                <div style="width: 50px; height: 50px; background: #cce5ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    <i class="fas fa-history" style="color: #004085;"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0;">Historial de Modificaciones</h3>
+                    <p id="historialTitulo" style="margin: 4px 0 0; color: #666; font-size: 13px;"></p>
+                </div>
+            </div>
+            <div id="historialContenido">
+                <p style="text-align: center; color: #999; padding: 20px;">Cargando historial...</p>
+            </div>
+            <div class="modal-buttons">
+                <button onclick="cerrarModal('modalHistorial')" class="btn-modern btn-gray">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <script>
 
         let estadoActual = 'sin_datos';
-
+        let parametroEditandoId = null;
         const proformaId = {{ $proforma->id }};
 
-        const btnGuardar =
-            document.getElementById('btnGuardar');
-
-        const btnEditar =
-            document.getElementById('btnEditar');
+        const btnGuardar = document.getElementById('btnGuardar');
+        const btnEditarGenerales = document.getElementById('btnEditarGenerales');
+        const btnHistorialGenerales = document.getElementById('btnHistorialGenerales');
 
         const inputsEditables = document.querySelectorAll(
-            '.resultado, .responsable, .fecha, .vb, .fecha-inicio-ensayo, .fecha-conclusion-ensayo, #zonaUtm, #puntoCardinal1, #valorCardinal1, #puntoCardinal2, #valorCardinal2, #numeroRecepcion, #tipoPermisible'
+            '.resultado, .responsable, .fecha, .vb'
         );
+
+        const generalesEditables = document.querySelectorAll(
+            '.fecha-inicio-ensayo, .fecha-conclusion-ensayo, #zonaUtm, #puntoCardinal1, #valorCardinal1, #puntoCardinal2, #valorCardinal2, #numeroRecepcion, #tipoPermisible'
+        );
+
+        const GENERAL_FIELD_MAP = {
+            fecha_inicio_ensayo: { label: 'Inicio de Ensayo', el: () => document.getElementById('fecha_inicio_ensayo') },
+            fecha_conclusion_ensayo: { label: 'Conclusión de Ensayo', el: () => document.getElementById('fecha_conclusion_ensayo') },
+            numero_recepcion: { label: 'N° Recepción', el: () => document.getElementById('numeroRecepcion') },
+            zona_utm: { label: 'Zona UTM', el: () => document.getElementById('zonaUtm') },
+            punto_cardinal_1: { label: 'Punto Cardinal 1', el: () => document.getElementById('puntoCardinal1') },
+            valor_cardinal_1: { label: 'Valor 1', el: () => document.getElementById('valorCardinal1') },
+            punto_cardinal_2: { label: 'Punto Cardinal 2', el: () => document.getElementById('puntoCardinal2') },
+            valor_cardinal_2: { label: 'Valor 2', el: () => document.getElementById('valorCardinal2') },
+        };
 
         function csrfToken() {
             return document.querySelector('meta[name="csrf-token"]').content;
         }
 
-        function actualizarEstadoUI() {
+        function hayPendientes() {
+            let vacios = 0;
+            document.querySelectorAll('.resultado, .responsable, .fecha, .vb').forEach(inp => {
+                if (!inp.value || inp.value.trim() === '') vacios++;
+            });
+            return vacios > 0;
+        }
 
-            const estadoTexto =
-                document.getElementById('estadoTexto');
+        function actualizarEstadoUI() {
+            const estadoTexto = document.getElementById('estadoTexto');
 
             switch (estadoActual) {
-
                 case 'sin_datos':
-
                     btnGuardar.style.display = 'inline-flex';
-                    btnEditar.style.display = 'none';
-
-                    estadoTexto.innerHTML =
-                        'Sin datos <i class="fas fa-database"></i>';
-
-                    habilitarInputs(true);
-
+                    btnEditarGenerales.style.display = 'none';
+                    btnHistorialGenerales.style.display = 'none';
+                    document.querySelector('.acciones-row').style.display = 'none';
+                    estadoTexto.innerHTML = 'Sin datos <i class="fas fa-database"></i>';
+                    habilitarGenerales(true);
+                    actualizarBloqueoParametros(true);
                     break;
 
                 case 'guardado':
-
                     btnGuardar.style.display = 'none';
-                    btnEditar.style.display = 'inline-flex';
-
-                    estadoTexto.innerHTML =
-                        'Datos guardados <i class="fas fa-lock"></i>';
-
-                    habilitarInputs(false);
-
-                    break;
-
-                case 'editando':
-
-                    btnGuardar.style.display = 'inline-flex';
-                    btnEditar.style.display = 'none';
-
-                    estadoTexto.innerHTML =
-                        'Editando <i class="fas fa-edit"></i>';
-
-                    habilitarInputs(true);
-
+                    btnEditarGenerales.style.display = 'inline-flex';
+                    btnHistorialGenerales.style.display = 'inline-flex';
+                    document.querySelector('.acciones-row').style.display = '';
+                    estadoTexto.innerHTML = 'Datos guardados <i class="fas fa-lock"></i>';
+                    habilitarGenerales(false);
+                    actualizarBloqueoParametros(false);
                     break;
             }
         }
 
+        function actualizarBloqueoParametros(todosHabilitados) {
+            // Parámetros que tienen al menos un resultado lleno
+            const paramsConDatos = new Set();
+            document.querySelectorAll('.resultado').forEach(inp => {
+                if (inp.value && inp.value.trim() !== '') {
+                    paramsConDatos.add(inp.dataset.parametro);
+                }
+            });
+
+            document.querySelectorAll('.resultado, .responsable, .fecha, .vb').forEach(input => {
+                const paramId = input.dataset.parametro || input.dataset.id;
+                const tieneDatos = paramsConDatos.has(paramId);
+
+                if (todosHabilitados) {
+                    input.disabled = false;
+                } else {
+                    input.disabled = true;
+                }
+
+                const lockIcon = input.parentElement.querySelector('.lock-icon');
+                if (tieneDatos && !todosHabilitados) {
+                    if (!lockIcon) {
+                        const span = document.createElement('span');
+                        span.className = 'lock-icon';
+                        span.textContent = '\u{1F512}';
+                        span.style.cssText = 'display:inline-block; margin-left:4px; color:#6c757d; font-size:12px;';
+                        input.parentElement.insertBefore(span, input.nextSibling);
+                    }
+                } else {
+                    if (lockIcon) lockIcon.remove();
+                }
+            });
+
+            // Acciones solo para parámetros con datos
+            document.querySelectorAll('.param-actions').forEach(div => {
+                div.style.display = paramsConDatos.has(div.dataset.id) ? '' : 'none';
+            });
+        }
+
         function habilitarInputs(habilitado) {
-
             inputsEditables.forEach(input => {
-
                 input.disabled = !habilitado;
             });
         }
 
+        function agregarLockIcons() {
+            document.querySelectorAll('.lock-icon').forEach(el => el.remove());
+            document.querySelectorAll('.resultado, .responsable, .fecha, .vb').forEach(input => {
+                if (!input.parentElement.querySelector('.lock-icon')) {
+                    const span = document.createElement('span');
+                    span.className = 'lock-icon';
+                    span.textContent = '\u{1F512}';
+                    span.style.cssText = 'display:inline-block; margin-left:4px; color:#6c757d; font-size:12px;';
+                    input.parentElement.insertBefore(span, input.nextSibling);
+                }
+            });
+        }
+
+        function quitarLockIcons() {
+            document.querySelectorAll('.lock-icon').forEach(el => el.remove());
+        }
+
+        function habilitarGenerales(habilitado) {
+            generalesEditables.forEach(input => {
+                input.disabled = !habilitado;
+            });
+        }
+
+        function editarGenerales() {
+            habilitarGenerales(true);
+            actualizarBloqueoParametros(true);
+            btnEditarGenerales.style.display = 'none';
+            btnGuardar.style.display = 'inline-flex';
+        }
+
         function obtenerDatosFormulario() {
-
             let datos = {
-
                 resultados: {},
                 responsables: {},
                 fechas: {},
@@ -926,57 +1157,27 @@
                 numero_recepcion: ''
             };
 
-            // RESULTADOS
-            document.querySelectorAll('.resultado')
-                .forEach(inp => {
+            document.querySelectorAll('.resultado').forEach(inp => {
+                let muestra = inp.dataset.muestra;
+                let parametro = inp.dataset.parametro;
+                if (!datos.resultados[muestra]) datos.resultados[muestra] = {};
+                datos.resultados[muestra][parametro] = inp.value;
+            });
 
-                    let muestra =
-                        inp.dataset.muestra;
+            document.querySelectorAll('.responsable').forEach(inp => {
+                datos.responsables[inp.dataset.id] = inp.value;
+            });
 
-                    let parametro =
-                        inp.dataset.parametro;
+            document.querySelectorAll('.fecha').forEach(inp => {
+                datos.fechas[inp.dataset.id] = inp.value;
+            });
 
-                    if (!datos.resultados[muestra]) {
+            document.querySelectorAll('.vb').forEach(inp => {
+                datos.vbs[inp.dataset.id] = inp.value;
+            });
 
-                        datos.resultados[muestra] = {};
-                    }
-
-                    datos.resultados[muestra][parametro] =
-                        inp.value;
-                });
-
-            // RESPONSABLES
-            document.querySelectorAll('.responsable')
-                .forEach(inp => {
-
-                    datos.responsables[inp.dataset.id] =
-                        inp.value;
-                });
-
-            // FECHAS
-            document.querySelectorAll('.fecha')
-                .forEach(inp => {
-
-                    datos.fechas[inp.dataset.id] =
-                        inp.value;
-                });
-
-            // VB
-            document.querySelectorAll('.vb')
-                .forEach(inp => {
-
-                    datos.vbs[inp.dataset.id] =
-                        inp.value;
-                });
-
-            // FECHAS GENERALES
-            datos.fecha_inicio_ensayo =
-                document.getElementById('fecha_inicio_ensayo').value;
-
-            datos.fecha_conclusion_ensayo =
-                document.getElementById('fecha_conclusion_ensayo').value;
-
-            // COORDENADAS
+            datos.fecha_inicio_ensayo = document.getElementById('fecha_inicio_ensayo').value;
+            datos.fecha_conclusion_ensayo = document.getElementById('fecha_conclusion_ensayo').value;
             datos.zona_utm = document.getElementById('zonaUtm').value;
             datos.punto_cardinal_1 = document.getElementById('puntoCardinal1').value;
             datos.valor_cardinal_1 = document.getElementById('valorCardinal1').value;
@@ -1005,16 +1206,18 @@
 
             fetch('{{ route("proformas.resultados.guardar", $proforma->id) }}', {
                 method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken(),
-                    'Accept': 'application/json',
-                },
+                headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' },
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     estadoActual = 'guardado';
+                    // Guardar referencia de valores originales para detección de cambios
+                    ['fecha_inicio_ensayo','fecha_conclusion_ensayo','numeroRecepcion','zonaUtm','puntoCardinal1','valorCardinal1','puntoCardinal2','valorCardinal2'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.dataset.valorOriginal = el.value;
+                    });
                     actualizarEstadoUI();
                     mostrarToast('✅ Resultados guardados correctamente');
                 } else {
@@ -1030,9 +1233,7 @@
         function cargarTodo() {
             fetch('{{ route("proformas.resultados.cargar", $proforma->id) }}', {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                }
+                headers: { 'Accept': 'application/json' }
             })
             .then(response => response.json())
             .then(data => {
@@ -1042,79 +1243,48 @@
                     return;
                 }
 
-                // RESULTADOS
                 if (data.resultados) {
-                    Object.keys(data.resultados)
-                        .forEach(muestra => {
-                            Object.keys(
-                                data.resultados[muestra]
-                            ).forEach(parametro => {
-                                const inp = document.querySelector(
-                                    `.resultado[data-muestra="${muestra}"][data-parametro="${parametro}"]`
-                                );
-                                if (inp) {
-                                    inp.value = data.resultados[muestra][parametro];
-                                }
-                            });
+                    Object.keys(data.resultados).forEach(muestra => {
+                        Object.keys(data.resultados[muestra]).forEach(parametro => {
+                            const inp = document.querySelector(`.resultado[data-muestra="${muestra}"][data-parametro="${parametro}"]`);
+                            if (inp) inp.value = data.resultados[muestra][parametro];
                         });
+                    });
                 }
 
-                // RESPONSABLES
                 if (data.responsables) {
-                    Object.keys(data.responsables)
-                        .forEach(id => {
-                            const inp = document.querySelector(
-                                `.responsable[data-id="${id}"]`
-                            );
-                            if (inp) {
-                                inp.value = data.responsables[id];
-                            }
-                        });
+                    Object.keys(data.responsables).forEach(id => {
+                        const inp = document.querySelector(`.responsable[data-id="${id}"]`);
+                        if (inp) inp.value = data.responsables[id];
+                    });
                 }
 
-                // FECHAS
                 if (data.fechas) {
-                    Object.keys(data.fechas)
-                        .forEach(id => {
-                            const inp = document.querySelector(
-                                `.fecha[data-id="${id}"]`
-                            );
-                            if (inp) {
-                                inp.value = data.fechas[id];
-                            }
-                        });
+                    Object.keys(data.fechas).forEach(id => {
+                        const inp = document.querySelector(`.fecha[data-id="${id}"]`);
+                        if (inp) inp.value = data.fechas[id];
+                    });
                 }
 
-                // VB
                 if (data.vbs) {
-                    Object.keys(data.vbs)
-                        .forEach(id => {
-                            const inp = document.querySelector(
-                                `.vb[data-id="${id}"]`
-                            );
-                            if (inp) {
-                                inp.value = data.vbs[id];
-                            }
-                        });
+                    Object.keys(data.vbs).forEach(id => {
+                        const inp = document.querySelector(`.vb[data-id="${id}"]`);
+                        if (inp) inp.value = data.vbs[id];
+                    });
                 }
 
-                // FECHA INICIO ENSAYO
-                if (data.fecha_inicio_ensayo) {
-                    document.getElementById('fecha_inicio_ensayo').value = data.fecha_inicio_ensayo;
-                }
-
-                // FECHA CONCLUSION ENSAYO
-                if (data.fecha_conclusion_ensayo) {
-                    document.getElementById('fecha_conclusion_ensayo').value = data.fecha_conclusion_ensayo;
-                }
-
-                // COORDENADAS
-                if (data.zona_utm) document.getElementById('zonaUtm').value = data.zona_utm;
-                if (data.punto_cardinal_1) document.getElementById('puntoCardinal1').value = data.punto_cardinal_1;
-                if (data.valor_cardinal_1) document.getElementById('valorCardinal1').value = data.valor_cardinal_1;
-                if (data.punto_cardinal_2) document.getElementById('puntoCardinal2').value = data.punto_cardinal_2;
-                if (data.valor_cardinal_2) document.getElementById('valorCardinal2').value = data.valor_cardinal_2;
-                if (data.numero_recepcion) document.getElementById('numeroRecepcion').value = data.numero_recepcion;
+                const setGeneralField = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) { el.value = val || ''; el.dataset.valorOriginal = el.value; }
+                };
+                setGeneralField('fecha_inicio_ensayo', data.fecha_inicio_ensayo);
+                setGeneralField('fecha_conclusion_ensayo', data.fecha_conclusion_ensayo);
+                setGeneralField('zonaUtm', data.zona_utm);
+                setGeneralField('puntoCardinal1', data.punto_cardinal_1);
+                setGeneralField('valorCardinal1', data.valor_cardinal_1);
+                setGeneralField('puntoCardinal2', data.punto_cardinal_2);
+                setGeneralField('valorCardinal2', data.valor_cardinal_2);
+                setGeneralField('numeroRecepcion', data.numero_recepcion);
 
                 estadoActual = 'guardado';
                 actualizarEstadoUI();
@@ -1127,37 +1297,256 @@
             });
         }
 
-        function editarDatos() {
+        // ========== GUARDAR DATOS GENERALES ==========
+        function abrirModalGenerales() {
+            const campos = ['fecha_inicio_ensayo', 'fecha_conclusion_ensayo', 'numero_recepcion',
+                'zona_utm', 'punto_cardinal_1', 'valor_cardinal_1', 'punto_cardinal_2', 'valor_cardinal_2'];
 
-            estadoActual = 'editando';
+            const formData = new FormData();
 
-            actualizarEstadoUI();
+            campos.forEach(campo => {
+                const info = GENERAL_FIELD_MAP[campo];
+                if (!info) return;
+                const el = info.el();
+                formData.append(campo, el ? el.value || '' : '');
+            });
 
-            mostrarToast(
-                '✏️ Modo edición activado'
-            );
+            formData.append('motivo', 'Modificación de datos generales');
+
+            const url = '{{ route("proformas.resultados.guardar-generales", $proforma->id) }}';
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    campos.forEach(campo => {
+                        const info = GENERAL_FIELD_MAP[campo];
+                        if (!info) return;
+                        const el = info.el();
+                        if (el) el.dataset.valorOriginal = el.value;
+                    });
+                    habilitarGenerales(false);
+                    btnGuardarGenerales.style.display = 'none';
+                    btnEditarGenerales.style.display = 'inline-flex';
+                    btnGuardar.style.display = hayPendientes() ? 'inline-flex' : 'none';
+                    mostrarToast('✅ Datos generales guardados correctamente');
+                } else {
+                    mostrarToast('❌ Error: ' + (data.message || 'Error desconocido'));
+                }
+            })
+            .catch(error => {
+                mostrarToast('❌ Error de conexión');
+                console.error(error);
+            });
         }
+
+        // ========== MODAL: MODIFICAR PARÁMETRO ==========
+        function abrirModalParametro(parametroId, nombre) {
+            parametroEditandoId = parametroId;
+            document.getElementById('modalParametroNombre').textContent = nombre;
+            document.getElementById('campoParametroSelect').value = '';
+            document.getElementById('valorActualParametro').textContent = '—';
+            document.getElementById('valorNuevoParametro').value = '';
+            document.getElementById('motivoParametro').value = '';
+            document.getElementById('campoResultadoMuestra').style.display = 'none';
+            document.getElementById('modalModificarParametro').style.display = 'block';
+        }
+
+        function actualizarValorActualParametro() {
+            const campo = document.getElementById('campoParametroSelect').value;
+            const pId = parametroEditandoId;
+            if (!campo || !pId) {
+                document.getElementById('valorActualParametro').textContent = '—';
+                return;
+            }
+
+            document.getElementById('campoResultadoMuestra').style.display = campo === 'resultado' ? 'block' : 'none';
+
+            if (campo === 'resultado') {
+                const muestras = document.querySelectorAll(`.resultado[data-parametro="${pId}"]`);
+                const select = document.getElementById('muestraParametroSelect');
+                select.innerHTML = '';
+                muestras.forEach(inp => {
+                    const opt = document.createElement('option');
+                    opt.value = inp.dataset.muestra;
+                    opt.textContent = `Muestra ${inp.dataset.muestra}`;
+                    select.appendChild(opt);
+                });
+                actualizarValorResultadoMuestra();
+            } else {
+                let val = '';
+                if (campo === 'responsable') {
+                    const inp = document.querySelector(`.responsable[data-id="${pId}"]`);
+                    val = inp ? inp.value : '';
+                } else if (campo === 'fecha') {
+                    const inp = document.querySelector(`.fecha[data-id="${pId}"]`);
+                    val = inp ? inp.value : '';
+                } else if (campo === 'vb') {
+                    const inp = document.querySelector(`.vb[data-id="${pId}"]`);
+                    val = inp ? inp.value : '';
+                }
+                document.getElementById('valorActualParametro').textContent = val || '(vacío)';
+            }
+        }
+
+        function actualizarValorResultadoMuestra() {
+            const pId = parametroEditandoId;
+            const muestra = document.getElementById('muestraParametroSelect').value;
+            if (!muestra) {
+                document.getElementById('valorActualParametro').textContent = '—';
+                return;
+            }
+            const inp = document.querySelector(`.resultado[data-muestra="${muestra}"][data-parametro="${pId}"]`);
+            document.getElementById('valorActualParametro').textContent = inp ? inp.value || '(vacío)' : '(vacío)';
+        }
+
+        function guardarModificacionParametro() {
+            const campo = document.getElementById('campoParametroSelect').value;
+            const valorNuevo = document.getElementById('valorNuevoParametro').value;
+            const motivo = document.getElementById('motivoParametro').value;
+            const pId = parametroEditandoId;
+            let muestra = null;
+
+            if (!campo) { mostrarToast('❌ Seleccione un campo a modificar'); return; }
+            if (!motivo || motivo.trim().length < 5) { mostrarToast('❌ El motivo debe tener al menos 5 caracteres'); return; }
+
+            if (campo === 'resultado') {
+                muestra = document.getElementById('muestraParametroSelect').value;
+                if (!muestra) { mostrarToast('❌ Seleccione una muestra'); return; }
+            }
+
+            const formData = new FormData();
+            formData.append('parametro_id', pId);
+            formData.append('campo', campo);
+            formData.append('valor_nuevo', valorNuevo);
+            formData.append('motivo', motivo);
+            if (muestra) formData.append('muestra', muestra);
+
+            fetch('{{ route("proformas.resultados.modificar-parametro", $proforma->id) }}', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarToast('✅ Parámetro modificado correctamente');
+                    cerrarModal('modalModificarParametro');
+                    // Actualizar el campo en la UI
+                    if (campo === 'resultado' && muestra) {
+                        const inp = document.querySelector(`.resultado[data-muestra="${muestra}"][data-parametro="${pId}"]`);
+                        if (inp) inp.value = valorNuevo;
+                    } else if (campo === 'responsable') {
+                        const inp = document.querySelector(`.responsable[data-id="${pId}"]`);
+                        if (inp) inp.value = valorNuevo;
+                    } else if (campo === 'fecha') {
+                        const inp = document.querySelector(`.fecha[data-id="${pId}"]`);
+                        if (inp) inp.value = valorNuevo;
+                    } else if (campo === 'vb') {
+                        const inp = document.querySelector(`.vb[data-id="${pId}"]`);
+                        if (inp) inp.value = valorNuevo;
+                    }
+                } else {
+                    mostrarToast('❌ Error: ' + (data.message || 'Error desconocido'));
+                }
+            })
+            .catch(error => {
+                mostrarToast('❌ Error de conexión');
+                console.error(error);
+            });
+        }
+
+        // ========== HISTORIAL ==========
+        function verHistorial(parametroId) {
+            document.getElementById('historialContenido').innerHTML = '<p style="text-align:center;color:#999;padding:20px;">Cargando historial...</p>';
+
+            let url = '{{ route("proformas.resultados.historial", ["id" => $proforma->id]) }}';
+            if (parametroId) {
+                url += '/' + parametroId;
+                const btn = document.querySelector(`.btn-historial-parametro[data-id="${parametroId}"]`);
+                const nombre = btn ? btn.dataset.nombre : '';
+                document.getElementById('historialTitulo').textContent = 'Parámetro: ' + nombre;
+            } else {
+                document.getElementById('historialTitulo').textContent = 'Todos los datos generales';
+            }
+
+            document.getElementById('modalHistorial').style.display = 'flex';
+
+            fetch(url, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success || !data.data || data.data.length === 0) {
+                    document.getElementById('historialContenido').innerHTML = '<p style="text-align:center;color:#999;padding:20px;">No hay registros de modificaciones.</p>';
+                    return;
+                }
+
+                let html = `<table class="historial-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Usuario</th>
+                            <th>Campo</th>
+                            <th>Valor Anterior</th>
+                            <th>Valor Nuevo</th>
+                            <th>Motivo</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+                data.data.forEach(r => {
+                    html += `<tr>
+                        <td>${r.fecha}</td>
+                        <td>${r.usuario}</td>
+                        <td>${r.campo_modificado}</td>
+                        <td>${r.valor_anterior || '—'}</td>
+                        <td>${r.valor_nuevo || '—'}</td>
+                        <td>${r.motivo || '—'}</td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table>';
+                document.getElementById('historialContenido').innerHTML = html;
+            })
+            .catch(error => {
+                document.getElementById('historialContenido').innerHTML = '<p style="text-align:center;color:#dc3545;padding:20px;">Error al cargar historial.</p>';
+                console.error(error);
+            });
+        }
+
+        function cerrarModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // Cerrar modales haciendo clic fuera
+        window.onclick = function(event) {
+            ['modalLimpiar', 'modalModificarParametro', 'modalHistorial'].forEach(id => {
+                const modal = document.getElementById(id);
+                if (event.target == modal) modal.style.display = 'none';
+            });
+        };
 
         function limpiarResultados() {
             const formData = new FormData();
 
             fetch('{{ route("proformas.limpiar-resultados", $proforma->id) }}', {
                 method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken(),
-                    'Accept': 'application/json',
-                },
+                headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' },
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    inputsEditables.forEach(inp => {
-                        inp.value = '';
-                    });
+                    inputsEditables.forEach(inp => { inp.value = ''; });
                     estadoActual = 'sin_datos';
                     actualizarEstadoUI();
-                    cerrarModalLimpiar();
+                    document.getElementById('modalLimpiar').style.display = 'none';
                     mostrarToast('🧹 Resultados eliminados');
                 } else {
                     mostrarToast('❌ Error al limpiar: ' + (data.message || 'Error desconocido'));
@@ -1170,52 +1559,38 @@
         }
 
         function confirmarLimpiar() {
-
-            document.getElementById(
-                'modalLimpiar'
-            ).style.display = 'block';
-        }
-
-        function cerrarModalLimpiar() {
-
-            document.getElementById(
-                'modalLimpiar'
-            ).style.display = 'none';
-        }
-
-        window.onclick = function(event) {
-
-            let modal = document.getElementById(
-                'modalLimpiar'
-            );
-
-            if (event.target == modal) {
-
-                modal.style.display = 'none';
-            }
+            document.getElementById('modalLimpiar').style.display = 'block';
         }
 
         function mostrarToast(mensaje) {
-
             let toast = document.createElement('div');
-
             toast.className = 'toast-notification';
-
-            toast.innerHTML =
-                '<i class="fas fa-check-circle"></i> ' + mensaje;
-
+            toast.innerHTML = '<i class="fas fa-check-circle"></i> ' + mensaje;
             document.body.appendChild(toast);
-
             setTimeout(() => {
-
                 toast.style.opacity = '0';
-
                 setTimeout(() => toast.remove(), 300);
-
             }, 2500);
         }
 
-        // BOTON INFORME CON DATOS PERMISIBLES
+        // Event listeners para botones de modificar/historial en tabla
+        document.addEventListener('click', function(e) {
+            const btnModif = e.target.closest('.btn-modificar-parametro');
+            if (btnModif) {
+                e.preventDefault();
+                abrirModalParametro(btnModif.dataset.id, btnModif.dataset.nombre);
+                return;
+            }
+
+            const btnHist = e.target.closest('.btn-historial-parametro');
+            if (btnHist) {
+                e.preventDefault();
+                verHistorial(btnHist.dataset.id);
+                return;
+            }
+        });
+
+        // Botón informe permisible
         document.getElementById('btnInformePermisible')?.addEventListener('click', function(e) {
             e.preventDefault();
             const tipo = document.getElementById('tipoPermisible').value;
@@ -1223,7 +1598,7 @@
             window.open(url, '_blank');
         });
 
-        // AUTO CARGAR
+        // Auto-cargar al iniciar
         window.addEventListener('DOMContentLoaded', () => {
             cargarTodo();
         });

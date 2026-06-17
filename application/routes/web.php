@@ -159,6 +159,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/proformas/{id}/resultados', [ResultadosController::class, 'index'])->name('proformas.resultados')->middleware('role:admin|analista');
     Route::post('/proformas/{id}/resultados/guardar', [ResultadosController::class, 'guardarResultados'])->name('proformas.resultados.guardar')->middleware('permission:guardar resultados');
     Route::get('/proformas/{id}/resultados/cargar', [ResultadosController::class, 'cargarResultados'])->name('proformas.resultados.cargar')->middleware('permission:cargar resultados');
+    Route::post('/proformas/{id}/resultados/modificar-generales', [ResultadosController::class, 'modificarDatosGenerales'])->name('proformas.resultados.modificar-generales')->middleware('permission:guardar resultados');
+    Route::post('/proformas/{id}/resultados/guardar-generales', [ResultadosController::class, 'guardarTodosGenerales'])->name('proformas.resultados.guardar-generales')->middleware('permission:guardar resultados');
+    Route::post('/proformas/{id}/resultados/modificar-parametro', [ResultadosController::class, 'modificarParametro'])->name('proformas.resultados.modificar-parametro')->middleware('permission:guardar resultados');
+    Route::get('/proformas/{id}/resultados/historial/{parametroId?}', [ResultadosController::class, 'historial'])->name('proformas.resultados.historial')->middleware('permission:cargar resultados');
+    Route::get('/proformas/{id}/resultados/estado-bloqueo', [ResultadosController::class, 'estadoBloqueo'])->name('proformas.resultados.estado-bloqueo')->middleware('permission:cargar resultados');
     Route::get('/proformas/{id}/resultados/pdf', [ResultadosController::class, 'generarPdfResultados'])->name('proformas.resultados.pdf')->middleware('permission:generar pdf resultados');
     Route::get('/proformas/{id}/imprimir-resultados', [ResultadosController::class, 'imprimirResultados'])->name('proformas.informe-resultados-pdf')->middleware('permission:generar informe resultados');
     Route::get('/proformas/{id}/imprimir-permisibles/{tipo}', [ResultadosController::class, 'imprimirResultadosPermisibles'])->name('proformas.informe-permisibles-pdf')->middleware('permission:generar informe resultados');

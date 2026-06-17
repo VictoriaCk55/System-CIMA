@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\CadenaResultado;
 use App\Models\LimitePermisible;
 use App\Models\Proforma;
+use App\Models\ProformaResultadoAuditoria;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ResultadosController extends Controller
@@ -69,16 +71,28 @@ class ResultadosController extends Controller
 
             $proforma = Proforma::with('parametros')->findOrFail($id);
 
+            $esCreacion = CadenaResultado::where('proforma_id', $id)->count() === 0;
+
             // Eliminar resultados anteriores
             CadenaResultado::where('proforma_id', $id)->delete();
 
             $resultados = json_decode($request->resultados, true) ?? [];
-
             $responsables = json_decode($request->responsables, true) ?? [];
-
             $fechas = json_decode($request->fechas, true) ?? [];
-
             $vbs = json_decode($request->vbs, true) ?? [];
+
+            // Guardar valores anteriores de proforma para auditoría
+            $valoresAnteriores = [];
+            if (! $esCreacion) {
+                $camposGenerales = [
+                    'fecha_inicio_ensayo', 'fecha_conclusion_ensayo', 'zona_utm',
+                    'punto_cardinal_1', 'valor_cardinal_1', 'punto_cardinal_2',
+                    'valor_cardinal_2', 'numero_recepcion',
+                ];
+                foreach ($camposGenerales as $c) {
+                    $valoresAnteriores[$c] = $proforma->$c ?? '';
+                }
+            }
 
             $proforma->fecha_inicio_ensayo = $request->fecha_inicio_ensayo ?? $proforma->fecha_inicio_ensayo;
             $proforma->fecha_conclusion_ensayo = $request->fecha_conclusion_ensayo ?? $proforma->fecha_conclusion_ensayo;
@@ -101,42 +115,57 @@ class ResultadosController extends Controller
 
                 foreach ($parametrosValores as $parametroId => $valor) {
 
-                    // Ignorar vacíos
-                    if (
-                        $valor === null ||
-                        $valor === ''
-                    ) {
+                    if ($valor === null || $valor === '') {
                         continue;
                     }
 
                     $parametro = $parametrosMap[$parametroId] ?? null;
 
                     CadenaResultado::create([
-
                         'proforma_id' => $id,
-
                         'parametro_id' => $parametroId,
-
                         'parametro_nombre' => $parametro->nombre ?? '',
-
                         'metodo_ensayo' => $parametro->metodo ?? '',
-
                         'limite_cuantificacion' => $parametro->limite_cuantificacion ?? '',
-
                         'unidad' => $parametro->unidad ?? '',
-
                         'resultado' => $valor,
-
                         'fecha_analisis' => $fechas[$parametroId] ?? null,
-
                         'analizado_por' => $responsables[$parametroId] ?? null,
-
                         'vb' => $vbs[$parametroId] ?? null,
-
                         'observaciones' => null,
-
                         'orden' => $muestra,
                     ]);
+                }
+            }
+
+            // Registrar auditoría
+            if ($esCreacion) {
+                ProformaResultadoAuditoria::create([
+                    'proforma_id' => $id,
+                    'parametro_id' => null,
+                    'campo_modificado' => 'resultados_completos',
+                    'valor_anterior' => null,
+                    'valor_nuevo' => 'Datos iniciales registrados',
+                    'motivo' => 'Registro inicial de resultados',
+                    'user_id' => Auth::id(),
+                    'tipo' => 'creacion',
+                ]);
+            } else {
+                // Modificación general vía guardado masivo (old system compat)
+                foreach ($valoresAnteriores as $campo => $vAnterior) {
+                    $vNuevo = $request->$campo ?? '';
+                    if ((string) $vAnterior !== (string) $vNuevo) {
+                        ProformaResultadoAuditoria::create([
+                            'proforma_id' => $id,
+                            'parametro_id' => null,
+                            'campo_modificado' => $campo,
+                            'valor_anterior' => $vAnterior,
+                            'valor_nuevo' => $vNuevo,
+                            'motivo' => $request->motivo ?? 'Modificación masiva',
+                            'user_id' => Auth::id(),
+                            'tipo' => 'modificacion',
+                        ]);
+                    }
                 }
             }
 
@@ -249,6 +278,272 @@ class ResultadosController extends Controller
                 'success' => false,
                 'message' => 'Error al limpiar resultados',
                 'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Modificar datos generales con trazabilidad
+     */
+    public function modificarDatosGenerales(Request $request, $id)
+    {
+        $request->validate([
+            'campo' => 'required|string',
+            'valor_nuevo' => 'nullable|string',
+            'motivo' => 'required|string|min:5',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $proforma = Proforma::findOrFail($id);
+            $campo = $request->campo;
+            $valorAnterior = $proforma->$campo ?? '';
+
+            if ($campo === 'fecha_inicio_ensayo' || $campo === 'fecha_conclusion_ensayo') {
+                $proforma->$campo = $request->valor_nuevo ?: null;
+            } else {
+                $proforma->$campo = $request->valor_nuevo;
+            }
+            $proforma->save();
+
+            ProformaResultadoAuditoria::create([
+                'proforma_id' => $id,
+                'parametro_id' => null,
+                'campo_modificado' => $campo,
+                'valor_anterior' => $valorAnterior,
+                'valor_nuevo' => $request->valor_nuevo,
+                'motivo' => $request->motivo,
+                'user_id' => Auth::id(),
+                'tipo' => 'modificacion',
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Datos generales modificados correctamente',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al modificar datos generales',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Modificar un parámetro específico con trazabilidad
+     */
+    public function modificarParametro(Request $request, $id)
+    {
+        $request->validate([
+            'parametro_id' => 'required|integer|exists:parametros,id',
+            'campo' => 'required|string|in:resultado,responsable,fecha,vb',
+            'valor_nuevo' => 'nullable|string',
+            'motivo' => 'required|string|min:5',
+            'muestra' => 'nullable|integer',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $proforma = Proforma::findOrFail($id);
+            $parametroId = $request->parametro_id;
+            $campo = $request->campo;
+            $valorNuevo = $request->valor_nuevo;
+            $muestra = $request->muestra;
+
+            if ($campo === 'resultado') {
+                $registro = CadenaResultado::where('proforma_id', $id)
+                    ->where('parametro_id', $parametroId)
+                    ->where('orden', $muestra)
+                    ->first();
+
+                if (! $registro) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No se encontró el resultado para este parámetro y muestra',
+                    ], 404);
+                }
+
+                $valorAnterior = $registro->resultado;
+                $registro->resultado = $valorNuevo;
+                $registro->save();
+            } else {
+                $columnaMap = [
+                    'responsable' => 'analizado_por',
+                    'fecha' => 'fecha_analisis',
+                    'vb' => 'vb',
+                ];
+                $columna = $columnaMap[$campo];
+
+                $registros = CadenaResultado::where('proforma_id', $id)
+                    ->where('parametro_id', $parametroId)
+                    ->get();
+
+                if ($registros->isEmpty()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No se encontraron registros para este parámetro',
+                    ], 404);
+                }
+
+                $valorAnterior = $registros->first()->$columna ?? '';
+
+                foreach ($registros as $reg) {
+                    $reg->$columna = $campo === 'fecha' ? ($valorNuevo ?: null) : $valorNuevo;
+                    $reg->save();
+                }
+            }
+
+            ProformaResultadoAuditoria::create([
+                'proforma_id' => $id,
+                'parametro_id' => $parametroId,
+                'campo_modificado' => $campo.($muestra ? "_muestra_{$muestra}" : ''),
+                'valor_anterior' => $valorAnterior ?? '',
+                'valor_nuevo' => $valorNuevo,
+                'motivo' => $request->motivo,
+                'user_id' => Auth::id(),
+                'tipo' => 'modificacion',
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Parámetro modificado correctamente',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al modificar parámetro',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener historial de auditoría
+     */
+    public function historial($id, $parametroId = null)
+    {
+        try {
+            $query = ProformaResultadoAuditoria::with('usuario:id,name')
+                ->where('proforma_id', $id)
+                ->orderBy('created_at', 'desc');
+
+            if ($parametroId) {
+                $query->where('parametro_id', $parametroId);
+            }
+
+            $registros = $query->get()->map(function ($r) {
+                return [
+                    'id' => $r->id,
+                    'parametro_id' => $r->parametro_id,
+                    'campo_modificado' => $r->campo_modificado,
+                    'valor_anterior' => $r->valor_anterior,
+                    'valor_nuevo' => $r->valor_nuevo,
+                    'motivo' => $r->motivo,
+                    'usuario' => $r->usuario->name ?? 'Sistema',
+                    'fecha' => $r->created_at->format('d/m/Y H:i'),
+                    'tipo' => $r->tipo,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $registros,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al cargar historial',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Guardar todos los datos generales a la vez (edición inline)
+     */
+    public function guardarTodosGenerales(Request $request, $id)
+    {
+        $request->validate([
+            'motivo' => 'required|string|min:3',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $proforma = Proforma::findOrFail($id);
+            $campos = [
+                'fecha_inicio_ensayo', 'fecha_conclusion_ensayo', 'numero_recepcion',
+                'zona_utm', 'punto_cardinal_1', 'valor_cardinal_1',
+                'punto_cardinal_2', 'valor_cardinal_2',
+            ];
+
+            foreach ($campos as $campo) {
+                $vAnterior = $proforma->$campo ?? '';
+                $vNuevo = $request->$campo ?? '';
+
+                if ((string) $vAnterior !== (string) $vNuevo) {
+                    if (in_array($campo, ['fecha_inicio_ensayo', 'fecha_conclusion_ensayo'])) {
+                        $proforma->$campo = $vNuevo ?: null;
+                    } else {
+                        $proforma->$campo = $vNuevo;
+                    }
+
+                    ProformaResultadoAuditoria::create([
+                        'proforma_id' => $id,
+                        'parametro_id' => null,
+                        'campo_modificado' => $campo,
+                        'valor_anterior' => $vAnterior,
+                        'valor_nuevo' => $vNuevo,
+                        'motivo' => $request->motivo,
+                        'user_id' => Auth::id(),
+                        'tipo' => 'modificacion',
+                    ]);
+                }
+            }
+
+            $proforma->save();
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Datos generales guardados correctamente',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al guardar datos generales',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener el estado de bloqueo actual
+     */
+    public function estadoBloqueo($id)
+    {
+        try {
+            $tieneDatos = CadenaResultado::where('proforma_id', $id)->exists()
+                || ProformaResultadoAuditoria::where('proforma_id', $id)->exists();
+
+            return response()->json([
+                'success' => true,
+                'bloqueado' => $tieneDatos,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al verificar estado',
             ], 500);
         }
     }
