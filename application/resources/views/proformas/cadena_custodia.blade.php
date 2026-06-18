@@ -8,12 +8,12 @@
 
         @page{
             size: letter landscape;
-            margin: 10mm 8mm 10mm 8mm;
+            margin: 10mm;
         }
 
         body{
             font-family: "Times New Roman", Times, serif;
-            font-size: 10px;
+            font-size: 11px;
             color: #000;
         }
 
@@ -35,7 +35,7 @@
             border: 1px solid #000;
             text-align: center;
             vertical-align: middle;
-            padding: 1px;
+            padding: 0.5px;
             overflow: hidden;
         }
 
@@ -46,7 +46,7 @@
         }
         .text-center{
             text-align: center;
-            font-size: 16px;
+            font-size: 12px;
         }
 
         /* =====================================================
@@ -54,8 +54,8 @@
         ====================================================== */
 
         .logo-container{
-            width: 75px;
-            height: 75px;
+            width: 40px;
+            height: 40px;
             border: 1px solid #aaa;
             margin: auto;
             text-align: center;
@@ -63,15 +63,15 @@
         }
 
         .logo-container img{
-            max-width: 65px;
-            max-height: 65px;
-            margin-top: 5px;
+            max-width: 35px;
+            max-height: 35px;
+            margin-top: 3px;
         }
 
         .titulo-principal{
-            font-size: 20px;
+            font-size: 16px;
             font-weight: bold;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             color: #1c3d6e;
             margin: 0;
         }
@@ -79,7 +79,7 @@
         .codigo-cell{
             font-size: 9px;
             font-weight: bold;
-            padding: 6px;
+            padding: 3px;
         }
 
         /* =====================================================
@@ -88,26 +88,26 @@
 
         .checkbox-row{
             text-align: center;
-            margin: 12px 0;
+            margin: 6px 0;
         }
 
         .checkbox-option{
             display: inline-block;
-            margin: 0 25px;
-            font-size: 14px;
+            margin: 0 15px;
+            font-size: 11px;
         }
 
         .checkbox-square{
             display: inline-block;
-            width: 16px;
-            height: 16px;
+            width: 12px;
+            height: 12px;
             border: 1px solid #000;
             text-align: center;
-            line-height: 16px;
-            font-size: 12px;
+            line-height: 12px;
+            font-size: 9px;
             font-weight: bold;
             vertical-align: middle;
-            margin-left: 5px;
+            margin-left: 3px;
         }
 
         /* =====================================================
@@ -115,24 +115,25 @@
         ====================================================== */
 
         .fila-superior{
-            height: 12mm;
+            height: 7mm;
         }
 
         .fila-sub{
-            height: 50mm;
+            height: 30mm;
         }
 
         .fila-datos{
-            height: 12mm;
+            height: 7mm;
         }
 
         .fila-datos td{
-            height: 8mm;
-            vertical-align: top;
+            height: 5mm;
+            vertical-align: middle;
         }
 
         .h-large{
-            height: 50mm;
+            height: 30mm;
+            vertical-align: middle;
         }
 
         /* =====================================================
@@ -142,10 +143,20 @@
         .col-identificacion,
         .col-codigo,
         .col-matriz-principal{
-            font-size: 10px;
+            font-size: 9px;
             font-weight: bold;
-            padding: 3px;
-            line-height: 1.2;
+            padding: 1px;
+            line-height: 1.1;
+        }
+
+        .col-identificacion{
+            width: 10mm;
+            text-align: center;
+        }
+
+        .col-codigo{
+            width: 10mm;
+            text-align: center;
         }
 
         /* =====================================================
@@ -153,11 +164,12 @@
         ====================================================== */
 
         .matriz-sub{
-            width: 7mm;
-            min-width: 7mm;
-            max-width: 7mm;
+            width: 5mm;
+            min-width: 5mm;
+            max-width: 5mm;
             padding: 0;
-            height: 45mm;
+            height: 30mm;
+            vertical-align: middle;
         }
 
         /* =====================================================
@@ -165,10 +177,11 @@
         ====================================================== */
 
         .w-small{
-            width: 5mm;
-            min-width: 5mm;
-            max-width: 5mm;
+            width: 4mm;
+            min-width: 4mm;
+            max-width: 4mm;
             padding: 0;
+            vertical-align: middle;
         }
 
         /* =====================================================
@@ -179,7 +192,7 @@
             display: inline-block;
             transform: rotate(-90deg);
             white-space: nowrap;
-            font-size: 10px;
+            font-size: 9px;
         }
 
         /* =====================================================
@@ -207,7 +220,7 @@
         <tr>
 
             <!-- LOGO -->
-            <td rowspan="3" style="width:35mm;">
+            <td rowspan="3" style="width:28mm;">
 
                 <div class="logo-container">
 
@@ -237,7 +250,7 @@
             </td>
 
             <!-- CODIGO -->
-            <td class="codigo-cell" style="width:35mm;">
+            <td class="codigo-cell" style="width:28mm;">
                 <strong>{{ $cfg->codigo_documento }}</strong>
             </td>
 
@@ -302,17 +315,17 @@
         <tr class="fila-superior">
 
             <!-- TIPO MUESTRA -->
-            <td colspan="4">
+            <td colspan="1" style="text-align: center;">
 
-                TIPO DE MUESTRA
+                <strong>TIPO DE MUESTRA</strong>
 
             </td>
 
             <!-- ESPACIO GRANDE -->
-            <td colspan="8">{{ $proforma->tipo_muestra }}</td>
+            <td colspan="2">{{ $proforma->tipo_muestra }}</td>
 
             <!-- REQUERIMIENTO -->
-            <td colspan="28" rowspan="3" class="text-center">
+            <td colspan="31" rowspan="3" class="text-center">
 
                 <strong>REQUERIMIENTO DE ANALISIS</strong>
 
@@ -327,14 +340,14 @@
         <tr class="fila-superior">
 
             <!-- FECHA MUESTREO -->
-            <td colspan="4">
+            <td colspan="1" style="text-align: center;">
 
-                FECHA DE MUESTREO
+                <strong>FECHA DE MUESTREO</strong>
 
             </td>
 
             <!-- ESPACIO GRANDE -->
-            <td colspan="8">{{ $proforma->fecha_emision->format('d/m/Y') }}</td>
+            <td colspan="2">{{ $proforma->fecha_emision->format('d/m/Y') }}</td>
 
         </tr>
 
@@ -345,14 +358,14 @@
         <tr class="fila-superior">
 
             <!-- FECHA RECEPCION -->
-            <td colspan="4">
+            <td colspan="1" style="text-align: center;">
 
-                FECHA DE RECEPCION
+                <strong>FECHA DE RECEPCION</strong>
 
             </td>
 
             <!-- ESPACIO GRANDE -->
-            <td colspan="8">{{ $proforma->fecha_recepcion->format('d/m/Y') }}</td>
+            <td colspan="2">{{ $proforma->fecha_recepcion->format('d/m/Y') }}</td>
 
         </tr>
 
@@ -363,7 +376,7 @@
         <tr>
 
             <!-- IDENTIFICACION -->
-            <td rowspan="2" colspan="4" class="h-large col-identificacion">
+            <td rowspan="2" colspan="1" class="h-large col-identificacion" style="overflow: hidden; word-wrap: break-word; text-align: center;">
 
                 IDENTIFICACION
                 <br>
@@ -374,7 +387,7 @@
             </td>
 
             <!-- CODIGO -->
-            <td rowspan="2" colspan="4" class="h-large col-codigo">
+            <td rowspan="2" colspan="1" class="h-large col-codigo" style="overflow: hidden; word-wrap: break-word; text-align: center;">
 
                 CODIGO
                 <br>
@@ -383,7 +396,7 @@
             </td>
 
             <!-- MATRIZ -->
-            <td colspan="4" class="h-large col-matriz-principal">
+            <td colspan="4" class="h-large col-matriz-principal" style="text-align: center;">
 
                 MATRIZ
 
@@ -461,11 +474,15 @@
 
             @for ($i = 0; $i < 28; $i++)
 
+                @php
+                    $paramSub = $proforma->parametros[$i] ?? null;
+                    $tecnicaSub = $paramSub ? ($paramSub->tecnica ?? '') : '';
+                @endphp
+
                 <td class="w-small vertical">
 
                     <span class="vertical-text">
-                        {{ $proforma->parametros[$i]->tecnica ?? '' }}
-
+                        {{ $tecnicaSub }}
                     </span>
 
                 </td>
@@ -502,12 +519,16 @@
         <tr class="fila-datos">
 
             <!-- IDENTIFICACION -->
-            <td colspan="4">
-                {{ $cliente->codigo_cliente ?? '---' }}
+            <td colspan="1" style="width: 10mm; font-size: 7px; text-align: center; overflow: hidden;">
+                @php
+                    $codigos = $proforma->codigo_cliente ?? [];
+                    $codigoIdx = $fila < count($codigos) ? $codigos[$fila] : (count($codigos) > 0 ? $codigos[count($codigos)-1] : '---');
+                @endphp
+                {{ $codigoIdx }}
             </td>
 
             <!-- CODIGO -->
-            <td colspan="4">
+            <td colspan="1" style="width: 10mm; font-size: 7px; text-align: center; overflow: hidden;">
                 {{ $proforma->generarCodigoLaboratorio($numMuestra) }}
             </td>
 
@@ -517,28 +538,28 @@
             @endphp
 
             <!-- AGUA SUBTERRANEA -->
-            <td>
+            <td style="width: 5mm;">
                 @if(str_contains($tipo, 'SUBTERRANEA'))
                     X
                 @endif
             </td>
 
             <!-- AGUA SUPERFICIAL -->
-            <td>
+            <td style="width: 5mm;">
                 @if(str_contains($tipo, 'SUPERFICIAL'))
                     X
                 @endif
             </td>
 
             <!-- SUELO -->
-            <td>
+            <td style="width: 5mm;">
                 @if(str_contains($tipo, 'SUELO'))
                     X
                 @endif
             </td>
 
             <!-- OTROS -->
-            <td>
+            <td style="width: 5mm;">
                 @if(
                     !str_contains($tipo, 'SUBTERRANEA') &&
                     !str_contains($tipo, 'SUPERFICIAL') &&

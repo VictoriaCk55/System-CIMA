@@ -371,7 +371,7 @@
 
             @for($n = $m1; $n <= ($tieneM2 ? $m2 : $m1); $n++)
             <td colspan="2" style="border: 1px solid #000; background: #9bd9e6;">
-                {{ $proforma->codigo_cliente ?? '---' }}
+                {{ implode(', ', $proforma->codigo_cliente ?? []) ?: '---' }}
             </td>
             @endfor
 

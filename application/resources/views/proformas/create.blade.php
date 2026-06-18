@@ -104,6 +104,75 @@
     box-shadow: 0 8px 20px rgba(128, 128, 128, 0.3) !important;
 }
 
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.info-icon {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #ffc107, #ffb300);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1a1a2e;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.info-text h4 {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.info-text p {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.info-item-stacked {
+    align-items: flex-start;
+}
+
+.info-item-stacked .stacked-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.modern-input {
+    width: 85px;
+    padding: 8px 10px;
+    text-align: center;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 12px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.modern-input:focus {
+    outline: none;
+    border-color: #ffc107;
+    box-shadow: 0 0 0 3px rgba(255,193,7,0.2);
+}
+
+.modern-input:hover:not(:disabled) {
+    border-color: #ffc107;
+}
+
+.modern-input:disabled {
+    background: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+    border-color: #e0e0e0;
+}
+
 .form-control:focus, .form-select:focus {
     border-color: #ffbf00 !important;
     box-shadow: 0 0 0 3px rgba(153, 132, 30, 0.15) !important;
@@ -352,11 +421,21 @@
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="codigo_cliente" class="form-label">Código de Cliente</label>
-                            <input type="text" class="form-control @error('codigo_cliente') is-invalid @enderror" 
-                                   id="codigo_cliente" name="codigo_cliente" 
-                                   value="{{ old('codigo_cliente') }}"
-                                   placeholder="Ej: CL-001">
+                            <label class="form-label">Códigos de Cliente</label>
+                            <div id="codigos-cliente-container">
+                                @php $oldCodigos = old('codigo_cliente', ['']); @endphp
+                                @foreach ($oldCodigos as $i => $codigo)
+                                    <div class="codigo-cliente-row d-flex gap-2 mb-2">
+                                        <input type="text" class="form-control @error('codigo_cliente.'.$i) is-invalid @enderror" 
+                                               name="codigo_cliente[]" value="{{ $codigo }}" placeholder="Ej: CL-001">
+                                        <button type="button" class="btn btn-outline-danger btn-sm eliminar-codigo" 
+                                                style="{{ $loop->first ? 'display:none;' : '' }}">&times;</button>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-1" id="agregar-codigo-cliente">
+                                <i class="fas fa-plus"></i> Agregar código
+                            </button>
                             @error('codigo_cliente')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
@@ -444,12 +523,50 @@
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label for="coordenadas" class="form-label">Coordenadas</label>
-                            <input type="text" class="form-control @error('coordenadas') is-invalid @enderror" 
-                                   id="coordenadas" name="coordenadas" 
-                                   placeholder="Ej: E 214561, N 7836327"
-                                   value="{{ old('coordenadas') }}">
-                            @error('coordenadas')
+                            <label class="form-label">Coordenadas</label>
+                            <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; border: 1px solid #e0e0e0; border-radius: 12px; padding: 12px;">
+                                <div>
+                                    <h4 style="font-size: 12px; color: #666; margin-bottom: 4px;">PUNTO CARDINAL 1</h4>
+                                    <div style="display: flex; gap: 8px;">
+                                        <select id="puntoCardinal1" name="punto_cardinal_1" class="modern-input" style="width: auto; min-width: 80px;">
+                                            <option value="">--</option>
+                                            <option value="E" {{ old('punto_cardinal_1') == 'E' ? 'selected' : '' }}>Este (E)</option>
+                                            <option value="N" {{ old('punto_cardinal_1') == 'N' ? 'selected' : '' }}>Norte (N)</option>
+                                            <option value="O" {{ old('punto_cardinal_1') == 'O' ? 'selected' : '' }}>Oeste (O)</option>
+                                            <option value="S" {{ old('punto_cardinal_1') == 'S' ? 'selected' : '' }}>Sur (S)</option>
+                                        </select>
+                                        <input type="text" id="valorCardinal1" name="valor_cardinal_1"
+                                            class="modern-input" placeholder="Coord. 1" style="width: 100px;"
+                                            value="{{ old('valor_cardinal_1') }}">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 style="font-size: 12px; color: #666; margin-bottom: 4px;">PUNTO CARDINAL 2</h4>
+                                    <div style="display: flex; gap: 8px;">
+                                        <select id="puntoCardinal2" name="punto_cardinal_2" class="modern-input" style="width: auto; min-width: 80px;">
+                                            <option value="">--</option>
+                                            <option value="E" {{ old('punto_cardinal_2') == 'E' ? 'selected' : '' }}>Este (E)</option>
+                                            <option value="N" {{ old('punto_cardinal_2') == 'N' ? 'selected' : '' }}>Norte (N)</option>
+                                            <option value="O" {{ old('punto_cardinal_2') == 'O' ? 'selected' : '' }}>Oeste (O)</option>
+                                            <option value="S" {{ old('punto_cardinal_2') == 'S' ? 'selected' : '' }}>Sur (S)</option>
+                                        </select>
+                                        <input type="text" id="valorCardinal2" name="valor_cardinal_2"
+                                            class="modern-input" placeholder="Coord. 2" style="width: 100px;"
+                                            value="{{ old('valor_cardinal_2') }}">
+                                    </div>
+                                </div>
+                            </div>
+                            @error('punto_cardinal_1')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                            @error('valor_cardinal_1')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                            @error('punto_cardinal_2')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                            @error('valor_cardinal_2')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                         </div>
@@ -1338,6 +1455,19 @@ $(document).ready(function() {
 
         agregarFilaAmbient(id, 'Gases', precio, metodo, true);
         checked.prop('checked', false);
+    });
+
+    // ===== CÓDIGOS DE CLIENTE DINÁMICOS =====
+    $('#agregar-codigo-cliente').on('click', function() {
+        var container = $('#codigos-cliente-container');
+        var row = container.find('.codigo-cliente-row').first().clone();
+        row.find('input').val('');
+        row.find('.eliminar-codigo').show();
+        container.append(row);
+    });
+
+    $(document).on('click', '.eliminar-codigo', function() {
+        $(this).closest('.codigo-cliente-row').remove();
     });
 
     $('#tipo').on('change', function() {

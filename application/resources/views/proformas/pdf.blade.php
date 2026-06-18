@@ -461,31 +461,23 @@
         <div class="section-title">1.- DATOS DEL CLIENTE</div>
         
         <table class="data-table">
-              <tr>
+               <tr>
                     <td style="width: 25%;"><strong>Nombre/Razón Social:</strong></td>
-                    <td style="width: 75%;">{{ $proforma->cliente->razon_social }}</td>
-                 </tr>
-                 <tr>
-                    <td><strong>Código de Cliente:</strong></td>
-                    <td>{{ $proforma->codigo_cliente ?? 'N/A' }}</td>
+                    <td style="width: 75%;" colspan="3">{{ $proforma->cliente->razon_social }}</td>
                  </tr>
                  <tr>
                     <td><strong>Persona en contacto:</strong></td>
-                    <td>{{ $proforma->persona_contacto ?? $proforma->cliente->persona_contacto }}</td>
+                    <td style="width: 25%;">{{ $proforma->persona_contacto ?? $proforma->cliente->persona_contacto }}</td>
+                    <td style="width: 25%;"><strong>Teléfono/Celular:</strong></td>
+                    <td style="width: 25%;">{{ $proforma->telefono_contacto ?? $proforma->cliente->telefono ?? 'N/A' }}</td>
                  </tr>
                  <tr>
                     <td><strong>NIT:</strong></td>
-                    <td>{{ $proforma->cliente->nit ?? 'N/A' }}</td>
+                    <td style="width: 25%;">{{ $proforma->cliente->nit ?? 'N/A' }}</td>
+                    <td style="width: 25%;"><strong>Dirección:</strong></td>
+                    <td style="width: 25%;">{{ $proforma->cliente->direccion ?? 'N/A' }}</td>
                  </tr>
-                 <tr>
-                    <td><strong>Teléfono/Celular:</strong></td>
-                    <td>{{ $proforma->telefono_contacto ?? $proforma->cliente->telefono ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
-                    <td><strong>Dirección:</strong></td>
-                    <td>{{ $proforma->cliente->direccion ?? 'N/A' }}</td>
-                 </tr>
-         </table>
+          </table>
     </div>
 
     <!-- SECCIÓN 2: DATOS DE LA MUESTRA -->
@@ -502,24 +494,37 @@
                  <tr>
                     <td><strong>Fecha de muestreo:</strong></td>
                     <td>{{ $proforma->fecha_emision->format('d/m/Y') }}</td>
-                    <td><strong>Fecha recepción:</strong></td>
-                    <td>{{ $proforma->fecha_recepcion->format('d/m/Y') }}</td>
-                 </tr>
-                 <tr>
                     <td><strong>Hora recepción:</strong></td>
                     <td>{{ $proforma->hora_recepcion ?? 'N/A' }}</td>
+                 </tr>
+                 <tr>
+                    <td><strong>Fecha recepción:</strong></td>
+                    <td>{{ $proforma->fecha_recepcion->format('d/m/Y') }}</td>
                     <td><strong>Nro. Recepción:</strong></td>
                     <td>{{ $proforma->numero_recepcion ?? 'N/A' }}</td>
                  </tr>
                  <tr>
                     <td><strong>Procedencia:</strong></td>
-                    <td colspan="3">{{ $proforma->procedencia ?? 'N/A' }}</td>
+                    <td style="width: 25%;">{{ $proforma->procedencia ?? 'N/A' }}</td>
+                    <td style="width: 25%;"><strong>Coordenadas:</strong></td>
+                    <td style="width: 25%;">
+                        @php
+                            $coords = [];
+                            if ($proforma->punto_cardinal_1 && $proforma->valor_cardinal_1) {
+                                $coords[] = '<b>' . $proforma->punto_cardinal_1 . ':</b> ' . $proforma->valor_cardinal_1;
+                            }
+                            if ($proforma->punto_cardinal_2 && $proforma->valor_cardinal_2) {
+                                $coords[] = '<b>' . $proforma->punto_cardinal_2 . ':</b> ' . $proforma->valor_cardinal_2;
+                            }
+                        @endphp
+                        {!! !empty($coords) ? implode('&nbsp;&nbsp;&nbsp;&nbsp;', $coords) : 'N/A' !!}
+                    </td>
                  </tr>
                  <tr>
-                    <td><strong>Coordenadas:</strong></td>
-                    <td colspan="3">{{ $proforma->coordenadas ?? 'N/A' }}</td>
+                    <td><strong>Código de Cliente:</strong></td>
+                    <td colspan="3">{{ implode(', ', $proforma->codigo_cliente ?? []) ?: 'N/A' }}</td>
                  </tr>
-         </table>
+          </table>
     </div>
 
     <!-- SECCIÓN 3: PARÁMETROS A ANALIZAR -->
@@ -701,5 +706,12 @@
         <p>{{ $cfg->config('footer_telefono') }} | {{ $cfg->config('footer_email') }}</p>
         <p><em>{{ $cfg->config('footer_texto') }}</em></p>
     </div>
+
+    <script type="text/php">
+        if (isset($pdf)) {
+            $font = $fontMetrics->getFont("times", "normal");
+            $pdf->getCanvas()->page_text(260, 50, "Página {PAGE_NUM} de {PAGE_COUNT}", $font, 9, array(100,100,100));
+        }
+    </script>
 </body>
 </html>

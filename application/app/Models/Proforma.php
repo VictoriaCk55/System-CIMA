@@ -60,6 +60,7 @@ class Proforma extends Model
         'aplica_descuento_institucional' => 'boolean',
         'parametros_modificados' => 'boolean',
         'tipo_documento' => 'array',
+        'codigo_cliente' => 'array',
     ];
 
     protected $dates = ['deleted_at'];

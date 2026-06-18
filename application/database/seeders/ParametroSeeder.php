@@ -141,7 +141,7 @@ class ParametroSeeder extends Seeder
             // POTENCIOMETRO
             [
                 'nombre' => 'pH',
-                // 'metodo' => 'POE-1-01 Potenciometría',
+                // S'metodo' => 'POE-1-01 Potenciometría',
                 'metodo' => 'APHA-AWWA-WPCF 4500-H+, B Método electrométrico',
                 'codigo_poe' => 'POE 1-01',
                 'limite_cuantificacion' => '4,00 a 10,00',
@@ -396,7 +396,7 @@ class ParametroSeeder extends Seeder
                 // 'unidad' => 'mg/l',
                 'precio_unitario' => 60,
                 // 'matriz' => 'AGUA',
-                // 'tecnica' => 'ABSORCIÓN ATÓMICA',
+                'tecnica' => 'ABSORCIÓN ATÓMICA',
                 'tipo' => 'AGUA',
             ],
             [
@@ -407,7 +407,7 @@ class ParametroSeeder extends Seeder
                 // 'unidad' => 'mg/l',
                 'precio_unitario' => 60,
                 // 'matriz' => 'AGUA',
-                // 'tecnica' => 'ABSORCIÓN ATÓMICA',
+                'tecnica' => 'ABSORCIÓN ATÓMICA',
                 'tipo' => 'AGUA',
             ],
             [
@@ -418,7 +418,7 @@ class ParametroSeeder extends Seeder
                 // 'unidad' => 'mg/l',
                 'precio_unitario' => 60,
                 // 'matriz' => 'AGUA',
-                // 'tecnica' => 'ABSORCIÓN ATÓMICA',
+                'tecnica' => 'ABSORCIÓN ATÓMICA',
                 'tipo' => 'AGUA',
             ],
             [
@@ -429,7 +429,7 @@ class ParametroSeeder extends Seeder
                 // 'unidad' => 'mg/l',
                 'precio_unitario' => 60,
                 // 'matriz' => 'AGUA',
-                // 'tecnica' => 'ABSORCIÓN ATÓMICA',
+                'tecnica' => 'ABSORCIÓN ATÓMICA',
                 'tipo' => 'AGUA',
             ],
             [
@@ -440,7 +440,7 @@ class ParametroSeeder extends Seeder
                 // 'unidad' => 'mg/l',
                 'precio_unitario' => 70,
                 // 'matriz' => 'AGUA',
-                // 'tecnica' => 'ABSORCIÓN ATÓMICA',
+                'tecnica' => 'ABSORCIÓN ATÓMICA',
                 'tipo' => 'AGUA',
             ],
             // IONOMETRIA
@@ -452,7 +452,7 @@ class ParametroSeeder extends Seeder
                 // 'unidad' => 'mg/l',
                 'precio_unitario' => 50,
                 // 'matriz' => 'AGUA',
-                // 'tecnica' => 'ABSORCIÓN ATÓMICA',
+                'tecnica' => 'ABSORCIÓN ATÓMICA',
                 'tipo' => 'AGUA',
             ],
             [
@@ -463,7 +463,7 @@ class ParametroSeeder extends Seeder
                 // 'unidad' => 'mg/l',
                 'precio_unitario' => 50,
                 // 'matriz' => 'AGUA',
-                // 'tecnica' => 'ABSORCIÓN ATÓMICA',
+                'tecnica' => 'ABSORCIÓN ATÓMICA',
                 'tipo' => 'AGUA',
             ],
             [
@@ -474,7 +474,7 @@ class ParametroSeeder extends Seeder
                 // 'unidad' => 'mg/l',
                 'precio_unitario' => 50,
                 // 'matriz' => 'AGUA',
-                // 'tecnica' => 'ABSORCIÓN ATÓMICA',
+                'tecnica' => 'ABSORCIÓN ATÓMICA',
                 'tipo' => 'AGUA',
             ],
             [
@@ -485,7 +485,7 @@ class ParametroSeeder extends Seeder
                 // 'unidad' => 'mg/l',
                 'precio_unitario' => 50,
                 // 'matriz' => 'AGUA',
-                // 'tecnica' => 'ABSORCIÓN ATÓMICA',
+                'tecnica' => 'ABSORCIÓN ATÓMICA',
                 'tipo' => 'AGUA',
             ],
             // VOLUMETRIA
@@ -497,7 +497,7 @@ class ParametroSeeder extends Seeder
                 // 'unidad' => 'mg/l',
                 'precio_unitario' => 40,
                 // 'matriz' => 'AGUA',
-                // 'tecnica' => 'ABSORCIÓN ATÓMICA',
+                'tecnica' => 'ABSORCIÓN ATÓMICA',
                 'tipo' => 'AGUA',
             ],
             [
@@ -508,7 +508,7 @@ class ParametroSeeder extends Seeder
                 // 'unidad' => 'mg/l',
                 'precio_unitario' => 95,
                 // 'matriz' => 'AGUA',
-                // 'tecnica' => 'ABSORCIÓN ATÓMICA',
+                'tecnica' => 'ABSORCIÓN ATÓMICA',
                 'tipo' => 'AGUA',
             ],
             [
@@ -519,7 +519,7 @@ class ParametroSeeder extends Seeder
                 // 'unidad' => 'mg/l',
                 'precio_unitario' => 95,
                 // 'matriz' => 'AGUA',
-                // 'tecnica' => 'ABSORCIÓN ATÓMICA',
+                'tecnica' => 'ABSORCIÓN ATÓMICA',
                 'tipo' => 'AGUA',
             ],
             [
@@ -530,7 +530,7 @@ class ParametroSeeder extends Seeder
                 // 'unidad' => 'mg/l',
                 'precio_unitario' => 50,
                 // 'matriz' => 'AGUA',
-                // 'tecnica' => 'ABSORCIÓN ATÓMICA',
+                'tecnica' => 'ABSORCIÓN ATÓMICA',
                 'tipo' => 'AGUA',
             ],
 
