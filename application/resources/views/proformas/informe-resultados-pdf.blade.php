@@ -356,15 +356,11 @@
             </td>
 
             <!-- VALOR -->
+            @for($n = $m1; $n <= ($tieneM2 ? $m2 : $m1); $n++)
             <td style="border: 1px solid #000; background: #9bd9e6;">
-                {{ $proforma->generarCodigoLaboratorio($m1) ?? '---' }}
+                {{ $proforma->generarCodigoLaboratorio($n) ?? '---' }}
             </td>
-
-            @if($tieneM2)
-            <td style="border: 1px solid #000; background: #9bd9e6;">
-                {{ $proforma->generarCodigoLaboratorio($m2) ?? '---' }}
-            </td>
-            @endif
+            @endfor
 
         </tr>
 
@@ -375,15 +371,11 @@
                 CÓDIGO CLIENTE:
             </td>
 
+            @for($n = $m1; $n <= ($tieneM2 ? $m2 : $m1); $n++)
             <td style="border: 1px solid #000; background: #9bd9e6;">
                 {{ $proforma->codigo_cliente ?? '---' }}
             </td>
-
-            @if($tieneM2)
-            <td style="border: 1px solid #000; background: #9bd9e6;">
-                {{ $proforma->codigo_cliente ?? '---' }}
-            </td>
-            @endif
+            @endfor
 
         </tr>
 
@@ -394,15 +386,11 @@
                 FECHA DE MUESTREO:
             </td>
 
+            @for($n = $m1; $n <= ($tieneM2 ? $m2 : $m1); $n++)
             <td style="border: 1px solid #000; background: #9bd9e6;">
                 {{ optional($proforma->fecha_emision)->format('d/m/Y') ?? '---' }}
             </td>
-
-            @if($tieneM2)
-            <td style="border: 1px solid #000; background: #9bd9e6;">
-                {{ optional($proforma->fecha_emision)->format('d/m/Y') ?? '---' }}
-            </td>
-            @endif
+            @endfor
 
         </tr>
 
@@ -417,15 +405,11 @@
                 {{ $muestreo->punto_cardinal_1 ?? 'E' }}
             </td>
 
+            @for($n = $m1; $n <= ($tieneM2 ? $m2 : $m1); $n++)
             <td style="border: 1px solid #000;background: #9bd9e6;">
                 {{ $muestreo->valor_cardinal_1 ?? '---' }}
             </td>
-
-            @if($tieneM2)
-            <td style="border: 1px solid #000;background: #9bd9e6;">
-                {{ $muestreo->valor_cardinal_1 ?? '---' }}
-            </td>
-            @endif
+            @endfor
 
         </tr>
 
@@ -435,15 +419,11 @@
                 {{ $muestreo->punto_cardinal_2 ?? 'N' }}
             </td>
 
+            @for($n = $m1; $n <= ($tieneM2 ? $m2 : $m1); $n++)
             <td style="border: 1px solid #000; background: #9bd9e6;">
                 {{ $muestreo->valor_cardinal_2 ?? '---' }}
             </td>
-
-            @if($tieneM2)
-            <td style="border: 1px solid #000; background: #9bd9e6;">
-                {{ $muestreo->valor_cardinal_2 ?? '---' }}
-            </td>
-            @endif
+            @endfor
         </tr>
 
         <!-- CABECERA -->
