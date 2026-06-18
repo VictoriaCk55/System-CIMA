@@ -547,19 +547,16 @@
                     @foreach($proforma->parametros as $index => $parametro)
                     @php
                         $nombreParam = $parametro->nombre;
-                        $metodoParam = $parametro->metodo;
                         if ($parametro->categoria === 'RUIDO') {
                             $nombreParam = 'RUIDO';
-                            $metodoParam = 'SONÓMETRO';
                         } elseif ($parametro->categoria === 'GASES') {
                             $nombreParam = 'Gases';
-                            $metodoParam = $parametro->pivot->metodo ?? $parametro->metodo;
                         }
                     @endphp
                     <tr>
                         <td class="align-center">{{ $index + 1 }}</td>
                         <td>{{ $nombreParam }}</td>
-                        <td>{{ $metodoParam }}</td>
+                        <td class="align-center">{{ $parametro->tecnica ?? '' }}</td>
                         <td class="align-center">{{ $parametro->pivot->cantidad_muestras }}</td>
                         <td class="align-right">Bs. {{ number_format($parametro->pivot->precio_unitario, 2) }}</td>
                         <td class="align-right">Bs. {{ number_format($parametro->pivot->precio_unitario * $parametro->pivot->cantidad_muestras, 2) }}</td>

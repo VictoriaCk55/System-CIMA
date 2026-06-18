@@ -765,7 +765,7 @@
             </div>
             
             @php
-                $parametros = $proforma->parametros;
+                $parametros = $proforma->parametros->reverse();
                 $maxMuestras = 0;
                 foreach($parametros as $p) {
                     $cant = $p->pivot->cantidad_muestras ?? 1;
@@ -898,7 +898,7 @@
                 
                 <a href="{{ route('proformas.resultados.pdf', $proforma->id) }}" 
                 class="btn-modern btn-info" target="_blank"> 
-                <i class="fas fa-file-pdf"></i> Exportar PDF </a>
+                <i class="fas fa-file-pdf"></i> Resultado de Ensayo </a>
                 <a href="{{ route('proformas.informe-resultados-pdf', $proforma->id) }}"
                 target="_blank"
                 class="btn-modern btn-purple">
@@ -1136,7 +1136,30 @@
 
         function editarGenerales() {
             habilitarGenerales(true);
-            actualizarBloqueoParametros(true);
+            // Parámetros que tienen al menos un resultado lleno
+            const paramsConDatos = new Set();
+            document.querySelectorAll('.resultado').forEach(inp => {
+                if (inp.value && inp.value.trim() !== '') {
+                    paramsConDatos.add(inp.dataset.parametro);
+                }
+            });
+            // Habilitar solo parámetros sin datos
+            document.querySelectorAll('.resultado, .responsable, .fecha, .vb').forEach(input => {
+                const paramId = input.dataset.parametro || input.dataset.id;
+                if (!paramsConDatos.has(paramId)) {
+                    input.disabled = false;
+                }
+            });
+            // Remover candados de parámetros sin datos
+            document.querySelectorAll('.lock-icon').forEach(icon => {
+                const input = icon.previousElementSibling;
+                if (input) {
+                    const paramId = input.dataset.parametro || input.dataset.id;
+                    if (!paramsConDatos.has(paramId)) {
+                        icon.remove();
+                    }
+                }
+            });
             btnEditarGenerales.style.display = 'none';
             btnGuardar.style.display = 'inline-flex';
         }

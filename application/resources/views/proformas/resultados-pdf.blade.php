@@ -72,6 +72,7 @@
 
 </head>
 <body>
+@php $parametrosReversed = $proforma->parametros->reverse(); @endphp
 <div class="wrapper">
 <div class="table-content">
 
@@ -129,11 +130,11 @@
 
     <tr>
 
-        <th>
+        <th colspan="2">
             Parámetros
         </th>
 
-        @foreach($proforma->parametros as $p)
+        @foreach($parametrosReversed as $p)
 
             <th>
                 {{ $p->nombre }}
@@ -145,13 +146,13 @@
 
     <tr>
 
-        <td>
+        <td colspan="2">
             <strong>
                 Límites de cuantificación
             </strong>
         </td>
 
-        @foreach($proforma->parametros as $p)
+        @foreach($parametrosReversed as $p)
 
             <td>
                 {{ ($limites[$p->id] ?? $p->limite_cuantificacion) ?: '---' }}
@@ -163,13 +164,13 @@
 
     <tr>
 
-        <td>
+        <td colspan="2">
             <strong>
                 Unidad
             </strong>
         </td>
 
-        @foreach($proforma->parametros as $p)
+        @foreach($parametrosReversed as $p)
 
             <td>
                 {{ ($unidades[$p->id] ?? $p->unidad) ?: '---' }}
@@ -181,13 +182,13 @@
 
     <tr>
 
-        <td>
+        <td colspan="2">
             <strong>
                 Método ó técnica de ensayo
             </strong>
         </td>
 
-        @foreach($proforma->parametros as $p)
+        @foreach($parametrosReversed as $p)
 
             <td class="small">
                 {{ $p->codigo_poe ?? '---' }}
@@ -199,13 +200,13 @@
 
     <tr>
 
-        <td>
+        <td colspan="2">
             <strong>
                 Responsable de ensayo
             </strong>
         </td>
 
-        @foreach($proforma->parametros as $p)
+        @foreach($parametrosReversed as $p)
 
             <td>
                 {{ $responsables[$p->id] ?? '---' }}
@@ -217,13 +218,13 @@
 
     <tr>
 
-        <td>
+        <td colspan="2">
             <strong>
                 Fecha de ensayo
             </strong>
         </td>
 
-        @foreach($proforma->parametros as $p)
+        @foreach($parametrosReversed as $p)
 
             <td>
                 {{ $fechas[$p->id] ?? '---' }}
@@ -233,9 +234,17 @@
 
     </tr>
 
+    @php $firstCodLab = true; $totalCodLab = count($resultados); @endphp
     @foreach($resultados as $muestra => $datos)
 
     <tr>
+
+        @if($firstCodLab)
+        <td rowspan="{{ $totalCodLab }}">
+            <strong>Cod. Lab.</strong>
+        </td>
+        @php $firstCodLab = false; @endphp
+        @endif
 
         <td>
 
@@ -243,7 +252,7 @@
 
         </td>
 
-        @foreach($proforma->parametros as $p)
+        @foreach($parametrosReversed as $p)
 
             <td>
 
@@ -263,7 +272,7 @@
             <strong>V°B°</strong>
         </td>
 
-        <td colspan="{{ count($proforma->parametros) }}">
+        <td colspan="{{ count($parametrosReversed) + 1 }}">
 
             @php
                 $vbsList = array_unique(array_filter(array_values($vbs ?? [])));

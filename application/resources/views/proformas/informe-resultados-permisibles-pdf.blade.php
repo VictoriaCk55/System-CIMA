@@ -371,7 +371,7 @@
 
             @for($n = $m1; $n <= ($tieneM2 ? $m2 : $m1); $n++)
             <td colspan="2" style="border: 1px solid #000; background: #9bd9e6;">
-                {{ implode(', ', $proforma->codigo_cliente ?? []) ?: '---' }}
+                {{ $proforma->codigo_cliente[$n - 1] ?? '---' }}
             </td>
             @endfor
 
@@ -432,8 +432,8 @@
                 PARAMETRO
             </td>
 
-            <td rowspan="2" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; vertical-align: middle;">
-                METODO DE ENSAYO
+            <td rowspan="2" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; vertical-align: middle; font-size: 9px;">
+                POE / TÉCNICA
             </td>
 
             <td rowspan="2" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; vertical-align: middle;">
@@ -473,8 +473,8 @@
                 {{ $p->nombre }}
             </td>
 
-            <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
-                {{ $p->codigo_poe ?? '---' }}
+            <td style="border: 1px solid #000; text-align: center; vertical-align: middle; font-size: 9px;">
+                {{ $p->codigo_poe ?? '---' }} - {{ $p->tecnica ?? '---' }}
             </td>
 
             <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
