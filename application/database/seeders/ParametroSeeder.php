@@ -107,7 +107,7 @@ class ParametroSeeder extends Seeder
                 'unidad_default' => 'ppm',
             ],
             [
-                'nombre' => 'O2',
+                'nombre' => 'O₂',
                 'nombre_completo' => 'Oxígeno',
                 'metodo' => 'Sensor Electroquímico/Analizador de Gases',
                 'descripcion' => 'Oxígeno - método Sensor Electroquímico',
@@ -117,7 +117,7 @@ class ParametroSeeder extends Seeder
                 'unidad_default' => '%',
             ],
             [
-                'nombre' => 'H2S',
+                'nombre' => 'H₂S',
                 'nombre_completo' => 'Sulfuro de Hidrógeno',
                 'metodo' => 'Sensor Electroquímico/Analizador de Gases',
                 'descripcion' => 'Sulfuro de Hidrógeno - método Sensor Electroquímico',

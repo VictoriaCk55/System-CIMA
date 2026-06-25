@@ -212,7 +212,7 @@ class Proforma extends Model
         |--------------------------------------------------------------------------
         */
 
-        $recepcion = str_pad($this->id, 3, '0', STR_PAD_LEFT);
+        $recepcion = $this->numero_recepcion ?? str_pad($this->id, 3, '0', STR_PAD_LEFT);
 
         /*
         |--------------------------------------------------------------------------

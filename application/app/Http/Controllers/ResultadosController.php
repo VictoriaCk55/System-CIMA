@@ -96,7 +96,7 @@ class ResultadosController extends Controller
 
             $proforma->fecha_inicio_ensayo = $request->fecha_inicio_ensayo ?? $proforma->fecha_inicio_ensayo;
             $proforma->fecha_conclusion_ensayo = $request->fecha_conclusion_ensayo ?? $proforma->fecha_conclusion_ensayo;
-            $proforma->zona_utm = $request->zona_utm ?? $proforma->zona_utm;
+            $proforma->zona_utm = $request->has('zona_utm') ? ($request->zona_utm ?: null) : $proforma->zona_utm;
             $proforma->punto_cardinal_1 = $request->punto_cardinal_1 ?? $proforma->punto_cardinal_1;
             $proforma->valor_cardinal_1 = $request->valor_cardinal_1 ?? $proforma->valor_cardinal_1;
             $proforma->punto_cardinal_2 = $request->punto_cardinal_2 ?? $proforma->punto_cardinal_2;
@@ -221,7 +221,7 @@ class ResultadosController extends Controller
 
             $proforma = Proforma::find($id);
             $tieneDatos = ! empty($resultados) || ! empty($responsables) || ! empty($fechas) || ! empty($vbs)
-                || ($proforma && ($proforma->fecha_inicio_ensayo || $proforma->fecha_conclusion_ensayo));
+                || ($proforma && ($proforma->fecha_inicio_ensayo || $proforma->fecha_conclusion_ensayo || $proforma->zona_utm));
 
             return response()->json([
                 'success' => $tieneDatos,

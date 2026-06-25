@@ -407,7 +407,7 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-4 mb-3">
+                        <!-- <div class="col-md-4 mb-3">
                             <label for="numero_recepcion" class="form-label">Nro. de Recepción</label>
                             <input type="text" class="form-control @error('numero_recepcion') is-invalid @enderror" 
                                    id="numero_recepcion" name="numero_recepcion" 
@@ -416,7 +416,7 @@
                             @error('numero_recepcion')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
-                        </div>
+                        </div> -->
                     </div>
                     
                     <div class="row">
@@ -529,7 +529,7 @@
                                     <h4 style="font-size: 12px; color: #666; margin-bottom: 4px;">PUNTO CARDINAL 1</h4>
                                     <div style="display: flex; gap: 8px;">
                                         <select id="puntoCardinal1" name="punto_cardinal_1" class="modern-input" style="width: auto; min-width: 80px;">
-                                            <option value="">--</option>
+                                            <option value="">N</option>
                                             <option value="E" {{ old('punto_cardinal_1') == 'E' ? 'selected' : '' }}>Este (E)</option>
                                             <option value="N" {{ old('punto_cardinal_1') == 'N' ? 'selected' : '' }}>Norte (N)</option>
                                             <option value="O" {{ old('punto_cardinal_1') == 'O' ? 'selected' : '' }}>Oeste (O)</option>
@@ -545,7 +545,7 @@
                                     <h4 style="font-size: 12px; color: #666; margin-bottom: 4px;">PUNTO CARDINAL 2</h4>
                                     <div style="display: flex; gap: 8px;">
                                         <select id="puntoCardinal2" name="punto_cardinal_2" class="modern-input" style="width: auto; min-width: 80px;">
-                                            <option value="">--</option>
+                                            <option value="">E</option>
                                             <option value="E" {{ old('punto_cardinal_2') == 'E' ? 'selected' : '' }}>Este (E)</option>
                                             <option value="N" {{ old('punto_cardinal_2') == 'N' ? 'selected' : '' }}>Norte (N)</option>
                                             <option value="O" {{ old('punto_cardinal_2') == 'O' ? 'selected' : '' }}>Oeste (O)</option>
@@ -1296,8 +1296,31 @@ $(document).ready(function() {
 
     // ===== AMBIENTAL: DATOS DE PARÁMETROS POR CATEGORÍA =====
     const parametrosAmbientales = @json($parametrosAmbientales);
+    const oldParametros = (@json(old('parametros'))) || [];
 
     let ambientCategoria = '';
+
+    function setupAmbientUI() {
+        const tipo = $('#tipo').val();
+        const firstRow = $('#parametro-row-0');
+        if (tipo === 'AMBIENTAL') {
+            $('#ambient-categoria-wrapper').show();
+            const firstSelect = $('#parametro-select-0');
+            if (firstSelect.data('select2')) firstSelect.select2('destroy');
+            firstRow.hide();
+            firstRow.find('select, input').prop('disabled', true);
+            $('#add-parametro').hide();
+        } else {
+            $('#ambient-categoria-wrapper').hide();
+            $('#ambient-params-picker').hide();
+            firstRow.show();
+            firstRow.find('select, input').prop('disabled', false);
+            if (!firstRow.find('.parametro-select').data('select2')) {
+                initParametroSelect('#parametro-select-0');
+            }
+            $('#add-parametro').show();
+        }
+    }
 
     function toggleAmbientParamUI() {
         const tipo = $('#tipo').val();
@@ -1438,7 +1461,7 @@ $(document).ready(function() {
         calcularTotalesEstimados();
     }
 
-    // Add multiple gases — single GASES row with combined names
+    // Add multiple gases — one row per selected gas
     $('#add-ambient-gases').click(function() {
         const checked = $('#ambient-gases-list .gas-checkbox:checked');
         if (checked.length === 0) {
@@ -1446,14 +1469,14 @@ $(document).ready(function() {
             return;
         }
 
-        const first = $(checked[0]);
-        const id = parseInt(first.val());
-        const precio = parseFloat(first.data('precio'));
-        const gases = [];
-        checked.each(function() { gases.push($(this).data('nombre')); });
-        const metodo = gases.join(', ');
+        checked.each(function() {
+            const cb = $(this);
+            const id = parseInt(cb.val());
+            const precio = parseFloat(cb.data('precio'));
+            const nombre = cb.data('nombre');
+            agregarFilaAmbient(id, nombre, precio, '', true);
+        });
 
-        agregarFilaAmbient(id, 'Gases', precio, metodo, true);
         checked.prop('checked', false);
     });
 
@@ -1474,7 +1497,26 @@ $(document).ready(function() {
         toggleLogisticaMuestreo();
         toggleAmbientParamUI();
     });
-    toggleAmbientParamUI();
+    setupAmbientUI();
+
+    // Restaurar parámetros desde old input (tras error de validación)
+    if (oldParametros.length > 0 && $('#tipo').val() === 'AMBIENTAL') {
+        oldParametros.forEach(function(p) {
+            const param = parametrosAmbientales.find(function(pa) { return pa.id == p.id; });
+            if (param) {
+                const esGas = param.categoria === 'GASES';
+                agregarFilaAmbient(
+                    parseInt(param.id),
+                    param.nombre,
+                    parseFloat(param.precio_unitario),
+                    p.metodo || '',
+                    esGas
+                );
+            }
+        });
+        $('#ambient-categoria-wrapper').show();
+        $('#ambient-params-picker').hide();
+    }
 });
 </script>
 @endpush

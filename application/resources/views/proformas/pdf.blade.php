@@ -556,7 +556,7 @@
                     <tr>
                         <td class="align-center">{{ $index + 1 }}</td>
                         <td>{{ $nombreParam }}</td>
-                        <td class="align-center">{{ $parametro->tecnica ?? '' }}</td>
+                        <td class="align-center">{{ $proforma->tipo === 'AMBIENTAL' && $parametro->categoria === 'GASES' ? ($parametro->pivot->metodo ?? '') : ($proforma->tipo === 'AMBIENTAL' ? ($parametro->metodo ?? '') : ($parametro->tecnica ?: ($parametro->codigo_poe ?? ''))) }}</td>
                         <td class="align-center">{{ $parametro->pivot->cantidad_muestras }}</td>
                         <td class="align-right">Bs. {{ number_format($parametro->pivot->precio_unitario, 2) }}</td>
                         <td class="align-right">Bs. {{ number_format($parametro->pivot->precio_unitario * $parametro->pivot->cantidad_muestras, 2) }}</td>

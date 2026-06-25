@@ -671,17 +671,17 @@
                             </div>
                             
                             <!-- Método de ensayo -->
-                            <div class="row mt-2 metodo-container" id="metodo-{{ $paramIndex }}" style="display: block;">
+                            <div class="row mt-2 metodo-container" id="metodo-{{ $paramIndex }}" style="display: {{ $parametro->categoria === 'GASES' ? 'none' : 'block' }};">
                                 <div class="col-12">
                                     <small class="text-muted">
                                         <i class="fas fa-microscope me-1"></i> 
-                                        Método: <span class="metodo-text">{{ $parametro->metodo }}</span>
+                                        Método: <span class="metodo-text">{{ $parametro->categoria === 'GASES' ? ($parametro->pivot->metodo ?? '') : $parametro->metodo }}</span>
                                     </small>
                                 </div>
                             </div>
 
                             <!-- Método editable para GASES -->
-                            <div class="row mt-2 metodo-gas-container" id="metodo-gas-{{ $paramIndex }}" style="display: none;">
+                            <div class="row mt-2 metodo-gas-container" id="metodo-gas-{{ $paramIndex }}" style="display: {{ $parametro->categoria === 'GASES' ? 'block' : 'none' }};">
                                 <div class="col-md-6">
                                     <label class="form-label small">Método (equipo utilizado) *</label>
                                     <input type="text" class="form-control metodo-gas-input"
@@ -1508,7 +1508,7 @@ $(document).ready(function() {
         calcularTotalesEstimados();
     }
 
-    // Add multiple gases — single GASES row with combined names
+    // Add multiple gases — one row per selected gas
     $('#add-ambient-gases').click(function() {
         const checked = $('#ambient-gases-list .gas-checkbox:checked');
         if (checked.length === 0) {
@@ -1516,14 +1516,14 @@ $(document).ready(function() {
             return;
         }
 
-        const first = $(checked[0]);
-        const id = parseInt(first.val());
-        const precio = parseFloat(first.data('precio'));
-        const gases = [];
-        checked.each(function() { gases.push($(this).data('nombre')); });
-        const metodo = gases.join(', ');
+        checked.each(function() {
+            const cb = $(this);
+            const id = parseInt(cb.val());
+            const precio = parseFloat(cb.data('precio'));
+            const nombre = cb.data('nombre');
+            agregarFilaAmbient(id, nombre, precio, '', true);
+        });
 
-        agregarFilaAmbient(id, 'Gases', precio, metodo, true);
         checked.prop('checked', false);
     });
 

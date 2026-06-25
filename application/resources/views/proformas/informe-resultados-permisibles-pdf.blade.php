@@ -217,10 +217,25 @@
 
     </header>
 
-    <!-- ===================================================== -->
-    <!-- TÍTULO Y NÚMERO -->
-    <!-- ===================================================== -->
-    
+    @php
+        $maxMuestras = 0;
+        foreach($proforma->parametros as $p) {
+            $cant = $p->pivot->cantidad_muestras ?? 1;
+            if($cant > $maxMuestras) $maxMuestras = $cant;
+        }
+        if($maxMuestras == 0) $maxMuestras = 1;
+        $totalBloques = (int)ceil($maxMuestras / 2);
+    @endphp
+
+    @for($bloque = 0; $bloque < $totalBloques; $bloque++)
+    @php
+        $m1 = $bloque * 2 + 1;
+        $m2 = $bloque * 2 + 2;
+        $tieneM2 = $m2 <= $maxMuestras;
+    @endphp
+    <div @if($bloque > 0) style="page-break-before: always;" @endif>
+
+    <!-- TÍTULO -->
     <table>
         <tr>
             <td class="titulo center" style="font-size: 18px;">
@@ -320,27 +335,6 @@
 
 </table>
 
-    <!-- ===================================================== -->
-    <!-- DATOS DE LA MUESTRA Y TABLA DE RESULTADOS -->
-    <!-- Bloques de 2 muestras cada uno -->
-    <!-- Cada muestra lleva su columna de LÍMITES PERMISIBLES -->
-    <!-- ===================================================== -->
-    @php
-        $maxMuestras = 0;
-        foreach($proforma->parametros as $p) {
-            $cant = $p->pivot->cantidad_muestras ?? 1;
-            if($cant > $maxMuestras) $maxMuestras = $cant;
-        }
-        if($maxMuestras == 0) $maxMuestras = 1;
-        $totalBloques = (int)ceil($maxMuestras / 2);
-    @endphp
-
-    @for($bloque = 0; $bloque < $totalBloques; $bloque++)
-    @php
-        $m1 = $bloque * 2 + 1;
-        $m2 = $bloque * 2 + 2;
-        $tieneM2 = $m2 <= $maxMuestras;
-    @endphp
     <br>
     <table style="width: 96%; margin: 0 auto; border-collapse: collapse; table-layout: fixed; border: 2px solid #000; font-size: 10px;">
         <!-- FILA SUPERIOR -->
@@ -355,10 +349,11 @@
             </td>
 
             @for($n = $m1; $n <= ($tieneM2 ? $m2 : $m1); $n++)
-            <td colspan="2" style="border: 1px solid #000; background: #9bd9e6;">
+            <td style="border: 1px solid #000; background: #9bd9e6;">
                 {{ $proforma->generarCodigoLaboratorio($n) ?? '---' }}
             </td>
             @endfor
+            <td style="border: 1px solid #000; background: #9bd9e6;">&nbsp;</td>
 
         </tr>
 
@@ -370,10 +365,11 @@
             </td>
 
             @for($n = $m1; $n <= ($tieneM2 ? $m2 : $m1); $n++)
-            <td colspan="2" style="border: 1px solid #000; background: #9bd9e6;">
+            <td style="border: 1px solid #000; background: #9bd9e6;">
                 {{ $proforma->codigo_cliente[$n - 1] ?? '---' }}
             </td>
             @endfor
+            <td style="border: 1px solid #000; background: #9bd9e6;">&nbsp;</td>
 
         </tr>
 
@@ -385,10 +381,11 @@
             </td>
 
             @for($n = $m1; $n <= ($tieneM2 ? $m2 : $m1); $n++)
-            <td colspan="2" style="border: 1px solid #000; background: #9bd9e6;">
+            <td style="border: 1px solid #000; background: #9bd9e6;">
                 {{ $proforma->fecha_emision->format('d/m/Y') }}
             </td>
             @endfor
+            <td style="border: 1px solid #000; background: #9bd9e6;">&nbsp;</td>
 
         </tr>
 
@@ -404,10 +401,11 @@
             </td>
 
             @for($n = $m1; $n <= ($tieneM2 ? $m2 : $m1); $n++)
-            <td colspan="2" style="border: 1px solid #000; background: #9bd9e6;">
+            <td style="border: 1px solid #000; background: #9bd9e6;">
                 {{ $muestreo->valor_cardinal_1 ?? '---' }}
             </td>
             @endfor
+            <td style="border: 1px solid #000; background: #9bd9e6;">&nbsp;</td>
 
         </tr>
 
@@ -419,10 +417,11 @@
             </td>
 
             @for($n = $m1; $n <= ($tieneM2 ? $m2 : $m1); $n++)
-            <td colspan="2" style="border: 1px solid #000; background: #9bd9e6;">
+            <td style="border: 1px solid #000; background: #9bd9e6;">
                 {{ $muestreo->valor_cardinal_2 ?? '---' }}
             </td>
             @endfor
+            <td style="border: 1px solid #000; background: #9bd9e6;">&nbsp;</td>
 
         </tr>
 
@@ -445,10 +444,13 @@
             </td>
 
             @for($n = $m1; $n <= ($tieneM2 ? $m2 : $m1); $n++)
-            <td colspan="2" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; text-align: center; vertical-align: middle;">
+            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; text-align: center; vertical-align: middle;">
                 MUESTRA {{ $n }}
             </td>
             @endfor
+            <td rowspan="2" style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; text-align: center; vertical-align: middle;">
+                LÍM. PERM.
+            </td>
 
         </tr>
 
@@ -457,9 +459,6 @@
             @for($n = $m1; $n <= ($tieneM2 ? $m2 : $m1); $n++)
             <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; text-align: center;">
                 RESULT.
-            </td>
-            <td style="border: 1px solid #000; background: #9bd9e6; font-weight: bold; text-align: center;">
-                LÍM. PERM.
             </td>
             @endfor
 
@@ -489,6 +488,7 @@
             <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
                 {{ $resultados[$n][$p->id] ?? '---' }}
             </td>
+            @endfor
             <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
                 @php $lp = $limitesMap[$p->nombre] ?? null; @endphp
                 @if($lp)
@@ -502,18 +502,12 @@
                     ---
                 @endif
             </td>
-            @endfor
 
         </tr>
 
         @endforeach
 
     </table>
-    @endfor
-    <!-- ===================================================== -->
-    <!-- NOTAS Y RESPONSABILIDAD -->
-    <!-- ===================================================== -->
-
     <br>
     <table>
         <tr>
@@ -522,22 +516,13 @@
             </td>
         </tr>
     </table>
-    <br>
-    <!-- <table>
-        <tr>
-            <td class="small left">
-                La información del presente informe corresponde a los resultados de ensayos en la muestra recepcionada.<br>
-                {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, NO asume ninguna responsabilidad sobre la información proporcionada por el cliente, que pueda afectar la validez de los resultados.<br>
-                {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, solo reconoce como válidos, informes de ensayo emitidos en soporte físico, con las firmas y sellos autorizados.
-            </td>
-        </tr>
-    </table> -->
-    <!-- <br><br> -->
     <div style="font-size: 10px; margin-top: 15px; padding: 8px; background-color: #f8f9fa; border-radius: 3px; border-left: 3px solid #2c5282;">
-        <p> La información del presente informe corresponde a los resultados de ensayos en la muestra recepcionada.</p>
-        <p> {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, NO asume ninguna responsabilidad sobre la información proporcionada por el cliente, que pueda afectar la validez de los resultados.</p>
-        <p> {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, solo reconoce como válidos, informes de ensayo emitidos en soporte físico, con las firmas y sellos autorizados.</p>
+        <p style="text-align: left;"> La información del presente informe corresponde a los resultados de ensayos en la muestra recepcionada.</p>
+        <p style="text-align: left;"> {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, NO asume ninguna responsabilidad sobre la información proporcionada por el cliente, que pueda afectar la validez de los resultados.</p>
+        <p style="text-align: left;"> {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, solo reconoce como válidos, informes de ensayo emitidos en soporte físico, con las firmas y sellos autorizados.</p>
     </div>
+    </div>
+    @endfor
 
     <footer>
         <table class="sin-borde">

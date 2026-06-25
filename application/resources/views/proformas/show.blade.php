@@ -131,7 +131,16 @@
                             <label class="text-muted small">Coordenadas</label>
                             <p class="h5">
                                 <i class="fas fa-globe-americas me-1" style="color: #ffc107;"></i>
-                                {{ $proforma->coordenadas ?? 'N/A' }}
+                                @php
+                                    $coords = [];
+                                    if ($proforma->punto_cardinal_1 && $proforma->valor_cardinal_1) {
+                                        $coords[] = '<b>' . e($proforma->punto_cardinal_1) . ':</b> ' . e($proforma->valor_cardinal_1);
+                                    }
+                                    if ($proforma->punto_cardinal_2 && $proforma->valor_cardinal_2) {
+                                        $coords[] = '<b>' . e($proforma->punto_cardinal_2) . ':</b> ' . e($proforma->valor_cardinal_2);
+                                    }
+                                @endphp
+                                {!! !empty($coords) ? implode('&nbsp;&nbsp;&nbsp;&nbsp;', $coords) : 'N/A' !!}
                             </p>
                         </div>
                     </div>
@@ -286,7 +295,7 @@
                                     <td>
                                         <strong>{{ $parametro->nombre }}</strong>
                                     </td>
-                                    <td class="text-center">{{ $parametro->metodo ?? 'N/A' }}</td>
+                                    <td class="text-center">{{ $proforma->tipo === 'AGUA' ? ($parametro->tecnica ?? 'N/A') : ($parametro->pivot->metodo ?: $parametro->metodo ?? 'N/A') }}</td>
                                     <td class="text-center">{{ $parametro->pivot->cantidad_muestras }}</td>
                                     <td class="text-end">Bs. {{ number_format($parametro->pivot->precio_unitario, 2) }}</td>
                                     <td class="text-end">Bs. {{ number_format($parametro->pivot->precio_unitario * $parametro->pivot->cantidad_muestras, 2) }}</td>
@@ -412,6 +421,15 @@
                                onmouseover="this.style.backgroundColor='#6b0d7b'; this.style.color='#ffffff'; this.style.borderColor='#6b0d7b';"
                                onmouseout="this.style.backgroundColor='transparent'; this.style.color='#000000'; this.style.borderColor='#6b0d7b';">
                                     📝 Resultados de Ensayo
+                                </a>
+                            </div>
+                            <div style="text-align: center; margin-top: 12px;">
+                                <a href="{{ route('proformas.cadena-custodia', $proforma->id) }}" 
+                                class="btn"
+                               style="color: #000000; border: 2px solid #17a2b8; background-color: transparent; border-radius: 30px; padding: 10px 25px; transition: all 0.3s ease; font-weight: 500; text-decoration: none; display: block; text-align: center;"
+                               onmouseover="this.style.backgroundColor='#17a2b8'; this.style.color='#ffffff'; this.style.borderColor='#17a2b8';"
+                               onmouseout="this.style.backgroundColor='transparent'; this.style.color='#000000'; this.style.borderColor='#17a2b8';">
+                                    🔗 Cadena de Custodia
                                 </a>
                             </div>
                         @endif

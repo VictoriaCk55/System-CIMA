@@ -348,6 +348,8 @@
             background: rgba(0,0,0,0.6);
             backdrop-filter: blur(4px);
             animation: fadeIn 0.3s ease;
+            align-items: center;
+            justify-content: center;
         }
         
         @keyframes fadeIn {
@@ -357,7 +359,6 @@
         
         .modal-content {
             background: white;
-            margin: 10% auto;
             padding: 30px;
             border-radius: 24px;
             width: 400px;
@@ -626,7 +627,7 @@
                     <div class="info-text">
                         <h4>N° RECEPCIÓN</h4>
                         <input type="text" id="numeroRecepcion" name="numero_recepcion"
-                            class="modern-input" value="{{ $proforma->numero_recepcion ?? '' }}"
+                            class="modern-input" value="{{ $proforma->numero_recepcion ?? Str::afterLast($proforma->codigo, '-') }}"
                             placeholder="N°" style="width: 120px;">
                     </div>
                 </div>
@@ -710,56 +711,11 @@
                     <div class="info-text">
                         <h4>ZONA UTM</h4>
                         <select id="zonaUtm" name="zona_utm" class="modern-input" style="width: auto; min-width: 130px;">
+                            <option value="">-- SIN ZONA --</option>
                             <option value="ZONA_19K">ZONA 19K</option>
                             <option value="ZONA_20K">ZONA 20K</option>
                             <option value="ZONA_21K">ZONA 21K</option>
                         </select>
-                    </div>
-                </div>
-
-                <div class="info-item info-item-stacked">
-                    <div class="info-icon">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                    <div class="stacked-fields">
-                        <div class="info-text">
-                            <h4>PUNTO CARDINAL 1</h4>
-                            <select id="puntoCardinal1" name="punto_cardinal_1" class="modern-input" style="width: auto; min-width: 80px;">
-                                <option value="">--</option>
-                                <option value="E">Este (E)</option>
-                                <option value="N">Norte (N)</option>
-                                <option value="O">Oeste (O)</option>
-                                <option value="S">Sur (S)</option>
-                            </select>
-                        </div>
-                        <div class="info-text">
-                            <h4>VALOR 1</h4>
-                            <input type="text" id="valorCardinal1" name="valor_cardinal_1"
-                                class="modern-input" placeholder="Coord. 1" style="width: 100px;">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="info-item info-item-stacked">
-                    <div class="info-icon">
-                        <i class="fas fa-arrow-left"></i>
-                    </div>
-                    <div class="stacked-fields">
-                        <div class="info-text">
-                            <h4>PUNTO CARDINAL 2</h4>
-                            <select id="puntoCardinal2" name="punto_cardinal_2" class="modern-input" style="width: auto; min-width: 80px;">
-                                <option value="">--</option>
-                                <option value="E">Este (E)</option>
-                                <option value="N">Norte (N)</option>
-                                <option value="O">Oeste (O)</option>
-                                <option value="S">Sur (S)</option>
-                            </select>
-                        </div>
-                        <div class="info-text">
-                            <h4>VALOR 2</h4>
-                            <input type="text" id="valorCardinal2" name="valor_cardinal_2"
-                                class="modern-input" placeholder="Coord. 2" style="width: 100px;">
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1014,7 +970,7 @@
         );
 
         const generalesEditables = document.querySelectorAll(
-            '.fecha-inicio-ensayo, .fecha-conclusion-ensayo, #zonaUtm, #puntoCardinal1, #valorCardinal1, #puntoCardinal2, #valorCardinal2, #numeroRecepcion, #tipoPermisible'
+            '.fecha-inicio-ensayo, .fecha-conclusion-ensayo, #zonaUtm, #numeroRecepcion, #tipoPermisible'
         );
 
         const GENERAL_FIELD_MAP = {
@@ -1022,10 +978,6 @@
             fecha_conclusion_ensayo: { label: 'Conclusión de Ensayo', el: () => document.getElementById('fecha_conclusion_ensayo') },
             numero_recepcion: { label: 'N° Recepción', el: () => document.getElementById('numeroRecepcion') },
             zona_utm: { label: 'Zona UTM', el: () => document.getElementById('zonaUtm') },
-            punto_cardinal_1: { label: 'Punto Cardinal 1', el: () => document.getElementById('puntoCardinal1') },
-            valor_cardinal_1: { label: 'Valor 1', el: () => document.getElementById('valorCardinal1') },
-            punto_cardinal_2: { label: 'Punto Cardinal 2', el: () => document.getElementById('puntoCardinal2') },
-            valor_cardinal_2: { label: 'Valor 2', el: () => document.getElementById('valorCardinal2') },
         };
 
         function csrfToken() {
@@ -1173,10 +1125,6 @@
                 fecha_inicio_ensayo: '',
                 fecha_conclusion_ensayo: '',
                 zona_utm: '',
-                punto_cardinal_1: '',
-                valor_cardinal_1: '',
-                punto_cardinal_2: '',
-                valor_cardinal_2: '',
                 numero_recepcion: ''
             };
 
@@ -1202,10 +1150,6 @@
             datos.fecha_inicio_ensayo = document.getElementById('fecha_inicio_ensayo').value;
             datos.fecha_conclusion_ensayo = document.getElementById('fecha_conclusion_ensayo').value;
             datos.zona_utm = document.getElementById('zonaUtm').value;
-            datos.punto_cardinal_1 = document.getElementById('puntoCardinal1').value;
-            datos.valor_cardinal_1 = document.getElementById('valorCardinal1').value;
-            datos.punto_cardinal_2 = document.getElementById('puntoCardinal2').value;
-            datos.valor_cardinal_2 = document.getElementById('valorCardinal2').value;
             datos.numero_recepcion = document.getElementById('numeroRecepcion').value;
 
             return datos;
@@ -1221,10 +1165,6 @@
             formData.append('fecha_inicio_ensayo', datos.fecha_inicio_ensayo);
             formData.append('fecha_conclusion_ensayo', datos.fecha_conclusion_ensayo);
             formData.append('zona_utm', datos.zona_utm);
-            formData.append('punto_cardinal_1', datos.punto_cardinal_1);
-            formData.append('valor_cardinal_1', datos.valor_cardinal_1);
-            formData.append('punto_cardinal_2', datos.punto_cardinal_2);
-            formData.append('valor_cardinal_2', datos.valor_cardinal_2);
             formData.append('numero_recepcion', datos.numero_recepcion);
 
             fetch('{{ route("proformas.resultados.guardar", $proforma->id) }}', {
@@ -1237,7 +1177,7 @@
                 if (data.success) {
                     estadoActual = 'guardado';
                     // Guardar referencia de valores originales para detección de cambios
-                    ['fecha_inicio_ensayo','fecha_conclusion_ensayo','numeroRecepcion','zonaUtm','puntoCardinal1','valorCardinal1','puntoCardinal2','valorCardinal2'].forEach(id => {
+                    ['fecha_inicio_ensayo','fecha_conclusion_ensayo','numeroRecepcion'].forEach(id => {
                         const el = document.getElementById(id);
                         if (el) el.dataset.valorOriginal = el.value;
                     });
@@ -1303,10 +1243,6 @@
                 setGeneralField('fecha_inicio_ensayo', data.fecha_inicio_ensayo);
                 setGeneralField('fecha_conclusion_ensayo', data.fecha_conclusion_ensayo);
                 setGeneralField('zonaUtm', data.zona_utm);
-                setGeneralField('puntoCardinal1', data.punto_cardinal_1);
-                setGeneralField('valorCardinal1', data.valor_cardinal_1);
-                setGeneralField('puntoCardinal2', data.punto_cardinal_2);
-                setGeneralField('valorCardinal2', data.valor_cardinal_2);
                 setGeneralField('numeroRecepcion', data.numero_recepcion);
 
                 estadoActual = 'guardado';
@@ -1323,7 +1259,7 @@
         // ========== GUARDAR DATOS GENERALES ==========
         function abrirModalGenerales() {
             const campos = ['fecha_inicio_ensayo', 'fecha_conclusion_ensayo', 'numero_recepcion',
-                'zona_utm', 'punto_cardinal_1', 'valor_cardinal_1', 'punto_cardinal_2', 'valor_cardinal_2'];
+                'zona_utm'];
 
             const formData = new FormData();
 
@@ -1376,7 +1312,7 @@
             document.getElementById('valorNuevoParametro').value = '';
             document.getElementById('motivoParametro').value = '';
             document.getElementById('campoResultadoMuestra').style.display = 'none';
-            document.getElementById('modalModificarParametro').style.display = 'block';
+            document.getElementById('modalModificarParametro').style.display = 'flex';
         }
 
         function actualizarValorActualParametro() {
@@ -1582,7 +1518,7 @@
         }
 
         function confirmarLimpiar() {
-            document.getElementById('modalLimpiar').style.display = 'block';
+            document.getElementById('modalLimpiar').style.display = 'flex';
         }
 
         function mostrarToast(mensaje) {
