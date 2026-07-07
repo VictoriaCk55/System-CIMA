@@ -550,7 +550,7 @@
                         if ($parametro->categoria === 'RUIDO') {
                             $nombreParam = 'RUIDO';
                         } elseif ($parametro->categoria === 'GASES') {
-                            $nombreParam = 'Gases';
+                            $nombreParam = 'GASES';
                         }
                     @endphp
                     <tr>

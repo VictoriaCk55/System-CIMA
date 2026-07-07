@@ -293,7 +293,7 @@
                                 @foreach($proforma->parametros as $parametro)
                                 <tr>
                                     <td>
-                                        <strong>{{ $parametro->nombre }}</strong>
+                                        <strong>{{ $parametro->categoria === 'RUIDO' ? 'RUIDO' : ($parametro->categoria === 'GASES' ? 'GASES' : $parametro->nombre) }}</strong>
                                     </td>
                                     <td class="text-center">{{ $proforma->tipo === 'AGUA' ? ($parametro->tecnica ?? 'N/A') : ($parametro->pivot->metodo ?: $parametro->metodo ?? 'N/A') }}</td>
                                     <td class="text-center">{{ $parametro->pivot->cantidad_muestras }}</td>

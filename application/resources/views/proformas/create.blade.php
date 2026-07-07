@@ -1400,9 +1400,22 @@ $(document).ready(function() {
         }
 
         const id = parseInt(selected.val());
-        const nombre = selected.text();
+        let nombre = selected.text();
         const precio = parseFloat(selected.data('precio'));
-        const metodo = selected.data('metodo') || '';
+        let metodo = selected.data('metodo') || '';
+
+        if (ambientCategoria === 'RUIDO') {
+            nombre = 'RUIDO';
+            metodo = 'SONÓMETRO';
+
+            const exists = $('.parametro-row:visible .form-control-plaintext').filter(function() {
+                return $(this).text().trim() === 'RUIDO';
+            }).length > 0;
+            if (exists) {
+                alert('Ya se agregó RUIDO a la proforma');
+                return;
+            }
+        }
 
         agregarFilaAmbient(id, nombre, precio, metodo, false);
 
@@ -1461,7 +1474,7 @@ $(document).ready(function() {
         calcularTotalesEstimados();
     }
 
-    // Add multiple gases — one row per selected gas
+    // Add multiple gases — single GASES row with combined names
     $('#add-ambient-gases').click(function() {
         const checked = $('#ambient-gases-list .gas-checkbox:checked');
         if (checked.length === 0) {
@@ -1469,14 +1482,14 @@ $(document).ready(function() {
             return;
         }
 
-        checked.each(function() {
-            const cb = $(this);
-            const id = parseInt(cb.val());
-            const precio = parseFloat(cb.data('precio'));
-            const nombre = cb.data('nombre');
-            agregarFilaAmbient(id, nombre, precio, '', true);
-        });
+        const first = $(checked[0]);
+        const id = parseInt(first.val());
+        const precio = parseFloat(first.data('precio'));
+        const gases = [];
+        checked.each(function() { gases.push($(this).data('nombre')); });
+        const metodo = gases.join(', ');
 
+        agregarFilaAmbient(id, 'GASES', precio, metodo, true);
         checked.prop('checked', false);
     });
 

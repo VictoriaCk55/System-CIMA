@@ -635,7 +635,7 @@
                                             <option value="{{ $parametro->id }}" selected
                                                     data-precio="{{ $parametro->precio_unitario }}"
                                                     data-metodo="{{ $parametro->metodo }}">
-                                                {{ $parametro->nombre }} ({{ $parametro->tipo }}) - Bs. {{ number_format($parametro->precio_unitario, 2) }}
+                                                {{ $parametro->categoria === 'RUIDO' ? 'RUIDO' : ($parametro->categoria === 'GASES' ? 'GASES' : $parametro->nombre) }} ({{ $parametro->tipo }}) - Bs. {{ number_format($parametro->precio_unitario, 2) }}
                                             </option>
                                         @endif
                                     </select>
