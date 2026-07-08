@@ -565,24 +565,20 @@
 
                     @if($proforma->tipo === 'AMBIENTAL' && $proforma->logisticasMuestreo->count() > 0)
                     @php
-                        $puntosItems = $proforma->logisticasMuestreo->where('categoria', 'PUNTOS');
-                        $totalPuntos = $puntosItems->sum(fn($l) => $l->pivot->cantidad);
-                        $totalLogistica = $proforma->logisticasMuestreo->sum(fn($l) => $l->pivot->subtotal);
-                        $precioUnitarioLog = $totalPuntos > 0 ? $totalLogistica / $totalPuntos : 0;
-                        $tiposPuntos = $puntosItems->pluck('descripcion')->map(function($d) {
-                            return trim(str_replace(['PUNTOS DE MUESTREO ', 'PUNTO DE MUESTREO '], '', $d));
-                        })->implode(', ');
+                        $totalPuntos = $proforma->logisticasMuestreo->sum(fn($l) => $l->pivot->cantidad);
+                        $totalCosto = $proforma->logisticasMuestreo->sum(fn($l) => $l->costo);
+                        $descripcion = $proforma->logisticasMuestreo->pluck('descripcion')->unique()->implode(', ');
                     @endphp
-                    <tr style="height: 45px; min-height: 45px;">
+                    <tr>
                         <td class="align-center">{{ $proforma->parametros->count() + 1 }}</td>
-                        <td>Logística de muestreo de: {{ $tiposPuntos ?: 'PUNTOS' }}</td>
-                        <td style="text-align: center; vertical-align: middle;">
+                        <td>Logística de muestreo - {{ $descripcion }}</td>
+                        <td class="align-center" style="text-align: center; vertical-align: middle;">
                             <strong style="font-size: 8px;">NÚMERO DE PUNTOS TOTALES</strong><br>
                             <span style="font-size: 14px; font-weight: bold;">{{ $totalPuntos }}</span>
                         </td>
-                        <td class="align-center"><strong>{{ $totalPuntos }}</strong></td>
-                        <td class="align-right">Bs. {{ number_format($precioUnitarioLog, 2) }}</td>
-                        <td class="align-right">Bs. {{ number_format($totalLogistica, 2) }}</td>
+                        <td class="align-center">{{ $totalPuntos }}</td>
+                        <td class="align-right">Bs. {{ number_format($totalCosto, 2) }}</td>
+                        <td class="align-right">Bs. {{ number_format($totalCosto, 2) }}</td>
                     </tr>
                     @endif
                 @else

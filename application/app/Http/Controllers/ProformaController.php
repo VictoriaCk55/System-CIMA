@@ -309,12 +309,11 @@ class ProformaController extends Controller
                 foreach ($request->logisticas as $logData) {
                     if (isset($logData['id']) && isset($logData['cantidad'])) {
                         $logistica = LogisticaMuestreo::find($logData['id']);
-                        $subtotalLog = $logistica->costo * $logData['cantidad'];
                         $proforma->logisticasMuestreo()->attach($logData['id'], [
                             'cantidad' => $logData['cantidad'],
-                            'subtotal' => $subtotalLog,
+                            'subtotal' => $logistica->costo,
                         ]);
-                        $totalLogistica += $subtotalLog;
+                        $totalLogistica += $logistica->costo;
                     }
                 }
             }
@@ -553,12 +552,11 @@ class ProformaController extends Controller
                 foreach ($request->logisticas as $logData) {
                     if (isset($logData['id']) && isset($logData['cantidad'])) {
                         $logistica = LogisticaMuestreo::find($logData['id']);
-                        $subtotalLog = $logistica->costo * $logData['cantidad'];
                         $logisticasSync[$logData['id']] = [
                             'cantidad' => $logData['cantidad'],
-                            'subtotal' => $subtotalLog,
+                            'subtotal' => $logistica->costo,
                         ];
-                        $totalLogistica += $subtotalLog;
+                        $totalLogistica += $logistica->costo;
                     }
                 }
                 $proforma->logisticasMuestreo()->sync($logisticasSync);
