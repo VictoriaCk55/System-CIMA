@@ -277,7 +277,7 @@ class Proforma extends Model
     public function logisticasMuestreo()
     {
         return $this->belongsToMany(LogisticaMuestreo::class, 'proforma_logisticas')
-            ->withPivot('cantidad', 'subtotal')
+            ->withPivot('cantidad', 'subtotal', 'descripcion')
             ->withTimestamps();
     }
 

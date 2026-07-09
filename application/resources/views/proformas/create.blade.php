@@ -723,7 +723,7 @@
                     <div id="logisticas-container">
                         <div class="logistica-row mb-3 border p-3 rounded" id="logistica-row-0">
                             <div class="row align-items-center">
-                                <div class="col-md-5 mb-2 mb-md-0">
+                                <div class="col-md-4 mb-2 mb-md-0">
                                     <label class="form-label small">Concepto Logístico *</label>
                                     <select name="logisticas[0][id]" class="form-select logistica-select" required>
                                         <option value="">Seleccionar concepto...</option>
@@ -733,6 +733,14 @@
                                             </option>
                                         @endforeach
                                     </select>
+                                </div>
+                                <div class="col-md-3 mb-2 mb-md-0">
+                                    <label class="form-label small">Descripción para la Proforma</label>
+                                    <textarea class="form-control logistica-descripcion"
+                                              name="logisticas[0][descripcion]"
+                                              rows="2"
+                                              style="resize: vertical; min-height: 38px; white-space: normal; overflow-wrap: break-word;"
+                                              placeholder="Logística de Muestreo de: ..."></textarea>
                                 </div>
                                 <div class="col-md-2 mb-2 mb-md-0">
                                     <label class="form-label small">Cantidad</label>
@@ -1098,6 +1106,7 @@ $(document).ready(function() {
             row.remove();
             console.log('Parámetros restantes:', parametrosSeleccionados);
             calcularTotalesEstimados();
+            actualizarDescripcionLogistica();
         }
     };
 
@@ -1158,6 +1167,10 @@ $(document).ready(function() {
             const cantidad = parseInt($(this).find('.muestra-input').val()) || 0;
             subtotal += precio * cantidad;
         });
+
+        $('#logistica-muestreo:visible .logistica-costo').each(function() {
+            subtotal += parseFloat($(this).val()) || 0;
+        });
         
         const tipo = $('#tipo').val();
         const descuento = (tipo === 'INVESTIGACION') ? subtotal * 0.20 : 0;
@@ -1192,6 +1205,21 @@ $(document).ready(function() {
     // ===== LOGÍSTICA DE MUESTREO - FILAS DINÁMICAS =====
     function calcularSubtotalesLogistica() {
         // Recalcula internamente cuando cambia cantidad (sin UI de subtotal)
+    }
+
+    function actualizarDescripcionLogistica() {
+        const nombres = [];
+        $('.parametro-row:visible .form-control-plaintext').each(function() {
+            let t = $(this).text().trim();
+            t = t.replace(/\s*\(Bs\..*$/, '');
+            if (nombres.indexOf(t) === -1) nombres.push(t);
+        });
+        if ($('#ambient-gases-list .gas-checkbox:checked').length > 0 && nombres.indexOf('GASES') === -1) {
+            nombres.push('GASES');
+        }
+        if (nombres.length > 0) {
+            $('.logistica-descripcion').val('Logística de Muestreo de: ' + nombres.join(', '));
+        }
     }
 
     function actualizarLogisticaSelect(row) {
@@ -1230,6 +1258,9 @@ $(document).ready(function() {
 
         newRow.find('.logistica-costo').val('0.00');
 
+        newRow.find('.logistica-descripcion')
+              .attr('name', 'logisticas[' + index + '][descripcion]').val('');
+
         const removeBtn = newRow.find('.remove-logistica');
         removeBtn.prop('disabled', false)
                 .off('click')
@@ -1245,6 +1276,7 @@ $(document).ready(function() {
                 });
 
         container.append(newRow);
+        actualizarDescripcionLogistica();
     });
 
     $('#tipo, #adelanto').on('change keyup', calcularTotalesEstimados);
@@ -1375,6 +1407,7 @@ $(document).ready(function() {
             filtrados.forEach(function(p) {
                 list.append('<label class="form-check form-check-inline"><input type="checkbox" class="form-check-input gas-checkbox" value="' + p.id + '" data-nombre="' + p.nombre + '" data-precio="' + p.precio_unitario + '"> <span class="form-check-label">' + p.nombre + ' (Bs. ' + parseFloat(p.precio_unitario).toFixed(2) + ')</span></label>');
             });
+            list.find('.gas-checkbox').on('change', actualizarDescripcionLogistica);
         } else {
             // Mostrar select único
             $('#ambient-single-select').show();
@@ -1472,6 +1505,7 @@ $(document).ready(function() {
 
         container.append(newRow);
         calcularTotalesEstimados();
+        actualizarDescripcionLogistica();
     }
 
     // Add multiple gases — single GASES row with combined names
@@ -1509,6 +1543,7 @@ $(document).ready(function() {
     $('#tipo').on('change', function() {
         toggleLogisticaMuestreo();
         toggleAmbientParamUI();
+        actualizarDescripcionLogistica();
     });
     setupAmbientUI();
 
@@ -1529,6 +1564,7 @@ $(document).ready(function() {
         });
         $('#ambient-categoria-wrapper').show();
         $('#ambient-params-picker').hide();
+        actualizarDescripcionLogistica();
     }
 });
 </script>

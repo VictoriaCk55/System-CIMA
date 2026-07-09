@@ -567,11 +567,11 @@
                     @php
                         $totalPuntos = $proforma->logisticasMuestreo->sum(fn($l) => $l->pivot->cantidad);
                         $totalCosto = $proforma->logisticasMuestreo->sum(fn($l) => $l->costo);
-                        $descripcion = $proforma->logisticasMuestreo->pluck('descripcion')->unique()->implode(', ');
+                        $descripcionUsuario = $proforma->logisticasMuestreo->first(fn($l) => !empty($l->pivot->descripcion))?->pivot->descripcion ?? 'Logística de muestreo';
                     @endphp
                     <tr>
                         <td class="align-center">{{ $proforma->parametros->count() + 1 }}</td>
-                        <td>Logística de muestreo - {{ $descripcion }}</td>
+                        <td>{{ $descripcionUsuario }}</td>
                         <td class="align-center" style="text-align: center; vertical-align: middle;">
                             <strong style="font-size: 8px;">NÚMERO DE PUNTOS TOTALES</strong><br>
                             <span style="font-size: 14px; font-weight: bold;">{{ $totalPuntos }}</span>
@@ -618,12 +618,18 @@
     </div>
 
     <!-- RESUMEN FINANCIERO -->
+    @php
+        $subtotalCalculado = $proforma->parametros->sum(fn($p) => $p->pivot->cantidad_muestras * $p->pivot->precio_unitario);
+        if ($proforma->tipo === 'AMBIENTAL') {
+            $subtotalCalculado += $proforma->logisticasMuestreo->sum(fn($l) => $l->costo);
+        }
+    @endphp
     <div class="financial-summary">
         <div class="summary-title">RESUMEN FINANCIERO</div>
         
         <div class="summary-line">
             <span class="summary-label">Subtotal:</span>
-            <span class="summary-value">Bs. {{ number_format($proforma->subtotal, 2) }}</span>
+            <span class="summary-value">Bs. {{ number_format($subtotalCalculado, 2) }}</span>
         </div>
         
         @if($proforma->descuento > 0)

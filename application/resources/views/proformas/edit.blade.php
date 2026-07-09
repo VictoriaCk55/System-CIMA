@@ -712,7 +712,7 @@
                         @forelse($proforma->logisticasMuestreo as $log)
                         <div class="logistica-row mb-3 border p-3 rounded" id="logistica-row-{{ $logIndex }}">
                             <div class="row align-items-center">
-                                <div class="col-md-5 mb-2 mb-md-0">
+                                <div class="col-md-4 mb-2 mb-md-0">
                                     <label class="form-label small">Concepto Logístico *</label>
                                     <select name="logisticas[{{ $logIndex }}][id]" class="form-select logistica-select" required>
                                         <option value="">Seleccionar concepto...</option>
@@ -723,6 +723,14 @@
                                             </option>
                                         @endforeach
                                     </select>
+                                </div>
+                                <div class="col-md-3 mb-2 mb-md-0">
+                                    <label class="form-label small">Descripción para la Proforma</label>
+                                    <textarea class="form-control logistica-descripcion"
+                                              name="logisticas[{{ $logIndex }}][descripcion]"
+                                              rows="2"
+                                              style="resize: vertical; min-height: 38px; white-space: normal; overflow-wrap: break-word;"
+                                              placeholder="Logística de Muestreo de: ...">{{ old('logisticas.' . $logIndex . '.descripcion', $log->pivot->descripcion ?? '') }}</textarea>
                                 </div>
                                 <div class="col-md-2 mb-2 mb-md-0">
                                     <label class="form-label small">Cantidad</label>
@@ -749,7 +757,7 @@
                         @empty
                         <div class="logistica-row mb-3 border p-3 rounded" id="logistica-row-0">
                             <div class="row align-items-center">
-                                <div class="col-md-5 mb-2 mb-md-0">
+                                <div class="col-md-4 mb-2 mb-md-0">
                                     <label class="form-label small">Concepto Logístico *</label>
                                     <select name="logisticas[0][id]" class="form-select logistica-select" required>
                                         <option value="">Seleccionar concepto...</option>
@@ -759,6 +767,14 @@
                                             </option>
                                         @endforeach
                                     </select>
+                                </div>
+                                <div class="col-md-3 mb-2 mb-md-0">
+                                    <label class="form-label small">Descripción para la Proforma</label>
+                                    <textarea class="form-control logistica-descripcion"
+                                              name="logisticas[0][descripcion]"
+                                              rows="2"
+                                              style="resize: vertical; min-height: 38px; white-space: normal; overflow-wrap: break-word;"
+                                              placeholder="Logística de Muestreo de: ..."></textarea>
                                 </div>
                                 <div class="col-md-2 mb-2 mb-md-0">
                                     <label class="form-label small">Cantidad</label>
@@ -1167,6 +1183,7 @@ $(document).ready(function() {
             console.log('Parámetros restantes:', parametrosSeleccionados);
             calcularTotalesEstimados();
             detectarCambiosParametros();
+            actualizarDescripcionLogistica();
         }
     };
     
@@ -1305,10 +1322,12 @@ $(document).ready(function() {
             row.find('.logistica-costo').val('0.00');
         }
         calcularSubtotalesLogistica();
+        calcularTotalesEstimados();
     });
 
     $(document).on('input', '.logistica-cantidad', function() {
         calcularSubtotalesLogistica();
+        calcularTotalesEstimados();
     });
 
     $('#add-logistica').click(function() {
@@ -1327,6 +1346,9 @@ $(document).ready(function() {
 
         newRow.find('.logistica-costo').val('0.00');
 
+        newRow.find('.logistica-descripcion')
+              .attr('name', 'logisticas[' + index + '][descripcion]').val('');
+
         const removeBtn = newRow.find('.remove-logistica');
         removeBtn.prop('disabled', false)
                 .off('click')
@@ -1337,11 +1359,27 @@ $(document).ready(function() {
                     }
                     if (confirm('¿Eliminar este concepto logístico?')) {
                         $(this).closest('.logistica-row').remove();
+                        calcularTotalesEstimados();
                     }
                 });
 
         container.append(newRow);
+        calcularTotalesEstimados();
+        actualizarDescripcionLogistica();
     });
+
+    // ===== AUTO-POBLAR DESCRIPCIÓN LOGÍSTICA =====
+    function actualizarDescripcionLogistica() {
+        const nombres = [];
+        $('.parametro-row:visible .form-control-plaintext').each(function() {
+            let t = $(this).text().trim();
+            t = t.replace(/\s*\(.*$/, '');
+            if (nombres.indexOf(t) === -1) nombres.push(t);
+        });
+        if (nombres.length > 0) {
+            $('.logistica-descripcion').val('Logística de Muestreo de: ' + nombres.join(', '));
+        }
+    }
 
     // ===== CALCULAR TOTALES =====
     window.calcularTotalesEstimados = function() {
@@ -1351,6 +1389,10 @@ $(document).ready(function() {
             const precio = parseFloat($(this).find('.precio-unitario').val()) || 0;
             const cantidad = parseInt($(this).find('.muestra-input').val()) || 0;
             subtotal += precio * cantidad;
+        });
+
+        $('#logistica-muestreo:visible .logistica-costo').each(function() {
+            subtotal += parseFloat($(this).val()) || 0;
         });
         
         const tipo = $('#tipo').val();
@@ -1506,6 +1548,7 @@ $(document).ready(function() {
 
         container.append(newRow);
         calcularTotalesEstimados();
+        actualizarDescripcionLogistica();
     }
 
     // Add multiple gases — one row per selected gas
@@ -1525,6 +1568,7 @@ $(document).ready(function() {
         });
 
         checked.prop('checked', false);
+        actualizarDescripcionLogistica();
     });
 
     // ===== CÓDIGOS DE CLIENTE DINÁMICOS =====

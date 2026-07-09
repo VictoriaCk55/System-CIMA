@@ -305,7 +305,7 @@
                             <tfoot>
                                 <tr>
                                     <td colspan="4" class="text-end fw-bold">Subtotal:</td>
-                                    <td class="text-end fw-bold">Bs. {{ number_format($proforma->subtotal, 2) }}</td>
+                                    <td class="text-end fw-bold">Bs. {{ number_format($proforma->parametros->sum(fn($p) => $p->pivot->precio_unitario * $p->pivot->cantidad_muestras), 2) }}</td>
                                 </tr>
                                 @if($proforma->descuento > 0)
                                 <tr>
@@ -314,24 +314,6 @@
                                     </td>
                                     <td class="text-end fw-bold text-danger">
                                         - Bs. {{ number_format($proforma->descuento, 2) }}
-                                    </td>
-                                </tr>
-                                @endif
-                                <tr>
-                                    <td colspan="4" class="text-end fw-bold h5">Total:</td>
-                                    <td class="text-end fw-bold h5 text-success">
-                                        Bs. {{ number_format($proforma->total, 2) }}
-                                    </td>
-                                </tr>
-                                @if($proforma->adelanto > 0)
-                                <tr>
-                                    <td colspan="4" class="text-end">Adelanto:</td>
-                                    <td class="text-end">Bs. {{ number_format($proforma->adelanto, 2) }}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="4" class="text-end fw-bold">Saldo Pendiente:</td>
-                                    <td class="text-end fw-bold {{ $proforma->saldo > 0 ? 'text-danger' : 'text-success' }}">
-                                        Bs. {{ number_format($proforma->saldo, 2) }}
                                     </td>
                                 </tr>
                                 @endif
@@ -355,6 +337,7 @@
                             <thead>
                                 <tr>
                                     <th>Concepto</th>
+                                    <th>Descripción</th>
                                     <th class="text-center">Cantidad</th>
                                     <th class="text-end">Costo Unit.</th>
                                     <th class="text-end">Subtotal</th>
@@ -364,6 +347,7 @@
                                 @foreach($proforma->logisticasMuestreo as $log)
                                 <tr>
                                     <td>{{ $log->categoria }} - {{ $log->descripcion }}</td>
+                                    <td>{{ $log->pivot->descripcion ?? '' }}</td>
                                     <td class="text-center">{{ $log->pivot->cantidad }}</td>
                                     <td class="text-end">Bs. {{ number_format($log->costo, 2) }}</td>
                                     <td class="text-end">Bs. {{ number_format($log->pivot->subtotal, 2) }}</td>
@@ -375,6 +359,42 @@
                 </div>
             </div>
             @endif
+
+            <!-- ===== RESUMEN FINANCIERO ===== -->
+            <div class="card mb-4">
+                <div class="card-header" style="background-color: #ffc107; border-bottom: none;">
+                    <h5 class="mb-0" style="color: #000000;">
+                        <i class="fas fa-calculator me-2" style="color: #000000;"></i>
+                        Resumen Financiero
+                    </h5>
+                </div>
+                <div class="card-body py-0">
+                    <div class="table-responsive" style="margin-bottom: 0;">
+                        <table class="table table-sm" style="margin-bottom: 0;">
+                            <tbody>
+                                <tr>
+                                    <td class="text-end fw-bold">Total:</td>
+                                    <td class="text-end fw-bold text-success">
+                                        Bs. {{ number_format($proforma->total, 2) }}
+                                    </td>
+                                </tr>
+                                @if($proforma->adelanto > 0)
+                                <tr>
+                                    <td class="text-end">Adelanto:</td>
+                                    <td class="text-end">Bs. {{ number_format($proforma->adelanto, 2) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-end fw-bold">Saldo Pendiente:</td>
+                                    <td class="text-end fw-bold {{ $proforma->saldo > 0 ? 'text-danger' : 'text-success' }}">
+                                        Bs. {{ number_format($proforma->saldo, 2) }}
+                                    </td>
+                                </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
             @if($proforma->observaciones)
             <div class="card mb-4">

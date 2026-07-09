@@ -221,6 +221,7 @@ class ProformaController extends Controller
             'logisticas' => 'nullable|array',
             'logisticas.*.id' => 'required_with:logisticas|exists:logisticas_muestreo,id',
             'logisticas.*.cantidad' => 'required_with:logisticas|integer|min:1',
+            'logisticas.*.descripcion' => 'nullable|string|max:500',
         ]);
 
         // ===== VALIDACIÓN ESTRICTA DE PARÁMETROS DUPLICADOS (STORE) =====
@@ -312,6 +313,7 @@ class ProformaController extends Controller
                         $proforma->logisticasMuestreo()->attach($logData['id'], [
                             'cantidad' => $logData['cantidad'],
                             'subtotal' => $logistica->costo,
+                            'descripcion' => $logData['descripcion'] ?? null,
                         ]);
                         $totalLogistica += $logistica->costo;
                     }
@@ -330,7 +332,7 @@ class ProformaController extends Controller
             $total = $subtotal + $totalLogistica - $descuento;
             $saldo = $total - $proforma->adelanto;
 
-            $proforma->subtotal = $subtotal;
+            $proforma->subtotal = $subtotal + $totalLogistica;
             $proforma->descuento = $descuento;
             $proforma->total = $total;
             $proforma->saldo = $saldo;
@@ -447,6 +449,7 @@ class ProformaController extends Controller
             'logisticas' => 'nullable|array',
             'logisticas.*.id' => 'required_with:logisticas|exists:logisticas_muestreo,id',
             'logisticas.*.cantidad' => 'required_with:logisticas|integer|min:1',
+            'logisticas.*.descripcion' => 'nullable|string|max:500',
             'justificacion_modificacion' => 'nullable|string',
         ]);
 
@@ -555,6 +558,7 @@ class ProformaController extends Controller
                         $logisticasSync[$logData['id']] = [
                             'cantidad' => $logData['cantidad'],
                             'subtotal' => $logistica->costo,
+                            'descripcion' => $logData['descripcion'] ?? null,
                         ];
                         $totalLogistica += $logistica->costo;
                     }
@@ -574,7 +578,7 @@ class ProformaController extends Controller
             $total = $subtotal + $totalLogistica - $descuento;
             $saldo = $total - $proforma->adelanto;
 
-            $proforma->subtotal = $subtotal;
+            $proforma->subtotal = $subtotal + $totalLogistica;
             $proforma->descuento = $descuento;
             $proforma->total = $total;
             $proforma->saldo = $saldo;

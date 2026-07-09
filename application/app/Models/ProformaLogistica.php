@@ -13,6 +13,7 @@ class ProformaLogistica extends Pivot
         'logistica_muestreo_id',
         'cantidad',
         'subtotal',
+        'descripcion',
     ];
 
     protected $casts = [
