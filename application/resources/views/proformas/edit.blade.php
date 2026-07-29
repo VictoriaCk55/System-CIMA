@@ -1369,15 +1369,34 @@ $(document).ready(function() {
     });
 
     // ===== AUTO-POBLAR DESCRIPCIÓN LOGÍSTICA =====
+    // Marcar como editado manualmente cuando el usuario escriba
+    $(document).on('input', '.logistica-descripcion', function() {
+        $(this).attr('data-user-edited', 'true');
+    });
+
     function actualizarDescripcionLogistica() {
         const nombres = [];
+        // Leer servicios agregados dinámicamente (plaintext)
         $('.parametro-row:visible .form-control-plaintext').each(function() {
             let t = $(this).text().trim();
             t = t.replace(/\s*\(.*$/, '');
             if (nombres.indexOf(t) === -1) nombres.push(t);
         });
+        // Leer servicios existentes (Select2)
+        $('.parametro-row:visible .parametro-select option:selected').each(function() {
+            if ($(this).val()) {
+                let t = $(this).text().trim();
+                t = t.replace(/\s*\(.*$/, '');
+                if (nombres.indexOf(t) === -1) nombres.push(t);
+            }
+        });
         if (nombres.length > 0) {
-            $('.logistica-descripcion').val('Logística de Muestreo de: ' + nombres.join(', '));
+            const texto = 'Logística de Muestreo de: ' + nombres.join(', ');
+            $('.logistica-descripcion').each(function() {
+                if ($(this).attr('data-user-edited') !== 'true') {
+                    $(this).val(texto);
+                }
+            });
         }
     }
 
@@ -1464,6 +1483,7 @@ $(document).ready(function() {
             filtrados.forEach(function(p) {
                 list.append('<label class="form-check form-check-inline"><input type="checkbox" class="form-check-input gas-checkbox" value="' + p.id + '" data-nombre="' + p.nombre + '" data-precio="' + p.precio_unitario + '"> <span class="form-check-label">' + p.nombre + ' (Bs. ' + parseFloat(p.precio_unitario).toFixed(2) + ')</span></label>');
             });
+            list.find('.gas-checkbox').on('change', actualizarDescripcionLogistica);
         } else {
             $('#ambient-single-select').show();
             $('#ambient-gases-checkbox').hide();
@@ -1551,7 +1571,7 @@ $(document).ready(function() {
         actualizarDescripcionLogistica();
     }
 
-    // Add multiple gases — one row per selected gas
+    // Add multiple gases — single GASES row with combined names
     $('#add-ambient-gases').click(function() {
         const checked = $('#ambient-gases-list .gas-checkbox:checked');
         if (checked.length === 0) {
@@ -1559,16 +1579,15 @@ $(document).ready(function() {
             return;
         }
 
-        checked.each(function() {
-            const cb = $(this);
-            const id = parseInt(cb.val());
-            const precio = parseFloat(cb.data('precio'));
-            const nombre = cb.data('nombre');
-            agregarFilaAmbient(id, nombre, precio, '', true);
-        });
+        const first = $(checked[0]);
+        const id = parseInt(first.val());
+        const precio = parseFloat(first.data('precio'));
+        const gases = [];
+        checked.each(function() { gases.push($(this).data('nombre')); });
+        const metodo = gases.join(', ');
 
+        agregarFilaAmbient(id, 'GASES', precio, metodo, true);
         checked.prop('checked', false);
-        actualizarDescripcionLogistica();
     });
 
     // ===== CÓDIGOS DE CLIENTE DINÁMICOS =====
