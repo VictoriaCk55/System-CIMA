@@ -199,7 +199,7 @@ Route::prefix('proformas/{proforma}/reporte-ambiental')->name('reportes.ambienta
     Route::get('/gases', [App\Http\Controllers\ReporteAmbientalController::class, 'gases'])->name('gases');
     Route::post('/', [App\Http\Controllers\ReporteAmbientalController::class, 'store'])->name('store');
 });
-Route::get('/reportes-ambientales/{reporte}/pdf', [App\Http\Controllers\ReporteAmbientalController::class, 'pdf'])->name('reportes.ambiental.pdf')->middleware('role:admin|tecnico|analista');
+Route::get('/reportes-ambientales/{reporte}/pdf', [App\Http\Controllers\ReporteAmbientalController::class, 'pdf'])->name('reportes.ambiental.pdf')->middleware('role:admin|tecnico');
 Route::get('/reportes-ambientales/{reporte}/pdf/aire', [App\Http\Controllers\ReporteAmbientalController::class, 'pdfAire'])->name('reportes.ambiental.pdf.aire')->middleware('role:admin|tecnico|analista');
 Route::get('/reportes-ambientales/{reporte}/pdf/ruido', [App\Http\Controllers\ReporteAmbientalController::class, 'pdfRuido'])->name('reportes.ambiental.pdf.ruido')->middleware('role:admin|tecnico|analista');
 Route::get('/reportes-ambientales/{reporte}/pdf/gases', [App\Http\Controllers\ReporteAmbientalController::class, 'pdfGases'])->name('reportes.ambiental.pdf.gases')->middleware('role:admin|tecnico|analista');

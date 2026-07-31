@@ -369,11 +369,13 @@
                                                 </li>
 
                                                 @if($proforma->tipo === 'AMBIENTAL')
+                                                @hasanyrole('admin|tecnico')
                                                 <li>
                                                     <a class="dropdown-item" href="{{ route('reportes.ambiental.index', $proforma) }}" title="Reporte Ambiental">
                                                         <i class="fas fa-file-signature me-2" style="color: #6f42c1;"></i>Reporte Ambiental
                                                     </a>
                                                 </li>
+                                                @endhasanyrole
                                                 @else
                                                 <!-- Cadena de Custodia (solo AGUA / INVESTIGACIÓN) -->
                                                 @can('generar cadena custodia')
