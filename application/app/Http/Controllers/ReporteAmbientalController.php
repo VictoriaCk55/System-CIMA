@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Parametro;
 use App\Models\Proforma;
 use App\Models\ReporteAmbiental;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -129,6 +130,7 @@ class ReporteAmbientalController extends Controller
                 'resultados_ruido.*.codigo' => 'nullable|string|max:255',
                 'resultados_ruido.*.hora_inicial' => 'nullable|string|max:10',
                 'resultados_ruido.*.hora_final' => 'nullable|string|max:10',
+                'resultados_ruido.*.tipo_ruido' => 'nullable|string|max:50',
                 'resultados_ruido.*.lmax' => 'nullable|numeric',
                 'resultados_ruido.*.lmin' => 'nullable|numeric',
                 'resultados_ruido.*.leq' => 'nullable|numeric',
@@ -141,13 +143,34 @@ class ReporteAmbientalController extends Controller
         }
 
         if ($categoria === 'GASES' || ! $categoria) {
-            $reglas = array_merge($reglas, [
+            $parametrosGases = $proforma->parametros()->where('categoria', 'GASES')->get();
+
+            // Replicar el mismo filtro que usa la vista (gasesNombres desde pivot->metodo)
+            $gasesMetodo = '';
+            foreach ($parametrosGases as $pg) {
+                if ($pg->pivot->metodo) {
+                    $gasesMetodo = $pg->pivot->metodo;
+                    break;
+                }
+            }
+            $gasesNombres = $gasesMetodo ? array_map('trim', explode(',', $gasesMetodo)) : [];
+            if (! empty($gasesNombres)) {
+                $parametrosGases = Parametro::where('categoria', 'GASES')
+                    ->whereIn('nombre', $gasesNombres)
+                    ->get();
+            }
+
+            $reglasGases = [
                 'resultados_gases' => 'nullable|array',
                 'resultados_gases.*.codigo' => 'nullable|string|max:255',
-                'resultados_gases.*.hora_inicial' => 'nullable|string|max:10',
-                'resultados_gases.*.hora_final' => 'nullable|string|max:10',
+                'resultados_gases.*.periodo' => 'nullable|string|max:255',
+                'resultados_unidades' => 'nullable|array',
                 'observaciones_gases' => 'nullable|string',
-            ]);
+            ];
+            foreach ($parametrosGases as $p) {
+                $reglasGases["resultados_gases.*.{$p->nombre}.valor"] = 'nullable|numeric';
+            }
+            $reglas = array_merge($reglas, $reglasGases);
         }
 
         $data = $request->validate($reglas);
@@ -185,9 +208,60 @@ class ReporteAmbientalController extends Controller
             $data['unidad_ruido'] = $request->input('resultados_unidad_ruido');
         }
 
+        // tag each punto with its categoria so forms don't mix
+        if ($request->has('puntos_medicion')) {
+            $tagged = [];
+            foreach ($request->input('puntos_medicion') as $pt) {
+                $pt['categoria'] = $categoria;
+                $tagged[] = $pt;
+            }
+
+            $existing = \DB::table('reportes_ambientales')->where('proforma_id', $proforma->id)->value('puntos_medicion');
+            $prev = $existing ? (json_decode($existing, true) ?? []) : [];
+
+            $keep = [];
+            foreach ($prev as $old) {
+                if (! isset($old['categoria']) || $old['categoria'] !== $categoria) {
+                    $keep[] = $old;
+                }
+            }
+
+            $data['puntos_medicion'] = array_values(array_merge($keep, $tagged));
+        }
+
         $data['proforma_id'] = $proforma->id;
         $data['estado'] = $request->input('accion', 'BORRADOR') === 'publicar' ? 'PUBLICADO' : 'BORRADOR';
         unset($data['categoria']);
+
+        // Información general independiente por categoría
+        $camposInfo = [
+            'codigo_reporte',
+            'fecha_emision',
+            'fecha_medicion',
+            'fecha_inicio_muestreo',
+            'fecha_fin_muestreo',
+            'periodo_medicion',
+            'tipo_muestreo',
+            'tipo_medicion',
+            'medicion_efectuada_por',
+            'equipo_usado',
+            'condiciones_muestreo',
+            'condiciones_reporte',
+            'subtipo_ruido',
+        ];
+
+        $info = [];
+        foreach ($camposInfo as $campo) {
+            if (array_key_exists($campo, $data)) {
+                $info[$campo] = $data[$campo];
+                unset($data[$campo]);
+            }
+        }
+
+        $columnaInfo = 'info_'.strtolower($categoria);
+        if (in_array($columnaInfo, ['info_aire', 'info_gases', 'info_ruido'])) {
+            $data[$columnaInfo] = $info;
+        }
 
         DB::beginTransaction();
         try {
@@ -248,6 +322,7 @@ class ReporteAmbientalController extends Controller
 
         $pdf = Pdf::loadHTML($html);
         $pdf->setPaper('letter', 'portrait');
+        $pdf->setOption('isPhpEnabled', true);
 
         return $pdf->stream("reporte-ambiental-{$reporte->proforma_id}.pdf");
     }
@@ -264,6 +339,7 @@ class ReporteAmbientalController extends Controller
 
         $pdf = Pdf::loadHTML($html);
         $pdf->setPaper('letter', 'portrait');
+        $pdf->setOption('isPhpEnabled', true);
 
         return $pdf->stream("reporte-{$categoria}-{$reporte->proforma_id}.pdf");
     }
@@ -289,6 +365,7 @@ class ReporteAmbientalController extends Controller
 
         $pdf = Pdf::loadHTML($html);
         $pdf->setPaper('letter', 'portrait');
+        $pdf->setOption('isPhpEnabled', true);
 
         return $pdf->download("reporte-ambiental-{$reporte->proforma_id}.pdf");
     }

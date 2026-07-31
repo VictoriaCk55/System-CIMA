@@ -29,6 +29,20 @@
         </div>
     </div>
 
+    <style>
+        .view-mode input:not([type="hidden"]):not(.btn):not([type="submit"]),
+        .view-mode select,
+        .view-mode textarea {
+            pointer-events: none;
+            background-color: #f0f0f0 !important;
+            opacity: 0.85;
+        }
+        .view-mode .btn-agregar-fila,
+        .view-mode .btn-eliminar-fila {
+            display: none !important;
+        }
+    </style>
+
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">{{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -40,9 +54,11 @@
         </div>
     @endif
 
+    <div id="form-wrapper" class="{{ $reporte && $reporte->exists ? 'view-mode' : '' }}">
     <form action="{{ route('reportes.ambiental.store', $proforma) }}" method="POST">
         @csrf
         <input type="hidden" name="categoria" value="RUIDO">
+        @php $info = $reporte->info('RUIDO'); @endphp
 
         <!-- INFORMACIÓN GENERAL -->
         <div class="card section-card ruido">
@@ -56,13 +72,13 @@
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Código de Reporte</label>
                         <input type="text" class="form-control @error('codigo_reporte') is-invalid @enderror"
-                               name="codigo_reporte" value="{{ old('codigo_reporte', $reporte->codigo_reporte ?? $reporte->codigoRuido()) }}" readonly>
+                               name="codigo_reporte" value="{{ old('codigo_reporte', $info['codigo_reporte'] ?? $reporte->codigoRuido()) }}" readonly>
                         @error('codigo_reporte')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Fecha de Emisión</label>
                         <input type="date" class="form-control @error('fecha_emision') is-invalid @enderror"
-                               name="fecha_emision" value="{{ old('fecha_emision', optional(optional($reporte)->fecha_emision)->format('Y-m-d') ?? date('Y-m-d')) }}">
+                               name="fecha_emision" value="{{ old('fecha_emision', $info['fecha_emision'] ?? date('Y-m-d')) }}">
                         @error('fecha_emision')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                 </div>
@@ -70,19 +86,19 @@
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Fecha de Medición</label>
                         <input type="date" class="form-control @error('fecha_medicion') is-invalid @enderror"
-                               name="fecha_medicion" value="{{ old('fecha_medicion', optional(optional($reporte)->fecha_medicion)->format('Y-m-d') ?? '') }}">
+                               name="fecha_medicion" value="{{ old('fecha_medicion', $info['fecha_medicion'] ?? '') }}">
                         @error('fecha_medicion')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Periodo de Medición</label>
                         <input type="text" class="form-control @error('periodo_medicion') is-invalid @enderror"
-                               name="periodo_medicion" value="{{ old('periodo_medicion', $reporte->periodo_medicion ?? '') }}" placeholder="Ej: Diurno, Nocturno, 24 horas">
+                               name="periodo_medicion" value="{{ old('periodo_medicion', $info['periodo_medicion'] ?? '') }}" placeholder="Ej: Diurno, Nocturno, 24 horas">
                         @error('periodo_medicion')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Medición Efectuada por</label>
                         <input type="text" class="form-control @error('medicion_efectuada_por') is-invalid @enderror"
-                               name="medicion_efectuada_por" value="{{ old('medicion_efectuada_por', $reporte->medicion_efectuada_por ?? '') }}" placeholder="Nombre del responsable">
+                               name="medicion_efectuada_por" value="{{ old('medicion_efectuada_por', $info['medicion_efectuada_por'] ?? '') }}" placeholder="Nombre del responsable">
                         @error('medicion_efectuada_por')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                 </div>
@@ -90,19 +106,14 @@
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Equipo Usado</label>
                         <input type="text" class="form-control @error('equipo_usado') is-invalid @enderror"
-                               name="equipo_usado" value="{{ old('equipo_usado', $reporte->equipo_usado ?? '') }}" placeholder="Ej: Sonómetro">
+                               name="equipo_usado" value="{{ old('equipo_usado', $info['equipo_usado'] ?? '') }}" placeholder="Ej: Sonómetro">
                         @error('equipo_usado')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Tipo de Medición</label>
-                        <input type="text" class="form-control" value="{{ ($reporte->subtipo_ruido ?? 'AMBIENTAL') === 'INDUSTRIAL' ? 'RUIDO INDUSTRIAL' : 'RUIDO AMBIENTAL' }}" disabled>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Tipo de Medición</label>
-                        <select class="form-select @error('subtipo_ruido') is-invalid @enderror" name="subtipo_ruido">
-                            <option value="AMBIENTAL" {{ old('subtipo_ruido', $reporte->subtipo_ruido ?? 'AMBIENTAL') == 'AMBIENTAL' ? 'selected' : '' }}>Ruido Ambiental (RUAM)</option>
-                            <option value="INDUSTRIAL" {{ old('subtipo_ruido', $reporte->subtipo_ruido ?? '') == 'INDUSTRIAL' ? 'selected' : '' }}>Ruido Industrial (RUIND)</option>
-                        </select>
+                        <input type="text" class="form-control @error('subtipo_ruido') is-invalid @enderror"
+                               name="subtipo_ruido" value="{{ old('subtipo_ruido', $info['subtipo_ruido'] ?? '') }}"
+                               placeholder="Ej: Ruido Ambiental, Ruido Industrial">
                         @error('subtipo_ruido')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                 </div>
@@ -144,8 +155,9 @@
                         </thead>
                         <tbody id="ruido-body">
                             @php
-                                $puntosRuido = old('puntos_medicion', $reporte->puntos_medicion ?? []);
-                                if (is_string($puntosRuido)) $puntosRuido = json_decode($puntosRuido, true) ?? [];
+                                $pmRaw2 = old('puntos_medicion', $reporte->puntos_medicion ?? []);
+                                if (is_string($pmRaw2)) $pmRaw2 = json_decode($pmRaw2, true) ?? [];
+                                $puntosRuido = array_values(array_filter($pmRaw2, fn($pt) => !isset($pt['categoria']) || $pt['categoria'] === 'RUIDO'));
                                 $numMuestras = count($puntosRuido);
                                 if ($numMuestras === 0) {
                                     $numMuestras = $proforma->parametros()->where('categoria', 'RUIDO')->count();
@@ -160,7 +172,7 @@
                                 <td><input type="text" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][codigo]" value="{{ $r['codigo'] ?? '' }}" readonly></td>
                                 <td><input type="time" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][hora_inicial]" value="{{ $r['hora_inicial'] ?? '' }}"></td>
                                 <td><input type="time" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][hora_final]" value="{{ $r['hora_final'] ?? '' }}"></td>
-                                <td><input type="text" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][tipo_ruido]" placeholder="AMB/IND"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][tipo_ruido]" value="{{ $r['tipo_ruido'] ?? '' }}" placeholder="AMB/IND"></td>
                                 <td><input type="number" step="0.1" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][lmax]" value="{{ $r['lmax'] ?? '' }}"></td>
                                 <td><input type="number" step="0.1" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][lmin]" value="{{ $r['lmin'] ?? '' }}"></td>
                                 <td><input type="number" step="0.1" class="form-control form-control-sm" name="resultados_ruido[{{ $i }}][leq]" value="{{ $r['leq'] ?? '' }}"></td>
@@ -179,18 +191,6 @@
                                 <td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
                             </tr>
                             @endfor
-                            @if($numMuestras === 0)
-                            <tr class="fila-ruido">
-                                <td><input type="text" class="form-control form-control-sm" name="resultados_ruido[0][codigo]" placeholder="Ej: RU-01" readonly></td>
-                                <td><input type="time" class="form-control form-control-sm" name="resultados_ruido[0][hora_inicial]"></td>
-                                <td><input type="time" class="form-control form-control-sm" name="resultados_ruido[0][hora_final]"></td>
-                                <td><input type="text" class="form-control form-control-sm" name="resultados_ruido[0][tipo_ruido]" placeholder="AMB/IND"></td>
-                                <td><input type="number" step="0.1" class="form-control form-control-sm" name="resultados_ruido[0][lmax]"></td>
-                                <td><input type="number" step="0.1" class="form-control form-control-sm" name="resultados_ruido[0][lmin]"></td>
-                                <td><input type="number" step="0.1" class="form-control form-control-sm" name="resultados_ruido[0][leq]"></td>
-                                <td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
-                            </tr>
-                            @endif
                             @endforelse
                         </tbody>
                     </table>
@@ -225,95 +225,43 @@
                         </thead>
                         <tbody id="puntos-body">
                             @php
-                                $puntos = old('puntos_medicion', $reporte->puntos_medicion ?? []);
-                                if (is_string($puntos)) $puntos = json_decode($puntos, true) ?? [];
-                                $hasPuntos = count($puntos) > 0;
+                                $pmRaw = old('puntos_medicion', $reporte->puntos_medicion ?? []);
+                                if (is_string($pmRaw)) $pmRaw = json_decode($pmRaw, true) ?? [];
+                                $puntos = array_values(array_filter($pmRaw, fn($pt) => (!isset($pt['categoria']) || $pt['categoria'] === 'RUIDO') && (!empty($pt['descripcion']) || !empty($pt['valor1']) || !empty($pt['valor2']))));
+                                $puntosCount = max(count($rr), count($puntos));
+                                if ($puntosCount === 0) { $puntosCount = $numMuestras; }
                             @endphp
-                            @forelse($puntos as $i => $p)
+                            @for($pi = 0; $pi < $puntosCount; $pi++)
+                            @php $p = $puntos[$pi] ?? []; @endphp
+                            @php $r = $rr[$pi] ?? []; @endphp
+                            @php $codigo = $r['codigo'] ?? $p['codigo'] ?? (count($rr) === 0 && count($puntos) === 0 ? 'RU-' . str_pad($pi + 1, 2, '0', STR_PAD_LEFT) : ''); @endphp
                             <tr class="fila-punto">
-                                <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[{{ $i }}][codigo]" value="{{ $p['codigo'] ?? '' }}"></td>
-                                <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[{{ $i }}][descripcion]" value="{{ $p['descripcion'] ?? '' }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[{{ $pi }}][codigo]" value="{{ $codigo }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[{{ $pi }}][descripcion]" value="{{ $p['descripcion'] ?? '' }}" placeholder="Ej: Área buzón de lavado"></td>
                                 <td>
                                     <div class="d-flex flex-column gap-1" style="min-width: 280px;">
-                                        <input type="hidden" name="puntos_medicion[{{ $i }}][zona]" value="{{ $p['zona'] ?? '19K' }}">
+                                        <input type="hidden" name="puntos_medicion[{{ $pi }}][zona]" value="{{ $p['zona'] ?? '19K' }}">
                                         <div class="d-flex gap-1 align-items-center">
-                                            <select class="form-select form-select-sm" name="puntos_medicion[{{ $i }}][direccion1]" style="width: 100px;">
+                                            <select class="form-select form-select-sm" name="puntos_medicion[{{ $pi }}][direccion1]" style="width: 100px;">
                                                 <option value="N" {{ ($p['direccion1'] ?? 'N') == 'N' ? 'selected' : '' }}>N</option>
                                                 <option value="S" {{ ($p['direccion1'] ?? '') == 'S' ? 'selected' : '' }}>S</option>
                                                 <option value="E" {{ ($p['direccion1'] ?? '') == 'E' ? 'selected' : '' }}>E</option>
                                                 <option value="O" {{ ($p['direccion1'] ?? '') == 'O' ? 'selected' : '' }}>O</option>
                                             </select>
-                                            <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[{{ $i }}][valor1]" value="{{ $p['valor1'] ?? $p['norte'] ?? '' }}" placeholder="Valor">
-                                            <select class="form-select form-select-sm" name="puntos_medicion[{{ $i }}][direccion2]" style="width: 100px;">
+                                            <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[{{ $pi }}][valor1]" value="{{ $p['valor1'] ?? $p['norte'] ?? '' }}" placeholder="Valor">
+                                            <select class="form-select form-select-sm" name="puntos_medicion[{{ $pi }}][direccion2]" style="width: 100px;">
                                                 <option value="E" {{ ($p['direccion2'] ?? 'E') == 'E' ? 'selected' : '' }}>E</option>
                                                 <option value="N" {{ ($p['direccion2'] ?? '') == 'N' ? 'selected' : '' }}>N</option>
                                                 <option value="S" {{ ($p['direccion2'] ?? '') == 'S' ? 'selected' : '' }}>S</option>
                                                 <option value="O" {{ ($p['direccion2'] ?? '') == 'O' ? 'selected' : '' }}>O</option>
                                             </select>
-                                            <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[{{ $i }}][valor2]" value="{{ $p['valor2'] ?? $p['este'] ?? '' }}" placeholder="Valor">
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
-                            </tr>
-                            @empty
-                            @for($pi = 0; $pi < $numMuestras; $pi++)
-                            <tr class="fila-punto">
-                                <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[{{ $pi }}][codigo]" value="RU-{{ str_pad($pi + 1, 2, '0', STR_PAD_LEFT) }}"></td>
-                                <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[{{ $pi }}][descripcion]" placeholder="Ej: Área buzón de lavado"></td>
-                                <td>
-                                    <div class="d-flex flex-column gap-1" style="min-width: 280px;">
-                                        <input type="hidden" name="puntos_medicion[{{ $pi }}][zona]" value="19K">
-                                        <div class="d-flex gap-1 align-items-center">
-                                            <select class="form-select form-select-sm" name="puntos_medicion[{{ $pi }}][direccion1]" style="width: 100px;">
-                                                <option value="N" selected>N</option>
-                                                <option value="S">S</option>
-                                                <option value="E">E</option>
-                                                <option value="O">O</option>
-                                            </select>
-                                            <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[{{ $pi }}][valor1]" placeholder="Valor">
-                                            <select class="form-select form-select-sm" name="puntos_medicion[{{ $pi }}][direccion2]" style="width: 100px;">
-                                                <option value="E" selected>E</option>
-                                                <option value="N">N</option>
-                                                <option value="S">S</option>
-                                                <option value="O">O</option>
-                                            </select>
-                                            <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[{{ $pi }}][valor2]" placeholder="Valor">
+                                            <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[{{ $pi }}][valor2]" value="{{ $p['valor2'] ?? $p['este'] ?? '' }}" placeholder="Valor">
                                         </div>
                                     </div>
                                 </td>
                                 <td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
                             </tr>
                             @endfor
-                            @if($numMuestras === 0)
-                            <tr class="fila-punto">
-                                <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[0][codigo]" placeholder="Ej: PT-01"></td>
-                                <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[0][descripcion]" placeholder="Ej: Área buzón de lavado"></td>
-                                <td>
-                                    <div class="d-flex flex-column gap-1" style="min-width: 280px;">
-                                        <input type="hidden" name="puntos_medicion[0][zona]" value="19K">
-                                        <div class="d-flex gap-1 align-items-center">
-                                            <select class="form-select form-select-sm" name="puntos_medicion[0][direccion1]" style="width: 100px;">
-                                                <option value="N" selected>N</option>
-                                                <option value="S">S</option>
-                                                <option value="E">E</option>
-                                                <option value="O">O</option>
-                                            </select>
-                                            <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[0][valor1]" placeholder="Valor">
-                                            <select class="form-select form-select-sm" name="puntos_medicion[0][direccion2]" style="width: 100px;">
-                                                <option value="E" selected>E</option>
-                                                <option value="N">N</option>
-                                                <option value="S">S</option>
-                                                <option value="O">O</option>
-                                            </select>
-                                            <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[0][valor2]" placeholder="Valor">
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
-                            </tr>
-                            @endif
-                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -329,21 +277,21 @@
                 <i class="fas fa-sticky-note me-2"></i> COMENTARIOS GENERALES
             </div>
             <div class="card-body">
-                <textarea class="form-control @error('comentarios') is-invalid @enderror"
-                          name="comentarios" rows="4" placeholder="Observaciones y comentarios técnicos generales...">{{ old('comentarios', $reporte->comentarios ?? '') }}</textarea>
-                @error('comentarios')<div class="text-danger small">{{ $message }}</div>@enderror
+                <textarea class="form-control @error('observaciones_ruido') is-invalid @enderror"
+                          name="observaciones_ruido" rows="4" placeholder="Observaciones y comentarios técnicos generales...">{{ old('observaciones_ruido', $reporte->observaciones_ruido ?? $reporte->comentarios ?? '') }}</textarea>
+                @error('observaciones_ruido')<div class="text-danger small">{{ $message }}</div>@enderror
             </div>
         </div>
 
         @include('reportes._firmas_publicar', ['reporte' => $reporte, 'proforma' => $proforma, 'categoria' => 'RUIDO'])
     </form>
 </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
-    let idx = {{ $hasRr ? count(old('resultados_ruido', $rr)) : max($numMuestras, 1) }};
-    let idxPunto = {{ $hasPuntos ? count(old('puntos_medicion', $puntos)) : max($numMuestras, 1) }};
+    let idx = {{ max($hasRr ? count(old('resultados_ruido', $rr)) : 0, $puntosCount) ?: max($numMuestras, 1) }};
     function agregarFila() {
         const tbody = document.getElementById('ruido-body');
         const tr = document.createElement('tr'); tr.className = 'fila-ruido';
@@ -357,38 +305,36 @@
             <td><input type="number" step="0.1" class="form-control form-control-sm" name="resultados_ruido[${idx}][lmin]"></td>
             <td><input type="number" step="0.1" class="form-control form-control-sm" name="resultados_ruido[${idx}][leq]"></td>
             <td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>`;
-        tbody.appendChild(tr); idx++;
+        tbody.appendChild(tr);
+        const tbP = document.getElementById('puntos-body');
+        const trP = document.createElement('tr'); trP.className = 'fila-punto';
+        const zona = document.getElementById('zona-header').value;
+        trP.innerHTML = `
+            <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[${idx}][codigo]" value="${codigo}"></td>
+            <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[${idx}][descripcion]" placeholder="Ej: Área buzón de lavado"></td>
+            <td>
+                <div class="d-flex flex-column gap-1" style="min-width: 280px;">
+                    <input type="hidden" name="puntos_medicion[${idx}][zona]" value="${zona}">
+                    <div class="d-flex gap-1 align-items-center">
+                        <select class="form-select form-select-sm" name="puntos_medicion[${idx}][direccion1]" style="width: 100px;">
+                            <option value="N">N</option><option value="S">S</option><option value="E">E</option><option value="O">O</option>
+                        </select>
+                        <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[${idx}][valor1]" placeholder="Valor">
+                        <select class="form-select form-select-sm" name="puntos_medicion[${idx}][direccion2]" style="width: 100px;">
+                            <option value="E">E</option><option value="N">N</option><option value="S">S</option><option value="O">O</option>
+                        </select>
+                        <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[${idx}][valor2]" placeholder="Valor">
+                    </div>
+                </div>
+            </td>
+            <td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>`;
+        tbP.appendChild(trP); idx++;
     }
     function actualizarZonas(valor) {
         document.querySelectorAll('#puntos-body input[name$="[zona]"]').forEach(function(el) {
             el.value = valor;
         });
     }
-    function agregarFilaPunto() {
-        const tbody = document.getElementById('puntos-body');
-        const tr = document.createElement('tr'); tr.className = 'fila-punto';
-        const zona = document.getElementById('zona-header').value;
-        const codigo = 'RU-' + String(idxPunto + 1).padStart(2, '0');
-        tr.innerHTML = `
-            <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[${idxPunto}][codigo]" value="${codigo}"></td>
-            <td><input type="text" class="form-control form-control-sm" name="puntos_medicion[${idxPunto}][descripcion]" placeholder="Ej: Área buzón de lavado"></td>
-            <td>
-                <div class="d-flex flex-column gap-1" style="min-width: 280px;">
-                    <input type="hidden" name="puntos_medicion[${idxPunto}][zona]" value="${zona}">
-                    <div class="d-flex gap-1 align-items-center">
-                        <select class="form-select form-select-sm" name="puntos_medicion[${idxPunto}][direccion1]" style="width: 100px;">
-                            <option value="N">N</option><option value="S">S</option><option value="E">E</option><option value="O">O</option>
-                        </select>
-                        <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[${idxPunto}][valor1]" placeholder="Valor">
-                        <select class="form-select form-select-sm" name="puntos_medicion[${idxPunto}][direccion2]" style="width: 100px;">
-                            <option value="E">E</option><option value="N">N</option><option value="S">S</option><option value="O">O</option>
-                        </select>
-                        <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[${idxPunto}][valor2]" placeholder="Valor">
-                    </div>
-                </div>
-            </td>
-            <td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>`;
-        tbody.appendChild(tr); idxPunto++;
-    }
+    const agregarFilaPunto = agregarFila;
 </script>
 @endpush

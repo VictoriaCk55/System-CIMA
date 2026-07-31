@@ -412,7 +412,13 @@
                 </h3>
                 
                 <div class="document-subtitle">
-                    {{ $cfg->config('footer_texto') }}
+                    @if($proforma->tipo === 'AGUA')
+                        ANÁLISIS QUÍMICO - BACTERIOLÓGICO: AGUAS, SUELOS, SEDIMENTOS Y MINERALES
+                    @elseif($proforma->tipo === 'AMBIENTAL')
+                        MUESTREO DE MATERIAL PARTICULADO, RUIDO, GASES, AGUAS, SEDIMIENTOS Y VEGETACIÓN
+                    @else
+                        {{ $cfg->config('footer_texto') }}
+                    @endif
                 </div>
                 
                 <div class="document-options">
@@ -456,6 +462,15 @@
     
     <div class="separator"></div>
 
+    <!-- DATOS DE RECEPCIÓN -->
+    @php $numRecepcion = explode('-', $proforma->codigo)[2] ?? $proforma->numero_recepcion; @endphp
+    <table class="data-table" style="margin-bottom: 5px;">
+        <tr>
+            <td style="width: 50%; text-align: left;"><strong>Fecha de recepción:</strong> {{ $proforma->fecha_recepcion->format('d/m/Y') }}</td>
+            <td style="width: 50%; text-align: right;"><strong>Nro. Recepción:</strong> {{ $numRecepcion }}</td>
+        </tr>
+    </table>
+
     <!-- SECCIÓN 1: DATOS DEL CLIENTE -->
     <div class="mb-10">
         <div class="section-title">1.- DATOS DEL CLIENTE</div>
@@ -497,13 +512,7 @@
                     <td><strong>Hora recepción:</strong></td>
                     <td>{{ $proforma->hora_recepcion ?? 'N/A' }}</td>
                  </tr>
-                 <tr>
-                    <td><strong>Fecha recepción:</strong></td>
-                    <td>{{ $proforma->fecha_recepcion->format('d/m/Y') }}</td>
-                    <td><strong>Nro. Recepción:</strong></td>
-                    <td>{{ $proforma->numero_recepcion ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
+                  <tr>
                     <td><strong>Procedencia:</strong></td>
                     <td style="width: 25%;">{{ $proforma->procedencia ?? 'N/A' }}</td>
                     <td style="width: 25%;"><strong>Coordenadas:</strong></td>

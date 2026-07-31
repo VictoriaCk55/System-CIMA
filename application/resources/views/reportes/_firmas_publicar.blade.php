@@ -41,20 +41,29 @@
                 <a href="{{ route('reportes.ambiental.index', $proforma) }}" class="btn btn-secondary" style="border-radius: 30px; padding: 10px 25px;">
                     <i class="fas fa-times me-2"></i> Cancelar
                 </a>
-                @if($reporte && $reporte->estado === 'PUBLICADO')
+                @if($reporte && $reporte->exists)
+                <button type="button" class="btn btn-warning btn-edit" onclick="toggleEdit(this)" style="border-radius: 30px; padding: 10px 25px; border: none;">
+                    <i class="fas fa-edit me-2"></i> Editar
+                </button>
+                @endif
+                @if($reporte && $reporte->exists)
                 <a href="{{ route('reportes.ambiental.pdf.' . strtolower($categoria), $reporte) }}" class="btn btn-outline-info ms-2" style="border-radius: 30px; padding: 10px 25px; border-width: 2px;" target="_blank">
                     <i class="fas fa-file-pdf me-2"></i> Ver PDF
                 </a>
                 @endif
             </div>
-            <div class="d-flex gap-2">
-                <button type="submit" name="accion" value="borrador" class="btn"
-                        style="background-color: #ffc107; border-radius: 30px; padding: 10px 25px; color: #000; border: none;">
-                    <i class="fas fa-save me-2"></i> Guardar Borrador
-                </button>
-                <button type="submit" name="accion" value="publicar" class="btn btn-primary"
+            <div class="d-flex gap-2 btn-save-group {{ $reporte && $reporte->exists ? 'd-none' : '' }}">
+                <button type="submit" name="accion" value="guardar" class="btn btn-primary"
                         style="border-radius: 30px; padding: 10px 25px; border: none;">
-                    <i class="fas fa-check-circle me-2"></i> Guardar y Publicar
+                    <i class="fas fa-save me-2"></i> Guardar
                 </button>
             </div>
         </div>
+        <script>
+            function toggleEdit(btn) {
+                var wrapper = document.getElementById('form-wrapper');
+                if (wrapper) wrapper.classList.remove('view-mode');
+                btn.classList.add('d-none');
+                btn.parentElement.parentElement.querySelector('.btn-save-group').classList.remove('d-none');
+            }
+        </script>

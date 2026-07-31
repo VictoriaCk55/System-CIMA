@@ -39,6 +39,9 @@ class ReporteAmbiental extends Model
         'observaciones_aire',
         'observaciones_ruido',
         'observaciones_gases',
+        'info_aire',
+        'info_gases',
+        'info_ruido',
         'estado',
     ];
 
@@ -50,6 +53,9 @@ class ReporteAmbiental extends Model
             'resultados_gases' => 'array',
             'puntos_medicion' => 'array',
             'unidad_ruido' => 'array',
+            'info_aire' => 'array',
+            'info_gases' => 'array',
+            'info_ruido' => 'array',
             'fecha_emision' => 'date',
             'fecha_medicion' => 'date',
             'fecha_inicio_muestreo' => 'date',
@@ -60,6 +66,28 @@ class ReporteAmbiental extends Model
     public function proforma()
     {
         return $this->belongsTo(Proforma::class);
+    }
+
+    public function info(string $categoria): array
+    {
+        $columna = 'info_'.strtolower($categoria);
+        $guardado = is_array($this->{$columna} ?? null) ? $this->{$columna} : [];
+
+        return array_merge([
+            'codigo_reporte' => $this->codigo_reporte,
+            'fecha_emision' => $this->fecha_emision?->format('Y-m-d'),
+            'fecha_medicion' => $this->fecha_medicion?->format('Y-m-d'),
+            'fecha_inicio_muestreo' => $this->fecha_inicio_muestreo?->format('Y-m-d'),
+            'fecha_fin_muestreo' => $this->fecha_fin_muestreo?->format('Y-m-d'),
+            'periodo_medicion' => $this->periodo_medicion,
+            'tipo_muestreo' => $this->tipo_muestreo,
+            'tipo_medicion' => $this->tipo_medicion,
+            'medicion_efectuada_por' => $this->medicion_efectuada_por,
+            'equipo_usado' => $this->equipo_usado,
+            'condiciones_muestreo' => $this->condiciones_muestreo,
+            'condiciones_reporte' => $this->condiciones_reporte,
+            'subtipo_ruido' => $this->subtipo_ruido,
+        ], $guardado);
     }
 
     public function categoriasPresentes(): array
@@ -83,7 +111,7 @@ class ReporteAmbiental extends Model
     public function codigoRuido(): string
     {
         $year = now()->format('y');
-        $sub = $this->subtipo_ruido === 'INDUSTRIAL' ? 'RUIND' : 'RUAM';
+        $sub = str_contains($this->info('RUIDO')['subtipo_ruido'] ?? '', 'INDUSTRIAL') ? 'RUIND' : 'RUAM';
 
         return "UIA-REP-{$sub}-{$this->proforma_id}/{$year}";
     }
