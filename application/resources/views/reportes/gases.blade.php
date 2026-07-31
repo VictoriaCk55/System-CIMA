@@ -72,7 +72,7 @@
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Código de Reporte</label>
                         <input type="text" class="form-control @error('codigo_reporte') is-invalid @enderror"
-                               name="codigo_reporte" value="{{ old('codigo_reporte', $info['codigo_reporte'] ?? $proforma->codigo . '-R') }}"
+                               name="codigo_reporte" value="{{ old('codigo_reporte', 'UIA-REP-GS-'.last(explode('-', $proforma->codigo)).'/'.now()->format('y')) }}"
                                placeholder="Ej: {{ $proforma->codigo }}-R01">
                         @error('codigo_reporte')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
