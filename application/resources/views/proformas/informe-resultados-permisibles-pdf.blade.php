@@ -194,7 +194,7 @@
                     </div>
 
                     <div style="font-size: 13px; font-weight: bold; line-height: 1.2;">
-                        {{ strtoupper($cfg->config('institucion_nombre')) }}
+                        {{ strtoupper($cfg->config('universidad_nombre')) }}
                     </div>
 
                     <div style="font-size: 18px; font-weight: bold; margin-top: 2px;">
@@ -517,9 +517,9 @@
         </tr>
     </table>
     <div style="font-size: 10px; margin-top: 15px; padding: 8px; background-color: #f8f9fa; border-radius: 3px; border-left: 3px solid #2c5282;">
-        <p style="text-align: left;"> La información del presente informe corresponde a los resultados de ensayos en la muestra recepcionada.</p>
-        <p style="text-align: left;"> {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, NO asume ninguna responsabilidad sobre la información proporcionada por el cliente, que pueda afectar la validez de los resultados.</p>
-        <p style="text-align: left;"> {{ $cfg->config('institucion_sigla', 'CIMA-UATF') }}, solo reconoce como válidos, informes de ensayo emitidos en soporte físico, con las firmas y sellos autorizados.</p>
+        <p style="text-align: left;"> {{ $cfg->config('nota1', 'La información del presente informe corresponde a los resultados de ensayos en la muestra recepcionada.') }}</p>
+        <p style="text-align: left;"> {{ $cfg->config('nota2', '"CIMA-UATF", NO asume ninguna responsabilidad sobre la información proporcionada por el cliente, que pueda afectar la validez de los resultados.') }}</p>
+        <p style="text-align: left;"> {{ $cfg->config('nota3', '"CIMA-UATF", solo reconoce como válidos, informes de ensayo emitidos en soporte físico, con las firmas y sellos autorizados.') }}</p>
     </div>
     </div>
     @endfor

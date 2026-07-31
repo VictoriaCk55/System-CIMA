@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    @php $cfg = \App\Models\Documento::whereSlug('solicitud-ensayo')->first() ?? new \App\Models\Documento; @endphp
+    @php $cfg = \App\Models\Documento::whereSlug($proforma->tipo === 'AMBIENTAL' ? 'solicitud-ensayo-ambiental' : 'solicitud-ensayo')->first() ?? new \App\Models\Documento; @endphp
     <title>PROFORMA {{ $proforma->codigo }} - {{ $cfg->config('institucion_sigla', 'CIMA') }}</title>
     <style>
         /* CONFIGURACIÓN BASE */
@@ -451,7 +451,7 @@
                 <div class="codigo-box">
                     <div><strong>{{ $cfg->codigo_documento }}</strong></div>
                     <div>VERSIÓN: {{ $cfg->version }}</div>
-                    <div>FECHA: {{ $proforma->fecha_emision->format('Y-m-d') }}</div>
+                    <div>FECHA: {{ $cfg->fecha_documento ?? $proforma->fecha_emision->format('Y-m-d') }}</div>
                     <div style="margin-top: 5px; border-top: 1px solid #ccc; padding-top: 3px;">
                         <strong>CÓDIGO:</strong> {{ $proforma->codigo }}
                     </div>
@@ -680,9 +680,9 @@
 
     <!-- NOTAS -->
     <div style="font-size: 10px; margin-top: 15px; padding: 8px; background-color: #f8f9fa; border-radius: 3px; border-left: 3px solid #2c5282;">
-        <p><strong>Nota 1:</strong> Para realizar el análisis se debe dejar cancelado el 100% del monto total.</p>
-        <p><strong>Nota 2:</strong> El laboratorio no realiza declaraciones de conformidad sobre los resultados que se reportan.</p>
-        <p><strong>Nota 3:</strong> Los resultados estarán disponibles dentro de los plazos establecidos según el tipo de análisis.</p>
+        <p><strong>Nota 1:</strong> {{ $cfg->config('nota1', 'Para realizar el análisis se debe dejar cancelado el 100% del monto total.') }}</p>
+        <p><strong>Nota 2:</strong> {{ $cfg->config('nota2', 'El laboratorio no realiza declaraciones de conformidad sobre los resultados que se reportan.') }}</p>
+        <p><strong>Nota 3:</strong> {{ $cfg->config('nota3', 'Los resultados estarán disponibles dentro de los plazos establecidos según el tipo de análisis.') }}</p>
     </div>
 
     <!-- FIRMAS -->

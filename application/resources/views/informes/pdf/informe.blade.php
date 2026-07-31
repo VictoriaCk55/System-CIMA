@@ -385,9 +385,9 @@
             <!-- Código a la derecha -->
             <td class="codigo-cell">
                 <div class="codigo-box">
-                    <div><strong>{{ $informe->codigo }}</strong></div>
+                    <div><strong>{{ $cfg->codigo_documento }}</strong></div>
                     <div>VERSIÓN: {{ $cfg->version }}</div>
-                    <div>FECHA: {{ $informe->fecha_emision->format('Y-m-d') }}</div>
+                    <div>FECHA: {{ $cfg->fecha_documento ?? $informe->fecha_emision->format('Y-m-d') }}</div>
                 </div>
             </td>
         </tr>
@@ -622,9 +622,9 @@
 
     <!-- ========== NOTAS INSTITUCIONALES ========== -->
     <div style="font-size: 10px; margin-top: 20px; padding: 8px; background-color: #f8f9fa; border-radius: 3px; border-left: 3px solid #2c5282;">
-        <p><strong>Nota 1:</strong> Este informe es válido únicamente con las firmas correspondientes.</p>
-        <p><strong>Nota 2:</strong> Los resultados reportados corresponden exclusivamente a las muestras analizadas.</p>
-        <p><strong>Nota 3:</strong> Prohibida la reproducción parcial de este informe sin autorización del {{ $cfg->config('institucion_sigla', 'CIMA') }}.</p>
+        <p><strong>Nota 1:</strong> {{ $cfg->config('nota1', 'Este informe es válido únicamente con las firmas correspondientes.') }}</p>
+        <p><strong>Nota 2:</strong> {{ $cfg->config('nota2', 'Los resultados reportados corresponden exclusivamente a las muestras analizadas.') }}</p>
+        <p><strong>Nota 3:</strong> {{ $cfg->config('nota3', 'Prohibida la reproducción parcial de este informe sin autorización del CIMA.') }}</p>
     </div>
 
     <!-- ========== FOOTER ========== -->

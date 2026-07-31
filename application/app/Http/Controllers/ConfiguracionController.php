@@ -25,6 +25,7 @@ class ConfiguracionController extends Controller
             'version' => 'nullable|string|max:255',
             'fecha_documento' => 'nullable|string|max:255',
             'institucion_nombre' => 'nullable|string|max:255',
+            'universidad_nombre' => 'nullable|string|max:255',
             'institucion_sigla' => 'nullable|string|max:50',
             'laboratorio_nombre' => 'nullable|string|max:255',
             'direccion' => 'nullable|string|max:255',
@@ -38,6 +39,9 @@ class ConfiguracionController extends Controller
             'responsable_cargo' => 'nullable|string|max:255',
             'director_nombre' => 'nullable|string|max:255',
             'director_cargo' => 'nullable|string|max:255',
+            'nota1' => 'nullable|string|max:500',
+            'nota2' => 'nullable|string|max:500',
+            'nota3' => 'nullable|string|max:500',
         ]);
 
         $config = $documento->config ?? [];
