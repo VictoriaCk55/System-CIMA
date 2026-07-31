@@ -529,7 +529,7 @@
                                     <h4 style="font-size: 12px; color: #666; margin-bottom: 4px;">PUNTO CARDINAL 1</h4>
                                     <div style="display: flex; gap: 8px;">
                                         <select id="puntoCardinal1" name="punto_cardinal_1" class="modern-input" style="width: auto; min-width: 80px;">
-                                            <option value="">N</option>
+                                            <option value="">---</option>
                                             <option value="E" {{ old('punto_cardinal_1') == 'E' ? 'selected' : '' }}>Este (E)</option>
                                             <option value="N" {{ old('punto_cardinal_1') == 'N' ? 'selected' : '' }}>Norte (N)</option>
                                             <option value="O" {{ old('punto_cardinal_1') == 'O' ? 'selected' : '' }}>Oeste (O)</option>
@@ -545,7 +545,7 @@
                                     <h4 style="font-size: 12px; color: #666; margin-bottom: 4px;">PUNTO CARDINAL 2</h4>
                                     <div style="display: flex; gap: 8px;">
                                         <select id="puntoCardinal2" name="punto_cardinal_2" class="modern-input" style="width: auto; min-width: 80px;">
-                                            <option value="">E</option>
+                                            <option value="">---</option>
                                             <option value="E" {{ old('punto_cardinal_2') == 'E' ? 'selected' : '' }}>Este (E)</option>
                                             <option value="N" {{ old('punto_cardinal_2') == 'N' ? 'selected' : '' }}>Norte (N)</option>
                                             <option value="O" {{ old('punto_cardinal_2') == 'O' ? 'selected' : '' }}>Oeste (O)</option>
