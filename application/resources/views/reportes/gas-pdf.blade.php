@@ -133,7 +133,16 @@
                 <th style="width: 10%;">CÓDIGO</th>
                 <th style="width: 15%;">PERIODO</th>
                 @foreach($paramsGases as $p)
-                 <th>{{ strtoupper($p->nombre_completo ?? $p->nombre) }} ({{ $p->unidad_default ?? '' }})</th>
+                 @php
+                     $unidad = $p->unidad_default ?? '';
+                     foreach ($rg as $r) {
+                         if (! empty($r[$p->nombre]['unidad'] ?? '')) {
+                             $unidad = $r[$p->nombre]['unidad'];
+                             break;
+                         }
+                     }
+                 @endphp
+                 <th>{{ strtoupper($p->nombre_completo ?? $p->nombre) }} ({{ $unidad }})</th>
                 @endforeach
             </tr>
         </thead>

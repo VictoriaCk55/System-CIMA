@@ -208,6 +208,17 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
+                    @php
+                        $pmRawZ = old('puntos_medicion', $reporte->puntos_medicion ?? []);
+                        if (is_string($pmRawZ)) $pmRawZ = json_decode($pmRawZ, true) ?? [];
+                        $zonaActual = '19K';
+                        foreach ($pmRawZ as $pt) {
+                            if ((!isset($pt['categoria']) || $pt['categoria'] === 'RUIDO') && !empty($pt['zona'])) {
+                                $zonaActual = $pt['zona'];
+                                break;
+                            }
+                        }
+                    @endphp
                     <table class="table table-bordered" id="tabla-puntos" style="border-color: #ffc107;">
                         <thead>
                             <tr>
@@ -215,9 +226,9 @@
                                 <th style="width: 33%;">DESCRIPCIÓN DEL PUNTO</th>
                                 <th class="text-center" style="width: 40%;">UBICACIÓN
                                     <select class="form-select form-select-sm d-block mx-auto mt-1" id="zona-header" style="width: 140px;" onchange="actualizarZonas(this.value)">
-                                        <option value="19K">ZONA 19K</option>
-                                        <option value="20K">ZONA 20K</option>
-                                        <option value="21K">ZONA 21K</option>
+                                        <option value="19K" {{ $zonaActual === '19K' ? 'selected' : '' }}>ZONA 19K</option>
+                                        <option value="20K" {{ $zonaActual === '20K' ? 'selected' : '' }}>ZONA 20K</option>
+                                        <option value="21K" {{ $zonaActual === '21K' ? 'selected' : '' }}>ZONA 21K</option>
                                     </select>
                                 </th>
                                 <th style="width: 40px;"></th>

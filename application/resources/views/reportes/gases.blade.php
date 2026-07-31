@@ -257,6 +257,20 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
+                    @php
+                        $pmRaw = old('puntos_medicion', $reporte->puntos_medicion ?? []);
+                        if (is_string($pmRaw)) $pmRaw = json_decode($pmRaw, true) ?? [];
+                        $puntos = array_values(array_filter($pmRaw, fn($pt) => (!isset($pt['categoria']) || $pt['categoria'] === 'GASES') && (!empty($pt['descripcion']) || !empty($pt['valor1']) || !empty($pt['valor2']))));
+                        $puntosCount = max(count($rg), count($puntos));
+                        if ($puntosCount === 0) { $puntosCount = $numMuestras; }
+                        $zonaActual = '19K';
+                        foreach ($puntos as $pt) {
+                            if (! empty($pt['zona'])) {
+                                $zonaActual = $pt['zona'];
+                                break;
+                            }
+                        }
+                    @endphp
                     <table class="table table-bordered" id="tabla-puntos" style="border-color: #ffc107;">
                         <thead>
                             <tr>
@@ -264,9 +278,9 @@
                                 <th style="width: 33%;">Descripción del Punto</th>
                                 <th class="text-center" style="width: 40%;">UBICACIÓN
                                     <select class="form-select form-select-sm d-block mx-auto mt-1" id="zona-header" style="width: 140px;" onchange="actualizarZonas(this.value)">
-                                        <option value="19K">ZONA 19K</option>
-                                        <option value="20K">ZONA 20K</option>
-                                        <option value="21K">ZONA 21K</option>
+                                        <option value="19K" {{ $zonaActual === '19K' ? 'selected' : '' }}>ZONA 19K</option>
+                                        <option value="20K" {{ $zonaActual === '20K' ? 'selected' : '' }}>ZONA 20K</option>
+                                        <option value="21K" {{ $zonaActual === '21K' ? 'selected' : '' }}>ZONA 21K</option>
                                     </select>
                                 </th>
                                 <th style="width: 40px;"></th>

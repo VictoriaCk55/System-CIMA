@@ -221,7 +221,7 @@
                                 <td><input type="text" class="form-control form-control-sm" name="resultados_aire[{{ $i }}][codigo]" value="{{ $r['codigo'] ?? '' }}" readonly></td>
                                 <td><input type="text" class="form-control form-control-sm" name="resultados_aire[{{ $i }}][periodo]" value="{{ $r['periodo'] ?? '' }}" placeholder="Ej: Diurno"></td>
                                 @foreach($parametrosAire as $p)
-                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="resultados_aire[{{ $i }}][{{ $p->nombre }}][valor]" value="{{ $r[$p->nombre]['valor'] ?? '' }}" placeholder="{{ $p->nombre_completo ?? $p->nombre }}"></td>
+                                <td><input type="text" inputmode="decimal" class="form-control form-control-sm" name="resultados_aire[{{ $i }}][{{ $p->nombre }}][valor]" value="{{ $r[$p->nombre]['valor'] ?? '' }}" placeholder="{{ $p->nombre_completo ?? $p->nombre }}"></td>
                                 @endforeach
                                 <td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
                             </tr>
@@ -231,7 +231,7 @@
                                 <td><input type="text" class="form-control form-control-sm" name="resultados_aire[{{ $mi }}][codigo]" value="AI-{{ str_pad($mi + 1, 2, '0', STR_PAD_LEFT) }}" readonly></td>
                                 <td><input type="text" class="form-control form-control-sm" name="resultados_aire[{{ $mi }}][periodo]" placeholder="Ej: Diurno"></td>
                                 @foreach($parametrosAire as $p)
-                                <td><input type="number" step="0.01" class="form-control form-control-sm" name="resultados_aire[{{ $mi }}][{{ $p->nombre }}][valor]" placeholder="{{ $p->nombre_completo ?? $p->nombre }}"></td>
+                                <td><input type="text" inputmode="decimal" class="form-control form-control-sm" name="resultados_aire[{{ $mi }}][{{ $p->nombre }}][valor]" placeholder="{{ $p->nombre_completo ?? $p->nombre }}"></td>
                                 @endforeach
                                 <td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
                             </tr>
@@ -253,6 +253,17 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
+                    @php
+                        $pmZonaRaw = old('puntos_medicion', $reporte->puntos_medicion ?? []);
+                        if (is_string($pmZonaRaw)) $pmZonaRaw = json_decode($pmZonaRaw, true) ?? [];
+                        $zonaActual = '19K';
+                        foreach ($pmZonaRaw as $pt) {
+                            if ((!isset($pt['categoria']) || $pt['categoria'] === 'AIRE') && !empty($pt['zona'])) {
+                                $zonaActual = $pt['zona'];
+                                break;
+                            }
+                        }
+                    @endphp
                     <table class="table table-bordered" id="tabla-puntos" style="border-color: #ffc107;">
                         <thead>
                             <tr>
@@ -260,9 +271,9 @@
                                 <th style="width: 33%;">Descripción del Punto</th>
                                 <th class="text-center" style="width: 40%;">UBICACIÓN
                                     <select class="form-select form-select-sm d-block mx-auto mt-1" id="zona-header" style="width: 140px;" onchange="actualizarZonas(this.value)">
-                                        <option value="19K">ZONA 19K</option>
-                                        <option value="20K">ZONA 20K</option>
-                                        <option value="21K">ZONA 21K</option>
+                                        <option value="19K" {{ $zonaActual === '19K' ? 'selected' : '' }}>ZONA 19K</option>
+                                        <option value="20K" {{ $zonaActual === '20K' ? 'selected' : '' }}>ZONA 20K</option>
+                                        <option value="21K" {{ $zonaActual === '21K' ? 'selected' : '' }}>ZONA 21K</option>
                                     </select>
                                 </th>
                                 <th style="width: 40px;"></th>
@@ -293,14 +304,14 @@
                                                 <option value="E" {{ ($p['direccion1'] ?? '') == 'E' ? 'selected' : '' }}>E</option>
                                                 <option value="O" {{ ($p['direccion1'] ?? '') == 'O' ? 'selected' : '' }}>O</option>
                                             </select>
-                                            <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[{{ $pi }}][valor1]" value="{{ $p['valor1'] ?? $p['norte'] ?? '' }}" placeholder="Valor">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm" name="puntos_medicion[{{ $pi }}][valor1]" value="{{ $p['valor1'] ?? $p['norte'] ?? '' }}" placeholder="Valor">
                                             <select class="form-select form-select-sm" name="puntos_medicion[{{ $pi }}][direccion2]" style="width: 100px;">
                                                 <option value="E" {{ ($p['direccion2'] ?? 'E') == 'E' ? 'selected' : '' }}>E</option>
                                                 <option value="N" {{ ($p['direccion2'] ?? '') == 'N' ? 'selected' : '' }}>N</option>
                                                 <option value="S" {{ ($p['direccion2'] ?? '') == 'S' ? 'selected' : '' }}>S</option>
                                                 <option value="O" {{ ($p['direccion2'] ?? '') == 'O' ? 'selected' : '' }}>O</option>
                                             </select>
-                                            <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[{{ $pi }}][valor2]" value="{{ $p['valor2'] ?? $p['este'] ?? '' }}" placeholder="Valor">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm" name="puntos_medicion[{{ $pi }}][valor2]" value="{{ $p['valor2'] ?? $p['este'] ?? '' }}" placeholder="Valor">
                                         </div>
                                     </div>
                                 </td>
@@ -346,7 +357,7 @@
             <td><input type="text" class="form-control form-control-sm" name="resultados_aire[${idx}][codigo]" value="${codigo}" readonly></td>
             <td><input type="text" class="form-control form-control-sm" name="resultados_aire[${idx}][periodo]" placeholder="Ej: Diurno"></td>`;
         paramsAire.forEach(p => {
-            cols += `<td><input type="number" step="0.01" class="form-control form-control-sm" name="resultados_aire[${idx}][${p.nombre}][valor]" placeholder="${p.nombre_completo || p.nombre}"></td>`;
+            cols += `<td><input type="text" inputmode="decimal" class="form-control form-control-sm" name="resultados_aire[${idx}][${p.nombre}][valor]" placeholder="${p.nombre_completo || p.nombre}"></td>`;
         });
         cols += `<td class="text-center"><button type="button" class="btn-eliminar-fila" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>`;
         tr.innerHTML = cols;
@@ -364,11 +375,11 @@
                         <select class="form-select form-select-sm" name="puntos_medicion[${idx}][direccion1]" style="width: 100px;">
                             <option value="N">N</option><option value="S">S</option><option value="E">E</option><option value="O">O</option>
                         </select>
-                        <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[${idx}][valor1]" placeholder="Valor">
+                        <input type="text" inputmode="decimal" class="form-control form-control-sm" name="puntos_medicion[${idx}][valor1]" placeholder="Valor">
                         <select class="form-select form-select-sm" name="puntos_medicion[${idx}][direccion2]" style="width: 100px;">
                             <option value="E">E</option><option value="N">N</option><option value="S">S</option><option value="O">O</option>
                         </select>
-                        <input type="number" step="0.01" class="form-control form-control-sm" name="puntos_medicion[${idx}][valor2]" placeholder="Valor">
+                        <input type="text" inputmode="decimal" class="form-control form-control-sm" name="puntos_medicion[${idx}][valor2]" placeholder="Valor">
                     </div>
                 </div>
             </td>
@@ -381,5 +392,8 @@
         });
     }
     const agregarFilaPunto = agregarFila;
+
+    const zonaHeaderSel = document.getElementById('zona-header');
+    if (zonaHeaderSel) { actualizarZonas(zonaHeaderSel.value); }
 </script>
 @endpush

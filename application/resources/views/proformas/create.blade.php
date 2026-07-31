@@ -1193,10 +1193,12 @@ $(document).ready(function() {
             $('#logistica-muestreo').show();
             $('.logistica-select').prop('required', true).prop('disabled', false);
             $('.logistica-cantidad').prop('required', true).prop('disabled', false);
+            $('.logistica-descripcion').prop('disabled', false);
         } else {
             $('#logistica-muestreo').hide();
             $('.logistica-select').prop('required', false).prop('disabled', true);
             $('.logistica-cantidad').prop('required', false).prop('disabled', true);
+            $('.logistica-descripcion').prop('disabled', true);
         }
     }
     $('#tipo').on('change', toggleLogisticaMuestreo);

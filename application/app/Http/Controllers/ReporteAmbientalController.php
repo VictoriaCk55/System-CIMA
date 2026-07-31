@@ -175,6 +175,18 @@ class ReporteAmbientalController extends Controller
 
         $data = $request->validate($reglas);
 
+        // Las claves con punto (ej: PM2.5) no sobreviven la validación por notación de puntos
+        if ($categoria === 'AIRE' && ! empty($data['resultados_aire'])) {
+            $rawAire = $request->input('resultados_aire') ?? [];
+            foreach ($rawAire as $ri => $row) {
+                foreach ($row as $clave => $valor) {
+                    if (is_array($valor) && str_contains($clave, '.')) {
+                        $data['resultados_aire'][$ri][$clave] = $valor;
+                    }
+                }
+            }
+        }
+
         // distribute header-level unidades to each row's param data
         if ($categoria === 'GASES' && $request->has('resultados_unidades')) {
             $unidades = $request->input('resultados_unidades');
