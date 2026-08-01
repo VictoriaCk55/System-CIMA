@@ -18,55 +18,42 @@
         </a>
     </div>
     <div class="card-body">
-        @if($permissions->count() > 0)
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Guard</th>
-                        <th>Roles asignados</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($permissions as $perm)
-                    <tr>
-                        <td>{{ $perm->id }}</td>
-                        <td><code>{{ $perm->name }}</code></td>
-                        <td><code>{{ $perm->guard_name }}</code></td>
-                        <td>
-                            @foreach($perm->roles as $role)
-                                <span class="badge bg-secondary me-1">{{ $role->name }}</span>
-                            @endforeach
-                            @if($perm->roles->count() === 0)
-                                <span class="text-muted">Sin asignar</span>
-                            @endif
-                        </td>
-                        <td>
-                            <a href="{{ route('permissions.edit', $perm) }}" class="btn btn-sm btn-warning" title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form action="{{ route('permissions.destroy', $perm) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('¿Eliminar el permiso &quot;{{ $perm->name }}&quot;?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        <div id="tablaPermisos">
+            @include('permissions._tabla')
         </div>
-        {{ $permissions->links() }}
-        @else
-        <div class="alert alert-info text-center mb-0">
-            <i class="fas fa-info-circle me-2"></i> No hay permisos registrados.
-        </div>
-        @endif
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var contenedor = document.getElementById('tablaPermisos');
+    if (!contenedor) return;
+
+    var timeout = null;
+
+    contenedor.addEventListener('input', function (e) {
+        if (!e.target || e.target.id !== 'buscarPermiso') return;
+
+        clearTimeout(timeout);
+        timeout = setTimeout(function () {
+            var input = contenedor.querySelector('#buscarPermiso');
+            var texto = input.value.trim();
+            var url = '{{ route('permissions.index') }}' + (texto ? '?search=' + encodeURIComponent(texto) : '');
+
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+                .then(function (respuesta) { return respuesta.json(); })
+                .then(function (data) {
+                    contenedor.innerHTML = data.html;
+                });
+        }, 400);
+    });
+});
+</script>
+@endpush

@@ -8,9 +8,21 @@ use Spatie\Permission\Models\Role;
 
 class PermissionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $permissions = Permission::with('roles')->orderBy('name')->paginate(10);
+        $permissions = Permission::with('roles')
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $query->whereRaw('LOWER(name) LIKE LOWER(?)', ['%'.$request->search.'%']);
+            })
+            ->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('permissions._tabla', compact('permissions'))->render(),
+            ]);
+        }
 
         return view('permissions.index', compact('permissions'));
     }
