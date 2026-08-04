@@ -17,7 +17,7 @@
             
             <div class="d-flex gap-2">
                 @auth
-                    @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
+                    @if(Auth::user()->hasAnyRole(['admin', 'tecnico', 'analista']))
                         <a href="{{ route('clientes.create') }}" class="btn" style="background-color: #2798F5; border-radius: 30px; padding: 10px 25px; color: white; border: none; transition: all 0.3s ease;">
                             <i class="fas fa-plus-circle"></i>
                             Nuevo Cliente
@@ -191,6 +191,7 @@
                                     <td class="text-center">
                                         <div class="btn-group" role="group">
                                             <!-- Botón VER en color CELESTE -->
+                                            @can('ver clientes')
                                             <a href="{{ route('clientes.show', $cliente) }}" 
                                                class="btn btn-sm"
                                                style="color: #0dcaf0; border: 1px solid #0dcaf0; background: transparent; border-radius: 6px; padding: 0.5rem; width: 38px; height: 38px; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center;"
@@ -201,9 +202,11 @@
                                                onmouseout="this.style.backgroundColor='transparent'; this.style.color='#0dcaf0';">
                                                 <i class="fas fa-eye"></i>
                                             </a>
+                                            @endcan
                                             
                                             @auth
-                                                @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
+                                                
+                                                @can('editar clientes')
                                                     <!-- Botón EDITAR -->
                                                     <a href="{{ route('clientes.edit', $cliente) }}" 
                                                        class="btn btn-outline-warning btn-sm"
@@ -212,7 +215,8 @@
                                                        title="Editar cliente">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    
+                                                @endcan
+                                                @can('eliminar clientes')
                                                     <!-- Botón ELIMINAR -->
                                                     <button type="button" 
                                                             class="btn btn-outline-danger btn-sm"
@@ -222,20 +226,21 @@
                                                             onclick="confirmarEliminacion({{ $cliente->id }}, '{{ $cliente->razon_social }}', 'cliente')">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
-                                                @endif
+                                                @endcan
+                                                
                                             @endauth
                                         </div>
                                         
                                         <!-- Formulario oculto para eliminar -->
                                         @auth
-                                            @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
+                                            @can('eliminar clientes')
                                                 <form id="delete-form-{{ $cliente->id }}" 
                                                       action="{{ route('clientes.destroy', $cliente) }}" 
                                                       method="POST" class="d-none">
                                                     @csrf
                                                     @method('DELETE')
                                                 </form>
-                                            @endif
+                                            @endcan
                                         @endauth
                                     </td>
                                 </tr>
@@ -285,7 +290,7 @@
                 <!-- Botón de Papelera y texto de registros centrado -->
                 <div class="d-flex align-items-center justify-content-center position-relative mt-3">
                     @auth
-                        @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
+                        @can('ver papelera clientes')
                             <a href="{{ route('clientes.trash') }}" 
                                class="btn btn-icon-circle position-absolute start-0"
                                style="width: 35px; height: 35px; border-radius: 50%; background-color: #6c757d; color: white; display: inline-flex; align-items: center; justify-content: center; transition: all 0.3s ease; text-decoration: none;"
@@ -295,7 +300,7 @@
                                onmouseout="this.style.backgroundColor='#6c757d'; this.style.transform='scale(1)';">
                                 <i class="fas fa-trash-alt" style="font-size: 1rem;"></i>
                             </a>
-                        @endif
+                        @endcan
                     @endauth
                     
                     <div style="color: #2798F5; font-weight: 500;">
@@ -316,7 +321,7 @@
                     </p>
                     
                     @auth
-                        @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
+                        @if(Auth::user()->hasAnyRole(['admin', 'tecnico', 'analista']))
                             @if(request('search'))
                                 <a href="{{ route('clientes.index') }}" class="btn btn-outline-secondary" style="border-radius: 30px; padding: 10px 25px;">
                                     <i class="fas fa-times me-2"></i>

@@ -170,14 +170,17 @@
                                             </a>
                                             
                                             @auth
-                                                @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
-                                                    <a href="{{ route('parametros.edit', $parametro) }}" 
-                                                       class="btn btn-outline-warning btn-sm"
-                                                       data-bs-toggle="tooltip" 
-                                                       data-bs-placement="top"
-                                                       title="Editar parámetro">
-                                                        <i class="fas fa-edit"></i>
+                                                @if(Auth::user()->hasAnyRole(['admin', 'tecnico', 'analista']))
+                                                    @can('editar parametros')
+                                                        <a href="{{ route('parametros.edit', $parametro) }}" 
+                                                           class="btn btn-outline-warning btn-sm"
+                                                           data-bs-toggle="tooltip" 
+                                                           data-bs-placement="top"
+                                                           title="Editar parámetro">
+                                                            <i class="fas fa-edit"></i>
+                                                    @endcan
                                                     </a>
+                                                    @can('eliminar parametros')
                                                     <button type="button" 
                                                             class="btn btn-outline-danger btn-sm"
                                                             data-bs-toggle="tooltip" 
@@ -186,13 +189,14 @@
                                                             onclick="confirmarEliminacion({{ $parametro->id }}, '{{ $parametro->nombre }}', 'parámetro')">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
+                                                    @endcan
                                                 @endif
                                             @endauth
                                         </div>
                                         
                                         <!-- Formulario oculto para eliminar -->
                                         @auth
-                                            @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
+                                            @if(Auth::user()->hasAnyRole(['admin', 'tecnico', 'analista']))
                                                 <form id="delete-form-{{ $parametro->id }}" 
                                                       action="{{ route('parametros.destroy', $parametro) }}" 
                                                       method="POST" class="d-none">
@@ -217,7 +221,7 @@
                 <!-- Botón de Papelera y texto de registros centrado -->
                 <div class="d-flex align-items-center justify-content-center position-relative mt-3">
                     @auth
-                        @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
+                        @can('ver papelera parametros')
                             <a href="{{ route('parametros.trash') }}" 
                                class="btn btn-icon-circle position-absolute start-0"
                                style="width: 35px; height: 35px; border-radius: 50%; background-color: #6c757d; color: white; display: inline-flex; align-items: center; justify-content: center; transition: all 0.3s ease; text-decoration: none;"
@@ -227,7 +231,7 @@
                                onmouseout="this.style.backgroundColor='#6c757d'; this.style.transform='scale(1)';">
                                 <i class="fas fa-trash-alt" style="font-size: 1rem;"></i>
                             </a>
-                        @endif
+                        @endcan
                     @endauth
                     
                     <div style="color: #A31800; font-weight: 500;">
@@ -248,7 +252,7 @@
                     </p>
                     
                     @auth
-                        @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
+                        @if(Auth::user()->hasAnyRole(['admin', 'tecnico', 'analista']))
                             @if(request('search'))
                                 <a href="{{ route('parametros.index') }}" class="btn btn-outline-secondary" style="border-radius: 30px; padding: 10px 25px;">
                                     <i class="fas fa-times me-2"></i>

@@ -29,6 +29,7 @@
                 Formulario de Registro
             </h5>
         </div>
+        @can('crear clientes')
         <div class="card-body">
             <form action="{{ route('clientes.store') }}" method="POST">
                 @csrf
@@ -131,6 +132,7 @@
                 </div>
             </form>
         </div>
+        @endcan
     </div>
 </div>
 

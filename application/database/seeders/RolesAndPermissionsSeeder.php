@@ -53,7 +53,7 @@ class RolesAndPermissionsSeeder extends Seeder
             Permission::firstOrCreate(['name' => "$verb proformas"]);
         }
         Permission::firstOrCreate(['name' => 'cambiar estado proformas']);
-        Permission::firstOrCreate(['name' => 'actualizar adelanto proformas']);
+        Permission::firstOrCreate(['name' => 'editar adelanto de proformas']);
         Permission::firstOrCreate(['name' => 'ver papelera proformas']);
         Permission::firstOrCreate(['name' => 'generar pdf proformas']);
 
@@ -98,15 +98,15 @@ class RolesAndPermissionsSeeder extends Seeder
             'restore usuarios', 'force-delete usuarios', 'ver papelera usuarios',
 
             'ver clientes', 'crear clientes', 'editar clientes', 'eliminar clientes',
-            'restore clientes', 'force-delete clientes', 'ver papelera clientes',
+            'restaurar clientes', 'forzar eliminar clientes', 'ver papelera clientes',
             'registrar pago clientes', 'actualizar saldo clientes',
 
             'ver parametros', 'crear parametros', 'editar parametros', 'eliminar parametros',
-            'restore parametros', 'force-delete parametros', 'ver papelera parametros',
+            'restaurar parametros', 'forzar eliminar parametros', 'ver papelera parametros',
 
             'ver proformas', 'crear proformas', 'editar proformas', 'eliminar proformas',
-            'cambiar estado proformas', 'actualizar adelanto proformas',
-            'restore proformas', 'force-delete proformas', 'ver papelera proformas',
+            'cambiar estado proformas', 'revision de proformas',
+            'restore proformas', 'forzar eliminar proformas', 'ver papelera proformas',
             'generar pdf proformas',
 
             'ver resultados', 'crear resultados', 'editar resultados',

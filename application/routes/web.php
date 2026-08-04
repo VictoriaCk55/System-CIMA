@@ -82,8 +82,8 @@ Route::middleware(['auth'])->group(function () {
 
         // PAPELERA DE CLIENTES
         Route::get('/clientes/trash', [ClienteController::class, 'trash'])->name('clientes.trash')->middleware('permission:ver papelera clientes');
-        Route::post('/clientes/{id}/restore', [ClienteController::class, 'restore'])->name('clientes.restore')->middleware('permission:restore clientes');
-        Route::delete('/clientes/{id}/force-delete', [ClienteController::class, 'forceDelete'])->name('clientes.force-delete')->middleware('permission:force-delete clientes');
+        Route::post('/clientes/{id}/restore', [ClienteController::class, 'restore'])->name('clientes.restore')->middleware('permission:restaurar clientes');
+        Route::delete('/clientes/{id}/force-delete', [ClienteController::class, 'forceDelete'])->name('clientes.force-delete')->middleware('permission:forzar eliminar clientes');
 
         // NUEVAS RUTAS PARA PAGOS MANUALES Y ACTUALIZAR SALDO
         Route::post('/clientes/{id}/registrar-pago', [ClienteController::class, 'registrarPago'])->name('clientes.registrar-pago')->middleware('permission:registrar pago clientes');
@@ -98,8 +98,8 @@ Route::middleware(['auth'])->group(function () {
 
         // PAPELERA DE PARÁMETROS
         Route::get('/parametros/trash', [ParametroController::class, 'trash'])->name('parametros.trash')->middleware('permission:ver papelera parametros');
-        Route::post('/parametros/{id}/restore', [ParametroController::class, 'restore'])->name('parametros.restore')->middleware('permission:restore parametros');
-        Route::delete('/parametros/{id}/force-delete', [ParametroController::class, 'forceDelete'])->name('parametros.force-delete')->middleware('permission:force-delete parametros');
+        Route::post('/parametros/{id}/restore', [ParametroController::class, 'restore'])->name('parametros.restore')->middleware('permission:restaurar parametros');
+        Route::delete('/parametros/{id}/force-delete', [ParametroController::class, 'forceDelete'])->name('parametros.force-delete')->middleware('permission:forzar eliminar parametros');
 
         // ===== PROFORMAS =====
         Route::get('/proformas/create', [ProformaController::class, 'create'])->name('proformas.create')->middleware('permission:crear proformas');
@@ -107,15 +107,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/proformas/{proforma}/edit', [ProformaController::class, 'edit'])->name('proformas.edit')->middleware('permission:editar proformas');
         Route::put('/proformas/{proforma}', [ProformaController::class, 'update'])->name('proformas.update')->middleware('permission:editar proformas');
         Route::delete('/proformas/{proforma}', [ProformaController::class, 'destroy'])->name('proformas.destroy')->middleware('permission:eliminar proformas');
-        Route::post('/proformas/{proforma}/cambiar-estado', [ProformaController::class, 'cambiarEstado'])->name('proformas.cambiar-estado')->middleware('permission:cambiar estado proformas');
+        Route::post('/proformas/{proforma}/cambiar-estado', [ProformaController::class, 'cambiarEstado'])->name('proformas.cambiar-estado')->middleware('permission: revision de proformas');
 
         // RUTA PARA ACTUALIZAR SOLO ADELANTO
-        Route::put('/proformas/{proforma}/actualizar-adelanto', [ProformaController::class, 'actualizarAdelanto'])->name('proformas.actualizar-adelanto')->middleware('permission:actualizar adelanto proformas');
+        Route::put('/proformas/{proforma}/actualizar-adelanto', [ProformaController::class, 'actualizarAdelanto'])->name('proformas.actualizar-adelanto')->middleware('permission:editar adelanto de proformas');
 
         // PAPELERA DE PROFORMAS
         Route::get('/proformas/trash', [ProformaController::class, 'trash'])->name('proformas.trash')->middleware('permission:ver papelera proformas');
         Route::post('/proformas/{id}/restore', [ProformaController::class, 'restore'])->name('proformas.restore')->middleware('permission:restore proformas');
-        Route::delete('/proformas/{id}/force-delete', [ProformaController::class, 'forceDelete'])->name('proformas.force-delete')->middleware('permission:force-delete proformas');
+        Route::delete('/proformas/{id}/force-delete', [ProformaController::class, 'forceDelete'])->name('proformas.force-delete')->middleware('permission:forzar eliminar proformas');
 
         // ===== INFORMES =====
         Route::get('/informes/create', [InformeController::class, 'create'])->name('informes.create')->middleware('permission:crear informes');

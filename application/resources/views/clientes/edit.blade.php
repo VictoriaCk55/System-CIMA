@@ -22,6 +22,7 @@
     </div>
 
     <!-- Formulario -->
+    @can('editar clientes')
     <div class="card">
         <div class="card-header" style="background-color: #2798F5; border-bottom: none;">
             <h5 class="mb-0 text-white">
@@ -113,6 +114,7 @@
                     </div>
                 </div>
 
+                @can('ver clientes')
                 <div class="d-flex justify-content-between pt-3 border-top">
                     <a href="{{ route('clientes.show', $cliente->id) }}" class="btn btn-secondary" style="border-radius: 30px; padding: 10px 25px;">
                         <i class="fas fa-times me-2"></i>
@@ -123,9 +125,11 @@
                         Actualizar Cliente
                     </button>
                 </div>
+                @endcan
             </form>
         </div>
     </div>
+    @endcan
 </div>
 
 <!-- Estilos adicionales específicos para la página de edición -->

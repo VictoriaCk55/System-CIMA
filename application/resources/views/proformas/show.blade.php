@@ -465,7 +465,7 @@
                         </a>
                         
                         @auth
-                            @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
+                            @if(Auth::user()->hasAnyRole(['admin', 'tecnico', 'analista']))
                                 
                                 @if($proforma->estado == 'BORRADOR')
                                     <!-- Editar Proforma Completa - Amarillo outline -->
@@ -479,6 +479,7 @@
                                     </a>
                                     
                                     <!-- ENVIAR A REVISIÓN -->
+                                    @can('revision de proformas')
                                     <button type="button" 
                                             class="btn"
                                             style="color: #000000; border: 2px solid #0dcaf0; background-color: transparent; border-radius: 30px; padding: 10px 25px; transition: all 0.3s ease; font-weight: 500; width: 100%; text-align: center;"
@@ -490,7 +491,7 @@
                                         <i class="fas fa-paper-plane me-2"></i>
                                         Enviar a Revisión
                                     </button>
-                                    
+                                    @endcan
                                     <!-- Rechazar Proforma -->
                                     <button type="button" 
                                             class="btn"
@@ -505,6 +506,7 @@
                                     </button>
                                     
                                     <!-- Eliminar Proforma -->
+                                     @can('eliminar proformas')
                                     <form action="{{ route('proformas.destroy', $proforma) }}" 
                                           method="POST" 
                                           class="d-grid mt-2"
@@ -518,6 +520,7 @@
                                             Eliminar Proforma
                                         </button>
                                     </form>
+                                    @endcan
                                     
                                 @elseif($proforma->estado == 'ENVIADA')
                                     <div class="alert alert-warning text-center">
@@ -570,6 +573,7 @@
                                     </div>
                                     
                                     <!-- Botón para editar SOLO ADELANTO (APROBADA) -->
+                                    @can('editar adelanto de proformas')
                                     <button type="button" 
                                             class="btn"
                                             style="color: #000000; border: 2px solid #ffc107; background-color: transparent; border-radius: 30px; padding: 10px 25px; transition: all 0.3s ease; font-weight: 500; width: 100%; text-align: center;"
@@ -580,6 +584,7 @@
                                         <i class="fas fa-money-bill-wave me-2"></i>
                                         Editar Adelanto
                                     </button>
+                                    @endcan
                                     
                                     @if($proforma->informe)
                                         <!-- Ver Informe Asociado -->
@@ -685,7 +690,7 @@
                             <i class="fas fa-file-alt text-muted fa-3x mb-3"></i>
                             <p class="text-muted">Esta proforma no tiene un informe asociado</p>
                             @auth
-                                @if(Auth::user()->hasAnyRole(['admin', 'tecnico']) && $proforma->estado == 'APROBADA')
+                                @if(Auth::user()->hasAnyRole(['admin', 'tecnico', 'analista']) && $proforma->estado == 'APROBADA')
                                     <a href="{{ route('informes.create', ['proforma_id' => $proforma->id]) }}" 
                                        class="btn"
                                        style="color: #000000; border: 2px solid #0dcaf0; background-color: transparent; border-radius: 30px; padding: 10px 25px; transition: all 0.3s ease; font-weight: 500; text-decoration: none; display: inline-block;"
@@ -705,7 +710,7 @@
 
 <!-- Modal para cambiar estado -->
 @auth
-    @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
+    @if(Auth::user()->hasAnyRole(['admin', 'tecnico', 'analista']))
         <div class="modal fade" id="cambiarEstadoModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -765,6 +770,7 @@
         </div>
         
         <!-- Modal para editar SOLO ADELANTO -->
+         @can('editar adelanto de proformas')
         <div class="modal fade" id="editarAdelantoModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -838,6 +844,7 @@
                 </div>
             </div>
         </div>
+        @endcan
         
         <script>
         document.addEventListener('DOMContentLoaded', function() {

@@ -229,7 +229,7 @@
             
             <!-- Acciones -->
             @auth
-                @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
+                @if(Auth::user()->hasAnyRole(['admin', 'tecnico', 'analista']))
                     <div class="card">
                         <div class="card-header" style="background-color: #2798F5; border-bottom: none;">
                             <h5 class="mb-0 text-white">
@@ -239,6 +239,7 @@
                         </div>
                         <div class="card-body">
                             <div class="d-grid gap-2">
+                                @can('editar clientes')
                                 <a href="{{ route('clientes.edit', $cliente) }}" 
                                    class="btn"
                                    style="color: #000000; border: 2px solid #ffc107; background-color: transparent; border-radius: 30px; padding: 10px 25px; transition: all 0.3s ease; font-weight: 500;"
@@ -247,8 +248,11 @@
                                     <i class="fas fa-edit me-2"></i>
                                     Editar Cliente
                                 </a>
+                                @endcan
                                 
                                 <!-- ===== NUEVO BOTÓN PARA REGISTRAR PAGO MANUAL ===== -->
+                                
+                                @can('registrar pago clientes')
                                 <button type="button" 
                                         class="btn"
                                         style="color: #000000; border: 2px solid #198754; background-color: transparent; border-radius: 30px; padding: 10px 25px; transition: all 0.3s ease; font-weight: 500;"
@@ -259,8 +263,10 @@
                                     <i class="fas fa-money-bill-wave me-2"></i>
                                     Registrar Pago Manual
                                 </button>
+                                @endcan
                                 
                                 <!-- ===== BOTÓN PARA ACTUALIZAR SALDO (RECALCULAR) ===== -->
+                                @can('actualizar saldo clientes')
                                 <form action="{{ route('clientes.actualizar-saldo', $cliente->id) }}" method="POST" class="d-grid">
                                     @csrf
                                     <button type="submit" class="btn" style="color: #000000; border: 2px solid #0dcaf0; background-color: transparent; border-radius: 30px; padding: 10px 25px; transition: all 0.3s ease; font-weight: 500;"
@@ -270,7 +276,8 @@
                                         Recalcular Saldo
                                     </button>
                                 </form>
-                                
+                                @endcan
+                                @can('eliminar clientes')
                                 <button type="button" 
                                         class="btn btn-outline-danger" 
                                         style="border-radius: 30px; padding: 10px 25px; border-width: 2px;"
@@ -285,6 +292,7 @@
                                     @csrf
                                     @method('DELETE')
                                 </form>
+                                @endcan
                             </div>
                         </div>
                     </div>
@@ -476,6 +484,7 @@
 </div>
 
 <!-- ===== MODAL PARA REGISTRAR PAGO MANUAL ===== -->
+ @can('registrar pago clientes')
 <div class="modal fade" id="registrarPagoModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -559,7 +568,7 @@
         </div>
     </div>
 </div>
-
+@endcan
 <!-- Estilos adicionales -->
 <style>
 .btn[style*="background-color: #2798F5"]:hover {

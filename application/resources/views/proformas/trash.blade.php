@@ -87,6 +87,7 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group" role="group">
+                                            @can('restore proformas')
                                             <form action="{{ route('proformas.restore', $proforma->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 <button type="submit" class="btn btn-sm btn-success" 
@@ -95,7 +96,8 @@
                                                     <i class="fas fa-trash-restore me-1"></i> Restaurar
                                                 </button>
                                             </form>
-                                            
+                                            @endcan
+                                            @can('forzar eliminar proformas')
                                             <form action="{{ route('proformas.force-delete', $proforma->id) }}" method="POST" class="d-inline" id="delete-form-{{ $proforma->id }}">
                                                 @csrf
                                                 @method('DELETE')
@@ -107,6 +109,7 @@
                                                     <i class="fas fa-times-circle me-1"></i> Eliminar
                                                 </button>
                                             </form>
+                                            @endcan
                                         </div>
                                     </td>
                                 </tr>

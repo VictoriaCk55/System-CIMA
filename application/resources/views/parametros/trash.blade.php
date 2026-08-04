@@ -89,6 +89,7 @@
                                             {{ $parametro->deleted_at->format('d/m/Y H:i') }}
                                         </span>
                                     </td>
+                                    @can('restaurar parametros')
                                     <td class="text-center">
                                         <div class="btn-group" role="group">
                                             <form action="{{ route('parametros.restore', $parametro->id) }}" method="POST" class="d-inline">
@@ -99,7 +100,7 @@
                                                     <i class="fas fa-trash-restore me-1"></i> Restaurar
                                                 </button>
                                             </form>
-                                            
+                                            @can('forzar eliminar parametros')
                                             <form action="{{ route('parametros.force-delete', $parametro->id) }}" method="POST" class="d-inline" id="delete-form-{{ $parametro->id }}">
                                                 @csrf
                                                 @method('DELETE')
@@ -111,8 +112,10 @@
                                                     <i class="fas fa-times-circle me-1"></i> Eliminar
                                                 </button>
                                             </form>
+                                            @endcan 
                                         </div>
                                     </td>
+                                    @endcan
                                 </tr>
                             @endforeach
                         </tbody>

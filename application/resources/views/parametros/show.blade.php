@@ -121,7 +121,7 @@
             
             <!-- Acciones -->
             @auth
-                @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
+                @if(Auth::user()->hasAnyRole(['admin', 'tecnico', 'analista']))
                     <div class="card">
                         <div class="card-header" style="background-color: #A31800; border-bottom: none;">
                             <h5 class="mb-0 text-white">
@@ -131,6 +131,7 @@
                         </div>
                         <div class="card-body">
                             <div class="d-grid gap-2">
+                                @can('editar parametros')
                                 <a href="{{ route('parametros.edit', $parametro) }}" 
                                 class="btn"
                        style="color: #000000; border: 2px solid #ffc107; background-color: transparent; border-radius: 30px; padding: 10px 25px; transition: all 0.3s ease; font-weight: 500;"
@@ -139,7 +140,9 @@
                         <i class="fas fa-edit me-2"></i>
                         Editar Parametro
                                 </a>
+                                @endcan
                                 
+                                @can('eliminar parametros')
                                 <button type="button" 
                                         class="btn btn-outline-danger" 
                                         style="border-radius: 30px; padding: 10px 25px;"
@@ -147,6 +150,7 @@
                                     <i class="fas fa-trash me-2"></i>
                                     Eliminar Parámetro
                                 </button>
+                                @endcan
                                 
                                 <!-- Formulario oculto para eliminar -->
                                 <form id="delete-form-{{ $parametro->id }}" 

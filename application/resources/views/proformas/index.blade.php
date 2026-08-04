@@ -327,18 +327,21 @@
                                                 
                                                 <!-- Editar (solo admin y borrador) -->
                                                 @auth
-                                                    @if(Auth::user()->hasAnyRole(['admin', 'tecnico']) && $proforma->estado == 'BORRADOR')
+                                                    @if(Auth::user()->hasAnyRole(['admin', 'tecnico', 'analista']) && $proforma->estado == 'BORRADOR')
                                                         <li>
+                                                            @can('editar proformas')
                                                             <a class="dropdown-item" 
                                                             href="{{ route('proformas.edit', $proforma) }}"
                                                             title="Editar proforma">
                                                                 <i class="fas fa-edit me-2" style="color: #ffc107;"></i>
                                                                 Editar
                                                             </a>
+                                                            @endcan
                                                         </li>
                                                         
                                                         <!-- Eliminar -->
                                                         <li>
+                                                            @can('eliminar proformas')
                                                             <form action="{{ route('proformas.destroy', $proforma) }}" 
                                                                 method="POST" 
                                                                 class="d-inline"
@@ -352,6 +355,7 @@
                                                                     Eliminar
                                                                 </button>
                                                             </form>
+                                                            @endcan
                                                         </li>
                                                         <li><hr class="dropdown-divider"></li>
                                                     @endif
@@ -414,7 +418,7 @@
                 <!-- Botón de Papelera y texto de registros centrado -->
                 <div class="d-flex align-items-center justify-content-center position-relative mt-3">
                     @auth
-                        @if(Auth::user()->hasAnyRole(['admin', 'tecnico']))
+                        @can('ver papelera proformas')
                             <a href="{{ route('proformas.trash') }}" 
                                class="btn btn-icon-circle position-absolute start-0"
                                style="width: 35px; height: 35px; border-radius: 50%; background-color: #6c757d; color: white; display: inline-flex; align-items: center; justify-content: center; transition: all 0.3s ease; text-decoration: none;"
@@ -424,7 +428,7 @@
                                onmouseout="this.style.backgroundColor='#6c757d'; this.style.transform='scale(1)';">
                                 <i class="fas fa-trash-alt" style="font-size: 1rem;"></i>
                             </a>
-                        @endif
+                        @endcan
                     @endauth
                     
                     <div style="color: #ffc107; font-weight: 500;">
