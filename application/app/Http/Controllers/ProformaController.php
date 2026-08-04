@@ -28,7 +28,7 @@ class ProformaController extends Controller
      */
     private function esAdmin()
     {
-        return Auth::check() && Auth::user()->hasAnyRole(['admin', 'tecnico']);
+        return Auth::check() && Auth::user()->hasAnyRole(['admin', 'tecnico', 'analista']);
     }
 
     /**
@@ -626,8 +626,7 @@ class ProformaController extends Controller
         try {
             DB::beginTransaction();
 
-            $proforma->parametros()->detach();
-            $proforma->delete(); // Soft delete
+            $proforma->delete(); // Soft delete (conserva la relación con parámetros)
 
             DB::commit();
 

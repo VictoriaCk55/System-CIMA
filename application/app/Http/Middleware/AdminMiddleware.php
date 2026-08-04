@@ -19,7 +19,7 @@ class AdminMiddleware
 
         // Solo admin y tecnico pueden pasar por rutas protegidas
         // Verifica tanto columna role como Spatie roles
-        $allowedRoles = ['admin', 'tecnico'];
+        $allowedRoles = ['admin', 'tecnico', 'analista'];
         $hasColumnRole = in_array($user->role, $allowedRoles);
         $hasSpatieRole = $user->hasAnyRole($allowedRoles);
 

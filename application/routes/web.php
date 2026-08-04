@@ -107,7 +107,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/proformas/{proforma}/edit', [ProformaController::class, 'edit'])->name('proformas.edit')->middleware('permission:editar proformas');
         Route::put('/proformas/{proforma}', [ProformaController::class, 'update'])->name('proformas.update')->middleware('permission:editar proformas');
         Route::delete('/proformas/{proforma}', [ProformaController::class, 'destroy'])->name('proformas.destroy')->middleware('permission:eliminar proformas');
-        Route::post('/proformas/{proforma}/cambiar-estado', [ProformaController::class, 'cambiarEstado'])->name('proformas.cambiar-estado')->middleware('permission: revision de proformas');
+        Route::post('/proformas/{proforma}/cambiar-estado', [ProformaController::class, 'cambiarEstado'])->name('proformas.cambiar-estado')->middleware('permission:revision de proformas');
 
         // RUTA PARA ACTUALIZAR SOLO ADELANTO
         Route::put('/proformas/{proforma}/actualizar-adelanto', [ProformaController::class, 'actualizarAdelanto'])->name('proformas.actualizar-adelanto')->middleware('permission:editar adelanto de proformas');

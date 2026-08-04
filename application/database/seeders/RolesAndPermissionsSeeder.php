@@ -121,23 +121,32 @@ class RolesAndPermissionsSeeder extends Seeder
             'generar cadena custodia',
         ]);
 
-        // Analista — solo lectura + resultados
+        // Analista — acceso a gestión de clientes, parámetros, proformas e informes
         $analista = Role::firstOrCreate(['name' => 'analista']);
         $analista->syncPermissions([
             'edit.profile', 'update.profile', 'update.password',
 
             'ver usuarios',
 
-            'ver clientes',
-            'ver parametros',
+            'ver clientes', 'crear clientes', 'editar clientes', 'eliminar clientes',
+            'restaurar clientes', 'forzar eliminar clientes', 'ver papelera clientes',
+            'registrar pago clientes', 'actualizar saldo clientes',
 
-            'ver proformas', 'generar pdf proformas',
+            'ver parametros', 'crear parametros', 'editar parametros', 'eliminar parametros',
+            'restaurar parametros', 'forzar eliminar parametros', 'ver papelera parametros',
+
+            'ver proformas', 'crear proformas', 'editar proformas', 'eliminar proformas',
+            'revision de proformas', 'editar adelanto de proformas',
+            'restore proformas', 'forzar eliminar proformas', 'ver papelera proformas',
+            'generar pdf proformas',
 
             'ver resultados', 'crear resultados', 'editar resultados',
             'guardar resultados', 'cargar resultados', 'limpiar resultados',
             'generar pdf resultados', 'generar informe resultados',
 
-            'ver informes', 'generar pdf informes',
+            'ver informes', 'crear informes', 'editar informes', 'eliminar informes',
+            'cambiar estado informes', 'restore informes', 'force-delete informes',
+            'ver papelera informes', 'generar pdf informes',
 
             'ver financiero',
             'generar cadena custodia',

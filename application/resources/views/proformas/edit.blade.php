@@ -1029,33 +1029,8 @@ $(document).ready(function() {
         });
     }
     
-    // Inicializar Select2 en todos los parámetros existentes
-    $('.parametro-select').each(function() {
-        const select = $(this);
-        const valor = select.val();
-        
-        // Inicializar Select2
-        initParametroSelect(select);
-        
-        // Si ya tiene un valor seleccionado, aseguramos que se muestre correctamente
-        if (valor) {
-            const row = select.closest('.parametro-row');
-            const rowId = row.attr('id').split('-')[2];
-            
-            // Actualizar si es necesario (los datos ya están en el HTML)
-            setTimeout(() => {
-                const precio = select.find('option:selected').data('precio');
-                const metodo = select.find('option:selected').data('metodo');
-                if (precio) {
-                    $('#precio-' + rowId).val(parseFloat(precio).toFixed(2));
-                }
-                if (metodo) {
-                    $('#metodo-' + rowId + ' .metodo-text').text(metodo);
-                }
-            }, 100);
-        }
-        
-        // Evento de selección
+    // Enlaza el evento de selección para actualizar precio y método
+    function bindParametroSelectEvents(select) {
         select.off('select2:select').on('select2:select', function(e) {
             const data = e.params.data;
             const row = $(this).closest('.parametro-row');
@@ -1095,15 +1070,84 @@ $(document).ready(function() {
         });
         
         // Guardar valor inicial
-        select.data('valor-anterior', valor);
+        select.data('valor-anterior', select.val());
+    }
+
+    // Inicializar Select2 en todos los parámetros existentes
+    $('.parametro-select').each(function() {
+        const select = $(this);
+        const valor = select.val();
+        
+        // Inicializar Select2
+        initParametroSelect(select);
+        
+        // Si ya tiene un valor seleccionado, aseguramos que se muestre correctamente
+        if (valor) {
+            const row = select.closest('.parametro-row');
+            const rowId = row.attr('id').split('-')[2];
+            
+            // Actualizar si es necesario (los datos ya están en el HTML)
+            setTimeout(() => {
+                const precio = select.find('option:selected').data('precio');
+                const metodo = select.find('option:selected').data('metodo');
+                if (precio) {
+                    $('#precio-' + rowId).val(parseFloat(precio).toFixed(2));
+                }
+                if (metodo) {
+                    $('#metodo-' + rowId + ' .metodo-text').text(metodo);
+                }
+            }, 100);
+        }
+        
+        // Enlazar eventos de selección (precio, método, duplicados)
+        bindParametroSelectEvents(select);
     });
     
     // ===== BOTÓN AGREGAR PARÁMETRO =====
+    // Plantilla de fila cuando la proforma no tiene parámetros
+    const parametroRowTemplate =
+        '<div class="parametro-row mb-3 border p-3 rounded" id="parametro-row-0">' +
+        '    <div class="row align-items-center">' +
+        '        <div class="col-md-5 mb-2 mb-md-0">' +
+        '            <label class="form-label small">Parámetro *</label>' +
+        '            <select name="parametros[0][id]" class="form-control parametro-select" id="parametro-select-0" style="width: 100%;" data-row-id="0" required>' +
+        '                <option value="">Buscar parámetro...</option>' +
+        '            </select>' +
+        '        </div>' +
+        '        <div class="col-md-3 mb-2 mb-md-0">' +
+        '            <label class="form-label small">N° Muestras *</label>' +
+        '            <input type="number" class="form-control muestra-input" name="parametros[0][cantidad]" value="1" min="1" oninput="calcularTotalesEstimados()" required>' +
+        '        </div>' +
+        '        <div class="col-md-3 mb-2 mb-md-0">' +
+        '            <label class="form-label small">Precio Unitario</label>' +
+        '            <div class="input-group">' +
+        '                <span class="input-group-text">Bs.</span>' +
+        '                <input type="text" class="form-control precio-unitario" id="precio-0" value="0.00" readonly>' +
+        '            </div>' +
+        '        </div>' +
+        '        <div class="col-md-1 text-center">' +
+        '            <label class="form-label small">&nbsp;</label>' +
+        '            <button type="button" class="btn btn-danger btn-sm remove-parametro" onclick="eliminarParametro(this)"><i class="fas fa-times"></i></button>' +
+        '        </div>' +
+        '    </div>' +
+        '    <div class="row mt-2 metodo-container" id="metodo-0" style="display: none;">' +
+        '        <div class="col-12">' +
+        '            <small class="text-muted"><i class="fas fa-microscope me-1"></i> Método: <span class="metodo-text"></span></small>' +
+        '        </div>' +
+        '    </div>' +
+        '    <div class="row mt-2 metodo-gas-container" id="metodo-gas-0" style="display: none;">' +
+        '        <div class="col-md-6">' +
+        '            <label class="form-label small">Método (equipo utilizado) *</label>' +
+        '            <input type="text" class="form-control metodo-gas-input" name="parametros[0][metodo]" placeholder="Ej: CO, O2, H2S...">' +
+        '        </div>' +
+        '    </div>' +
+        '</div>';
+
     $('#add-parametro').click(function() {
         const container = $('#parametros-container');
         const index = container.find('.parametro-row').length;
         const firstRow = $('.parametro-row:first');
-        const newRow = firstRow.clone();
+        const newRow = firstRow.length ? firstRow.clone() : $(parametroRowTemplate);
         
         // Actualizar IDs
         newRow.attr('id', 'parametro-row-' + index);
@@ -1147,6 +1191,7 @@ $(document).ready(function() {
         // Inicializar Select2 para el nuevo select
         setTimeout(() => {
             initParametroSelect(newSelect);
+            bindParametroSelectEvents(newSelect);
         }, 100);
         
         calcularTotalesEstimados();

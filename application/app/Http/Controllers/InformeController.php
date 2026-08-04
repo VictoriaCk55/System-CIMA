@@ -19,7 +19,7 @@ class InformeController extends Controller
      */
     private function esAdmin()
     {
-        return Auth::check() && Auth::user()->hasAnyRole(['admin', 'tecnico']);
+        return Auth::check() && Auth::user()->hasAnyRole(['admin', 'tecnico', 'analista']);
     }
 
     /**

@@ -529,7 +529,12 @@
 
             <!-- CODIGO -->
             <td colspan="1" style="width: 10mm; font-size: 7px; text-align: center; overflow: hidden;">
-                {{ $proforma->generarCodigoLaboratorio($numMuestra) }}
+                @php
+                    $numeroProforma = last(explode('-', $proforma->codigo));
+                    $partesCodigoLab = explode('-', $proforma->generarCodigoLaboratorio($numMuestra));
+                    $partesCodigoLab[2] = $numeroProforma;
+                @endphp
+                {{ implode('-', $partesCodigoLab) }}
             </td>
 
             <!-- MATRIZ -->
